@@ -1,0 +1,91 @@
+import { useForm } from "react-hook-form";
+import { FaGithub } from "react-icons/fa";
+import { FcGoogle } from "react-icons/fc";
+import { zodResolver } from "@hookform/resolvers/zod";
+
+import CustomInputLabel from "@/components/inputs/custom-input-label";
+import DootedSeparator from "@/components/dooted-separator";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
+import { loginSchema, LoginSchemaType } from "@/validators/auth";
+import CustomPasswordInput from "@/components/inputs/custom-password-input";
+import Link from "next/link";
+
+export default function SignInCard() {
+  const form = useForm<LoginSchemaType>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleLogin = (data: LoginSchemaType) => {
+    console.log("Logging in with", data);
+  };
+  return (
+    <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
+      <CardHeader className="flex items-center justify-center text-center p-0">
+        <CardTitle className="text-2xl">Welcome back!</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Form {...form}>
+          <form className="space-y-4" onSubmit={form.handleSubmit(handleLogin)}>
+            <CustomInputLabel
+              fieldTitle="Email"
+              nameInSchema="email"
+              className="h-12"
+              placeHolder="Enter email address"
+            />
+            <CustomPasswordInput
+              fieldTitle="Password"
+              nameInSchema="password"
+              className="h-12"
+              placeHolder="Enter password"
+            />
+            <Button type="submit" className="w-full cursor-pointer" size="xl">
+              Login
+            </Button>
+          </form>
+        </Form>
+        <DootedSeparator />
+        <CardFooter className="w-full space-y-4 flex flex-col p-0">
+          <Button
+            type="button"
+            className="w-full cursor-pointer"
+            size="xl"
+            variant="secondary"
+          >
+            <FcGoogle className="mr-2" />
+            Login with Google
+          </Button>
+          <Button
+            type="button"
+            className="w-full cursor-pointer"
+            size="xl"
+            variant="secondary"
+          >
+            <FaGithub
+              className="mr-2 
+          "
+            />
+            Login with Github
+          </Button>
+          <div className="w-full text-sm flex items-center justify-center">
+            Don&rsquo;t have an account
+            <Link href="/sign-up">
+              <span className="ml-2 text-blue-700 underline">Sign Up</span>
+            </Link>
+          </div>
+        </CardFooter>
+      </CardContent>
+    </Card>
+  );
+}
