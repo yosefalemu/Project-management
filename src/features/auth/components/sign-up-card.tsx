@@ -19,8 +19,10 @@ import DootedSeparator from "@/components/dooted-separator";
 import { signupSchema, SignUpSchemaType } from "@/validators/auth";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
+import { useRegister } from "../auth/register";
 
 export default function SignUpCard() {
+  const registerMutation = useRegister();
   const form = useForm<SignUpSchemaType>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
@@ -33,6 +35,7 @@ export default function SignUpCard() {
 
   const handleSignUp = (data: SignUpSchemaType) => {
     console.log("Signing up with", data);
+    registerMutation.mutate({ json: data });
   };
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">

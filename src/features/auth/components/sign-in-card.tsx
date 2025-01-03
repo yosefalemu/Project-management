@@ -17,8 +17,10 @@ import { Form } from "@/components/ui/form";
 import { loginSchema, LoginSchemaType } from "@/validators/auth";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
+import { useLogin } from "../auth/login";
 
 export default function SignInCard() {
+  const loginMutation = useLogin();
   const form = useForm<LoginSchemaType>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -28,7 +30,8 @@ export default function SignInCard() {
   });
 
   const handleLogin = (data: LoginSchemaType) => {
-    console.log("Logging in with", data);
+    console.log(data);
+    loginMutation.mutate({ json: data });
   };
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
