@@ -6,6 +6,9 @@ import { loginSchema, signupSchema } from "@/validators/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
 const app = new Hono()
+  .get("/current", sessionMiddleware, async (c) => {
+    return c.json({ data: "Current user" });
+  })
   .post("/login", zValidator("json", loginSchema), async (c) => {
     const { email, password } = c.req.valid("json");
     return c.json({ email, password });

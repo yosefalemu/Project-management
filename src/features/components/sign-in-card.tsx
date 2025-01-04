@@ -17,7 +17,7 @@ import { Form } from "@/components/ui/form";
 import { loginSchema, LoginSchemaType } from "@/validators/auth";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
-import { useLogin } from "../auth/login";
+import { useLogin } from "../auth/api/login";
 
 export default function SignInCard() {
   const loginMutation = useLogin();

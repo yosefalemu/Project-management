@@ -19,7 +19,7 @@ import DootedSeparator from "@/components/dooted-separator";
 import { signupSchema, SignUpSchemaType } from "@/validators/auth";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
-import { useRegister } from "../auth/register";
+import { useRegister } from "../auth/api/register";
 
 export default function SignUpCard() {
   const registerMutation = useRegister();
