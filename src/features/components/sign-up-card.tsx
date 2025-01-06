@@ -16,15 +16,17 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomInputLabel from "@/components/inputs/custom-input-label";
 import DootedSeparator from "@/components/dooted-separator";
-import { signupSchema, SignUpSchemaType } from "@/validators/auth";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { useRegister } from "../auth/api/register";
+import { insertUserSchema, insertUserType } from "@/zod-schemas/users";
+import { LoaderCircle } from "lucide-react";
+import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 
 export default function SignUpCard() {
   const registerMutation = useRegister();
-  const form = useForm<SignUpSchemaType>({
-    resolver: zodResolver(signupSchema),
+  const form = useForm<insertUserType>({
+    resolver: zodResolver(insertUserSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -33,7 +35,7 @@ export default function SignUpCard() {
     },
   });
 
-  const handleSignUp = (data: SignUpSchemaType) => {
+  const handleSignUp = (data: insertUserType) => {
     console.log("Signing up with", data);
     registerMutation.mutate({ json: data });
   };
@@ -59,6 +61,13 @@ export default function SignUpCard() {
             </span>
           </Link>
         </CardDescription>
+        {registerMutation.error && (
+          <p>{registerMutation.failureReason?.toString()}</p>
+        )}
+        {/* <DisplayServerActionResponse
+          result={registerMutation.}
+          onReset={() => registerMutation.reset}
+        /> */}
       </CardHeader>
       <CardContent className="space-y-4">
         <Form {...form}>
@@ -90,8 +99,19 @@ export default function SignUpCard() {
               className="h-12"
               placeHolder="Enter confirm password"
             />
-            <Button type="submit" className="w-full h-12 cursor-pointer">
-              Sign Up
+            <Button
+              type="submit"
+              className="w-full h-12 cursor-pointer"
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? (
+                <span className="flex items-center justify-center">
+                  <LoaderCircle className="mr-2 animate-spin" />
+                  <p>Signing Up</p>
+                </span>
+              ) : (
+                <p>Sign Up</p>
+              )}
             </Button>
           </form>
         </Form>

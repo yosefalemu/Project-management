@@ -14,22 +14,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { loginSchema, LoginSchemaType } from "@/validators/auth";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
 import { useLogin } from "../auth/api/login";
+import { selectUserSchema, selectUserType } from "@/zod-schemas/users";
 
 export default function SignInCard() {
   const loginMutation = useLogin();
-  const form = useForm<LoginSchemaType>({
-    resolver: zodResolver(loginSchema),
+  const form = useForm<selectUserType>({
+    resolver: zodResolver(selectUserSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const handleLogin = (data: LoginSchemaType) => {
+  const handleLogin = (data: selectUserType) => {
     console.log(data);
     loginMutation.mutate({ json: data });
   };
