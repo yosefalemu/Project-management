@@ -36,9 +36,9 @@ export default function SignUpCard() {
   });
 
   const handleSignUp = (data: insertUserType) => {
-    console.log("Signing up with", data);
     registerMutation.mutate({ json: data });
   };
+  console.log("REGISTER MUTATION", registerMutation);
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
       <CardHeader className="flex items-center justify-center text-center p-0">
@@ -64,12 +64,20 @@ export default function SignUpCard() {
         {registerMutation.error && (
           <p>{registerMutation.failureReason?.toString()}</p>
         )}
-        {/* <DisplayServerActionResponse
-          result={registerMutation.}
-          onReset={() => registerMutation.reset}
-        /> */}
       </CardHeader>
       <CardContent className="space-y-4">
+        <DisplayServerActionResponse
+          result={{
+            data: registerMutation.data
+              ? { message: "User registered successfully" }
+              : undefined,
+            serverError: registerMutation.failureReason?.message,
+            validationErrors: registerMutation.error
+              ? { general: [registerMutation.error.message] }
+              : undefined,
+          }}
+          onReset={() => registerMutation.reset()}
+        />
         <Form {...form}>
           <form
             className="space-y-4"

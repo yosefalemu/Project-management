@@ -30,7 +30,6 @@ export default function SignInCard() {
   });
 
   const handleLogin = (data: selectUserType) => {
-    console.log(data);
     loginMutation.mutate({ json: data });
   };
   return (
