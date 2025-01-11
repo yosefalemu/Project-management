@@ -23,9 +23,14 @@ export const insertUserSchema = createInsertSchema(users, {
 });
 
 export const selectUserSchema = createSelectSchema(users, {
+  id: (schema) => schema.uuid("Invalid uuid format").optional(),
+  name: (schema) => schema.optional(),
   email: (schema) =>
     schema.nonempty("Email is required").email("Invalid email"),
   password: (schema) => schema.nonempty("Password is required"),
+  confirm_password: (schema) => schema.optional(),
+  createdAt: (schema) => schema.optional(),
+  updatedAt: (schema) => schema.optional(),
 });
 
 export type insertUserType = typeof insertUserSchema._type;

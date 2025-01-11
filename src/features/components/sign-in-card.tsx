@@ -18,6 +18,8 @@ import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
 import { useLogin } from "../auth/api/login";
 import { selectUserSchema, selectUserType } from "@/zod-schemas/users";
+import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
+import { LoaderCircle } from "lucide-react";
 
 export default function SignInCard() {
   const loginMutation = useLogin();
@@ -32,12 +34,27 @@ export default function SignInCard() {
   const handleLogin = (data: selectUserType) => {
     loginMutation.mutate({ json: data });
   };
+
   return (
     <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
       <CardHeader className="flex items-center justify-center text-center p-0">
         <CardTitle className="text-2xl">Welcome back!</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
+        <DisplayServerActionResponse
+          data={
+            loginMutation.data
+              ? { message: "User logged in successfully" }
+              : undefined
+          }
+          error={
+            loginMutation.error
+              ? { message: loginMutation.error.message }
+              : undefined
+          }
+          routePath="home"
+          onReset={() => loginMutation.reset()}
+        />
         <Form {...form}>
           <form className="space-y-4" onSubmit={form.handleSubmit(handleLogin)}>
             <CustomInputLabel
@@ -52,8 +69,19 @@ export default function SignInCard() {
               className="h-12"
               placeHolder="Enter password"
             />
-            <Button type="submit" className="w-full cursor-pointer" size="xl">
-              Login
+            <Button
+              type="submit"
+              className="w-full h-12 cursor-pointer"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? (
+                <span className="flex items-center justify-center">
+                  <LoaderCircle className="mr-2 animate-spin" />
+                  <p>Logging</p>
+                </span>
+              ) : (
+                <p>Login</p>
+              )}
             </Button>
           </form>
         </Form>
