@@ -52,7 +52,7 @@ export default function SignInCard() {
               ? { message: loginMutation.error.message }
               : undefined
           }
-          routePath="home"
+          routePath="/"
           onReset={() => loginMutation.reset()}
         />
         <Form {...form}>

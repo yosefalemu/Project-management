@@ -1,3 +1,3 @@
 export default function LandingPage() {
-  return <div>Landing page</div>;
+  return <div>Home Page</div>;
 }

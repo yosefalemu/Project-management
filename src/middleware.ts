@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
 
-// List of routes to protect
-const publisRoutes = [
-  "/",
+const publicRoutes = [
   "/sign-in",
   "/sign-up",
   "/blogs",
@@ -12,32 +10,39 @@ const publisRoutes = [
   "/privacy-policy",
 ];
 
+const isProtectedRoute = (pathname: string) =>
+  !publicRoutes.includes(pathname) &&
+  !pathname.startsWith("/api/") &&
+  !pathname.includes("/_next/") &&
+  !pathname.includes("/favicon.ico");
+
+const redirectTo = (url: string, req: NextRequest) =>
+  NextResponse.redirect(new URL(url, req.url));
+
+const verifyToken = async (token: string | undefined) => {
+  if (!token) throw new Error("No token provided");
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+  await jwtVerify(token, secret);
+};
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if (pathname.startsWith("/api/")) {
-    return NextResponse.next();
-  }
-  if (pathname.includes("/_next/") || pathname.includes("/favicon.ico")) {
-    return NextResponse.next();
-  }
-  const isRoutePublic = publisRoutes.includes(pathname);
-  console.log("PATH NAME", pathname);
-  // Check if the route is protected
-  if (!isRoutePublic) {
-    const token = req.cookies.get("JIRA_CLONE_AUTH_COOKIE")?.value;
 
-    if (!token) {
-      // Redirect to login if no token
-      return NextResponse.redirect(new URL("/sign-in", req.url));
-    }
-
+  if (pathname === "/") {
     try {
-      // Verify JWT
-      const secret = new TextEncoder().encode(process.env.JWT_SECRET);
-      await jwtVerify(token, secret);
-    } catch (err) {
-      console.error("Invalid token", err);
-      return NextResponse.redirect(new URL("/sign-in", req.url));
+      const token = req.cookies.get("JIRA_CLONE_AUTH_COOKIE")?.value;
+      await verifyToken(token);
+    } catch {
+      return redirectTo("/sign-in", req);
+    }
+  }
+
+  if (isProtectedRoute(pathname)) {
+    try {
+      const token = req.cookies.get("JIRA_CLONE_AUTH_COOKIE")?.value;
+      await verifyToken(token);
+    } catch {
+      return redirectTo("/sign-in", req);
     }
   }
 

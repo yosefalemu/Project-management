@@ -3,13 +3,14 @@ import { zValidator } from "@hono/zod-validator";
 import { deleteCookie, setCookie } from "hono/cookie";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { NeonDbError } from "@neondatabase/serverless";
+import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertUserSchema, selectUserSchema } from "@/zod-schemas/users";
 import { users } from "@/db/schema/user";
-import { NeonDbError } from "@neondatabase/serverless";
-import { eq } from "drizzle-orm";
+import { AUTH_COOKIE } from "../auth/constants/constant";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {
@@ -79,7 +80,15 @@ const app = new Hono()
     }
   })
   .post("/logout", sessionMiddleware, async (c) => {
-    deleteCookie(c, "AUTH_COOKIE");
-    return c.json({ message: "Logged out successfully" });
+    try {
+      deleteCookie(c, AUTH_COOKIE);
+      return c.json({ message: "Logged out successfully" });
+    } catch (err) {
+      console.log("Error while logout", err);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
   });
 export default app;

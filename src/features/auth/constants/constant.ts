@@ -1,1 +1,1 @@
-export const AUTH_COOKIE = "cwy-jira-clone";
+export const AUTH_COOKIE = "JIRA_CLONE_AUTH_COOKIE";
