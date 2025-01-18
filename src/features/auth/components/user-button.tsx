@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogOut } from "lucide-react";
-import { useLogout } from "../auth/api/logout";
+import { useLogout } from "../api/logout";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 
 export default function UserButton() {

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
+import { JWT_SECRET } from "./config";
 
 const publicRoutes = [
   "/sign-in",
@@ -21,7 +22,7 @@ const redirectTo = (url: string, req: NextRequest) =>
 
 const verifyToken = async (token: string | undefined) => {
   if (!token) throw new Error("No token provided");
-  const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+  const secret = new TextEncoder().encode(JWT_SECRET);
   await jwtVerify(token, secret);
 };
 

@@ -16,7 +16,7 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
-import { useLogin } from "../auth/api/login";
+import { useLogin } from "../api/login";
 import { selectUserSchema, selectUserType } from "@/zod-schemas/users";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import { LoaderCircle } from "lucide-react";

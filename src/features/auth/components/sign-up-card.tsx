@@ -18,7 +18,7 @@ import CustomInputLabel from "@/components/inputs/custom-input-label";
 import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
-import { useRegister } from "../auth/api/register";
+import { useRegister } from "../api/register";
 import { insertUserSchema, insertUserType } from "@/zod-schemas/users";
 import { LoaderCircle } from "lucide-react";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
