@@ -1,0 +1,1 @@
+ALTER TABLE "work_spaces" ADD COLUMN "user_id" uuid DEFAULT gen_random_uuid() NOT NULL;

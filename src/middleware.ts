@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { jwtVerify } from "jose";
-import { JWT_SECRET } from "./config";
 
 const publicRoutes = [
   "/sign-in",
@@ -11,18 +10,14 @@ const publicRoutes = [
   "/privacy-policy",
 ];
 
-const isProtectedRoute = (pathname: string) =>
-  !publicRoutes.includes(pathname) &&
-  !pathname.startsWith("/api/") &&
-  !pathname.includes("/_next/") &&
-  !pathname.includes("/favicon.ico");
+const isProtectedRoute = (pathname: string) => !publicRoutes.includes(pathname);
 
 const redirectTo = (url: string, req: NextRequest) =>
   NextResponse.redirect(new URL(url, req.url));
 
 const verifyToken = async (token: string | undefined) => {
   if (!token) throw new Error("No token provided");
-  const secret = new TextEncoder().encode(JWT_SECRET);
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
   await jwtVerify(token, secret);
 };
 
@@ -49,3 +44,7 @@ export async function middleware(req: NextRequest) {
 
   return NextResponse.next();
 }
+
+export const config = {
+  matcher: ["/((?!api|_next|favicon.ico|global.css).*)"],
+};

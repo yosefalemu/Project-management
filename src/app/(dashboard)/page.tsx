@@ -1,3 +1,9 @@
+import CreateWorkSpaceForm from "@/features/workspace/components/create-workspace-form";
+
 export default function LandingPage() {
-  return <div>Home Page</div>;
+  return (
+    <div>
+      <CreateWorkSpaceForm />
+    </div>
+  );
 }

@@ -7,7 +7,7 @@ export const createWorkspaceSchema = createInsertSchema(workSpaces, {
     schema
       .nonempty("Name is required")
       .min(3, "Name must be at least 3 characters"),
-  userId: (schema) => schema.uuid("Invalid uuid format"),
+  userId: (schema) => schema.uuid("Invalid uuid format").optional(),
 });
 
 export type insertWorkspaceType = typeof createWorkspaceSchema._type;

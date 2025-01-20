@@ -11,7 +11,6 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertUserSchema, selectUserSchema } from "@/zod-schemas/users";
 import { users } from "@/db/schema/user";
 import { AUTH_COOKIE } from "../constants/constant";
-import { JWT_SECRET } from "@/config";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {
@@ -34,7 +33,7 @@ const app = new Hono()
           401
         );
       }
-      const token = jwt.sign({ email, id: user[0].id }, JWT_SECRET as string, {
+      const token = jwt.sign({ email, id: user[0].id }, process.env.JWT_SECRET! as string, {
         expiresIn: "7d",
       });
       setCookie(c, "JIRA_CLONE_AUTH_COOKIE", token, {

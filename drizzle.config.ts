@@ -1,4 +1,3 @@
-import { DATABASE_URL } from "@/config";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
@@ -6,6 +5,6 @@ export default defineConfig({
   schema: "./src/db/schema",
   out: "./src/db/migrations",
   dbCredentials: {
-    url: DATABASE_URL!,
+    url: process.env.DATABASE_URL!,
   },
 });

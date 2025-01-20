@@ -1,0 +1,1 @@
+ALTER TABLE "work_spaces" ADD CONSTRAINT "Name is unique" UNIQUE("name");
