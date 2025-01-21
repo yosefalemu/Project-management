@@ -9,37 +9,74 @@ import { Hono } from "hono";
 import { getCookie } from "hono/cookie";
 
 const app = new Hono()
-  .get("/current", async (c) => {
-    return c.json({ data: "Current workspace" });
+  .get("/", async (c) => {
+    const workspaces = await db.select().from(workSpaces);
+    return c.json({ data: workspaces });
   })
   .post(
     "/",
-    zValidator("json", createWorkspaceSchema),
+    zValidator("form", createWorkspaceSchema),
     sessionMiddleware,
     async (c) => {
-      const { name } = c.req.valid("json");
+      const { name, image } = c.req.valid("form");
+
+      let uploadedImage: string | undefined;
+
+      if (image instanceof File) {
+        try {
+          const fileReader = await image.arrayBuffer();
+          uploadedImage = `data:${image.type};base64,${Buffer.from(
+            fileReader
+          ).toString("base64")}`;
+        } catch (err) {
+          console.error("Error while processing image file", err);
+          return c.json(
+            {
+              error: "InvalidImage",
+              message: "Failed to process the image file",
+            },
+            400
+          );
+        }
+      } else {
+        return c.json(
+          {
+            error: "InvalidImage",
+            message: "Invalid image",
+          },
+          400
+        );
+      }
+
       const token = getCookie(c, "JIRA_CLONE_AUTH_COOKIE");
+
+      if (!token) {
+        return c.json(
+          { error: "Unauthorized", message: "No token provided" },
+          401
+        );
+      }
 
       let userId: string;
 
       try {
-        userId = await verifyToken(token!, process.env.JWT_SECRET!);
+        userId = await verifyToken(token, process.env.JWT_SECRET!);
       } catch (error) {
-        console.log("Error while verifying token", error);
+        console.error("Error while verifying token", error);
         return c.json(
           { error: "Unauthorized", message: "Invalid or expired token" },
           401
         );
       }
-
       try {
         const [newWorkspace] = await db
           .insert(workSpaces)
-          .values({ name, userId })
+          .values({ name, userId, image: uploadedImage })
           .returning();
 
         return c.json({ data: newWorkspace });
       } catch (err) {
+        console.error("ERROR WHILE CREATING WORKSPACE", err);
         if (err instanceof NeonDbError && err.code === "23505") {
           return c.json(
             { error: "Conflict", message: "Workspace already exists" },

@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import DootedSeparator from "@/components/dooted-separator";
 import Navigation from "@/components/navigation";
+import WorkspaceSwitcher from "./workspace-switcher";
 
 export default function Sidebar() {
   return (
@@ -10,6 +11,8 @@ export default function Sidebar() {
       <Link href="/">
         <Image src="/logo.svg" alt="logo" width={164} height={48} />
       </Link>
+      <DootedSeparator className="my-4" />
+      <WorkspaceSwitcher />
       <DootedSeparator className="my-4" />
       <Navigation />
     </aside>

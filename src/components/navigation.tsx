@@ -1,6 +1,5 @@
 "use client";
 import Link from "next/link";
-import { SettingsIcon, UserIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
@@ -10,6 +9,12 @@ import {
   GoHome,
   GoHomeFill,
 } from "react-icons/go";
+import {
+  IoPersonOutline,
+  IoPersonSharp,
+  IoSettingsOutline,
+  IoSettingsSharp,
+} from "react-icons/io5";
 const routes = [
   { label: "Home", href: "/", icon: GoHome, activeIcon: GoHomeFill },
   {
@@ -21,14 +26,14 @@ const routes = [
   {
     label: "Settings",
     href: "/settings",
-    icon: SettingsIcon,
-    activeIcon: SettingsIcon,
+    icon: IoSettingsOutline,
+    activeIcon: IoSettingsSharp,
   },
   {
     label: "Members",
     href: "/members",
-    icon: UserIcon,
-    activeIcon: UserIcon,
+    icon: IoPersonOutline,
+    activeIcon: IoPersonSharp,
   },
 ];
 export default function Navigation() {

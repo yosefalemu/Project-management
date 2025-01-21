@@ -13,24 +13,24 @@ import { useForm } from "react-hook-form";
 import { useCreateWorkspace } from "../api/use-create-workspace";
 import { LoaderCircle } from "lucide-react";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
+import CustomImageUploader from "@/components/inputs/custom-image-upload";
 
-interface CreateWorkSpaceFormProps {
-  onCancel?: () => void;
-}
-export default function CreateWorkSpaceForm({
-  onCancel,
-}: CreateWorkSpaceFormProps) {
+export default function CreateWorkSpaceForm() {
   const createWorkspaceMutation = useCreateWorkspace();
   const form = useForm<insertWorkspaceType>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       name: "",
+      image: "",
     },
   });
 
   const handleCreateWorkspace = (data: insertWorkspaceType) => {
-    console.log("Values", data);
-    createWorkspaceMutation.mutate({ json: data });
+    const finalValues = {
+      ...data,
+      image: data.image instanceof File ? data.image : "",
+    };
+    createWorkspaceMutation.mutate({ form: finalValues });
   };
   return (
     <Card className="shadow-none border-none">
@@ -55,7 +55,7 @@ export default function CreateWorkSpaceForm({
               : undefined
           }
           routePath="/"
-          onReset={() => createWorkspaceMutation.reset()}
+          onReset={() => form.reset()}
         />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
@@ -65,10 +65,10 @@ export default function CreateWorkSpaceForm({
                 nameInSchema="name"
                 placeHolder="Enter workspace name"
               />
-              <CustomInputLabel
-                fieldTitle="User Id"
-                nameInSchema="userId"
-                placeHolder="Enter user id"
+              <CustomImageUploader
+                fieldTitle="Image"
+                nameInSchema="image"
+                isPending={createWorkspaceMutation.isPending}
               />
             </div>
             <DootedSeparator className="py-7" />
@@ -77,7 +77,7 @@ export default function CreateWorkSpaceForm({
                 type="button"
                 size="lg"
                 variant="secondary"
-                onClick={onCancel}
+                onClick={() => form.reset()}
                 disabled={createWorkspaceMutation.isPending}
               >
                 Cancel

@@ -22,7 +22,7 @@ const MessageBox = ({
   type: "success" | "error";
   content: React.ReactNode;
   routerPath?: string;
-  onReset: () => void;
+  onReset?: () => void;
 }) => {
   const router = useRouter();
   const [visible, setIsVisible] = useState<boolean>(true);
@@ -31,7 +31,9 @@ const MessageBox = ({
   }
   const handleAnimationEnd = () => {
     setIsVisible(false);
-    onReset();
+    if (onReset) {
+      onReset();
+    }
     if (routerPath) {
       router.push(routerPath);
     }
@@ -73,9 +75,7 @@ export default function DisplayServerActionResponse({
       )}
 
       {/* Show server error message if there's any error */}
-      {error && (
-        <MessageBox type="error" content={error.message} onReset={onReset} />
-      )}
+      {error && <MessageBox type="error" content={error.message} />}
     </div>
   );
 }

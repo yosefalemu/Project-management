@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { QueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
@@ -17,12 +17,15 @@ type ErrorResponse = {
 type ResponseType = InferResponseType<(typeof client.api.workspace)["$post"]>;
 type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
 
+const queryClient = new QueryClient();
+
 export const useCreateWorkspace = () => {
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ json }): Promise<ResponseType> => {
-      const response = await client.api.workspace["$post"]({ json });
+    mutationFn: async ({ form }): Promise<ResponseType> => {
+      const response = await client.api.workspace["$post"]({ form });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
+        console.log("Error while creating", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&
@@ -37,6 +40,9 @@ export const useCreateWorkspace = () => {
         );
       }
       return (await response.json()) as ResponseType;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["currentWorkspaces"] });
     },
   });
   return mutation;
