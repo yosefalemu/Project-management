@@ -24,7 +24,7 @@ export default function WorkspaceSwitcher() {
         <SelectTrigger className="w-full h-fit bg-neutral-200 font-medium py-1 text-sm focus:ring-transparent">
           <SelectValue placeholder="No selected workspaces" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="pb-4">
           {data?.map((workspace) => (
             <SelectItem key={workspace.id} value={workspace.id}>
               <div className="flex items-center justify-start font-medium gap-2">
