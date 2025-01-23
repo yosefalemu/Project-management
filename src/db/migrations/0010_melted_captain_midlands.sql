@@ -1,1 +1,0 @@
-ALTER TABLE "work_spaces" ALTER COLUMN "image_url" SET DEFAULT '';

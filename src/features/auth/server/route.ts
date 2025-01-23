@@ -8,9 +8,9 @@ import { eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { insertUserSchema, selectUserSchema } from "@/zod-schemas/users";
 import { users } from "@/db/schema/user";
 import { AUTH_COOKIE } from "../constants/constant";
+import { insertUserSchema, selectUserSchema } from "@/zod-schemas/users-schema";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {

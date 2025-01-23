@@ -5,16 +5,19 @@ import { ImageIcon } from "lucide-react";
 import { useRef } from "react";
 import { Button } from "../ui/button";
 import { FormField } from "../ui/form";
+import { cn } from "@/lib/utils";
 
 interface CustomImageUploaderProps {
   fieldTitle: string;
   nameInSchema: string;
   isPending?: boolean;
+  className?: string;
 }
 export default function CustomImageUploader({
   fieldTitle,
   nameInSchema,
   isPending,
+  className,
 }: CustomImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const form = useFormContext();
@@ -31,7 +34,7 @@ export default function CustomImageUploader({
       name={nameInSchema}
       render={({ field }) => {
         return (
-          <div className="flex flex-col gap-y-2">
+          <div className={cn("flex flex-col gap-y-2", className)}>
             <div className="flex items-center gap-x-5">
               {field.value ? (
                 <div className="size-[72px] rounded-md overflow-hidden relative">

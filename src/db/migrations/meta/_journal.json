@@ -5,85 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736148339186,
-      "tag": "0000_foamy_dark_beast",
+      "when": 1737619700203,
+      "tag": "0000_true_exodus",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1736150686970,
-      "tag": "0001_late_silver_centurion",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1736151219065,
-      "tag": "0002_blushing_corsair",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1736151971620,
-      "tag": "0003_dizzy_maximus",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1737404198129,
-      "tag": "0004_loud_black_panther",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1737405041246,
-      "tag": "0005_parallel_pandemic",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1737406766119,
-      "tag": "0006_milky_meggan",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1737409228178,
-      "tag": "0007_slim_vin_gonzales",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1737480446249,
-      "tag": "0008_uneven_eddie_brock",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1737482792547,
-      "tag": "0009_salty_black_queen",
-      "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1737483716031,
-      "tag": "0010_melted_captain_midlands",
-      "breakpoints": true
-    },
-    {
-      "idx": 11,
-      "version": "7",
-      "when": 1737484111225,
-      "tag": "0011_high_scrambler",
+      "when": 1737637346558,
+      "tag": "0001_strong_malice",
       "breakpoints": true
     }
   ]

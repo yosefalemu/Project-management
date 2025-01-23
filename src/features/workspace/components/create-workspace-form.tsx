@@ -10,10 +10,11 @@ import {
 } from "@/zod-schemas/workspace-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useCreateWorkspace } from "../api/use-create-workspace";
 import { LoaderCircle } from "lucide-react";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import CustomImageUploader from "@/components/inputs/custom-image-upload";
+import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
+import { useCreateWorkspace } from "../api/create-workspace-api";
 
 export default function CreateWorkSpaceForm() {
   const createWorkspaceMutation = useCreateWorkspace();
@@ -22,16 +23,19 @@ export default function CreateWorkSpaceForm() {
     defaultValues: {
       name: "",
       image: "",
+      description: "",
     },
   });
 
   const handleCreateWorkspace = (data: insertWorkspaceType) => {
     const finalValues = {
-      ...data,
+      name: data.name,
+      description: data.description,
       image: data.image instanceof File ? data.image : "",
     };
     createWorkspaceMutation.mutate({ form: finalValues });
   };
+
   return (
     <Card className="shadow-none border-none">
       <CardHeader className="flex p-7">
@@ -59,17 +63,32 @@ export default function CreateWorkSpaceForm() {
         />
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-            <div className="flex flex-col gap-y-4">
-              <CustomInputLabel
-                fieldTitle="Workspace Name"
-                nameInSchema="name"
-                placeHolder="Enter workspace name"
-              />
-              <CustomImageUploader
-                fieldTitle="Image"
-                nameInSchema="image"
-                isPending={createWorkspaceMutation.isPending}
-              />
+            <div className="flex flex-col xl:flex-row items-start gap-4">
+              <div className="flex flex-col gap-y-4 w-full">
+                <CustomInputLabel
+                  fieldTitle="Workspace Name"
+                  nameInSchema="name"
+                  placeHolder="Enter workspace name"
+                  className=""
+                  maxCharLength={15}
+                />
+                <CustomTextareaLabel
+                  fieldTitle="Workspace Description"
+                  nameInSchema="description"
+                  placeHolder="Enter workspace description"
+                  maxCharLength={500}
+                  rows={8}
+                  className=""
+                />
+                <CustomImageUploader
+                  fieldTitle="Image"
+                  nameInSchema="image"
+                  isPending={createWorkspaceMutation.isPending}
+                  className=""
+                />
+              </div>
+              <DootedSeparator className="block xl:hidden py-7" />
+              <div className="flex flex-col gap-y-4 w-full">Column Two</div>
             </div>
             <DootedSeparator className="py-7" />
             <div className="flex items-center justify-between">

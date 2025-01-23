@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { InferResponseType } from "hono";
 import { client } from "@/lib/rpc";
+import { QueryClient } from "@tanstack/react-query";
 
 type ErrorResponse = {
   error?: string;
@@ -10,6 +11,7 @@ type ErrorResponse = {
 type ResponseType = InferResponseType<(typeof client.api.auth.logout)["$post"]>;
 
 export const useLogout = () => {
+  const queryClient = new QueryClient();
   const mutation = useMutation<ResponseType, Error>({
     mutationFn: async () => {
       const response = await client.api.auth.logout["$post"]();
@@ -20,6 +22,9 @@ export const useLogout = () => {
         );
       }
       return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
   return mutation;

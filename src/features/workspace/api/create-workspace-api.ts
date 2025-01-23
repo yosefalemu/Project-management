@@ -42,7 +42,7 @@ export const useCreateWorkspace = () => {
       return (await response.json()) as ResponseType;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["currentWorkspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
     },
   });
   return mutation;
