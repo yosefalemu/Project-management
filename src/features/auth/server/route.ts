@@ -14,7 +14,12 @@ import { insertUserSchema, selectUserSchema } from "@/zod-schemas/users-schema";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {
-    return c.json({ data: "Current user" });
+    const userId = c.get("userId") as string;
+    const user = await db.select().from(users).where(eq(users.id, userId));
+    if (user.length === 0) {
+      return c.json({ data: [] });
+    }
+    return c.json({ data: user });
   })
   .post("/login", zValidator("json", selectUserSchema), async (c) => {
     const { email, password } = c.req.valid("json");
@@ -33,9 +38,13 @@ const app = new Hono()
           401
         );
       }
-      const token = jwt.sign({ email, id: user[0].id }, process.env.JWT_SECRET! as string, {
-        expiresIn: "7d",
-      });
+      const token = jwt.sign(
+        { email, id: user[0].id },
+        process.env.JWT_SECRET! as string,
+        {
+          expiresIn: "7d",
+        }
+      );
       setCookie(c, "JIRA_CLONE_AUTH_COOKIE", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

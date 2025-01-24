@@ -44,7 +44,7 @@ export default function CustomInputLabel({
             <FormControl>
               <Input
                 id={nameInSchema}
-                className="w-full max-w-xl disabled:cursor-not-allowed"
+                className="w-full max-w-xl disabled:cursor-not-allowed h-12"
                 placeholder={placeHolder}
                 {...props}
                 {...field}

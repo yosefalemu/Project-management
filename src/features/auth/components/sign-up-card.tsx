@@ -78,19 +78,17 @@ export default function SignUpCard() {
         />
         <Form {...form}>
           <form
-            className="space-y-4"
+            className="space-y-2"
             onSubmit={form.handleSubmit(handleSignUp)}
           >
             <CustomInputLabel
               fieldTitle="Name"
               nameInSchema="name"
-              className="h-12"
               placeHolder="Enter your your name"
             />
             <CustomInputLabel
               fieldTitle="Email"
               nameInSchema="email"
-              className="h-12"
               placeHolder="Enter email address"
             />
             <CustomPasswordInput
@@ -105,6 +103,7 @@ export default function SignUpCard() {
               className="h-12"
               placeHolder="Enter confirm password"
             />
+            <DootedSeparator className="py-4" />
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
@@ -121,7 +120,6 @@ export default function SignUpCard() {
             </Button>
           </form>
         </Form>
-        <DootedSeparator />
         <CardFooter className="w-full space-y-4 flex flex-col p-0">
           <Button variant="secondary" className="h-12 w-full cursor-pointer">
             <FcGoogle className="mr-2" />

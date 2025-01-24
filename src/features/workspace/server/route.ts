@@ -5,7 +5,7 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { createWorkspaceSchema } from "@/zod-schemas/workspace-schema";
 import { zValidator } from "@hono/zod-validator";
 import { NeonDbError } from "@neondatabase/serverless";
-import { Hono } from "hono";
+import { Context, Hono } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { MemberRole } from "@/features/members/types/type";
 import { generateInviteCode } from "@/lib/utils";
@@ -27,7 +27,7 @@ const app = new Hono()
       .where(inArray(workSpaces.id, workspacesIds));
     return c.json({ data: workspaces });
   })
-  .get("/current", sessionMiddleware, async (c) => {
+  .get("/current/:workspaceId", sessionMiddleware, async (c: Context) => {
     const userId = c.get("userId") as string;
     const members = await db
       .select()
@@ -41,23 +41,51 @@ const app = new Hono()
       .select()
       .from(workSpaces)
       .where(inArray(workSpaces.id, workspacesIds));
-    try {
-      const lastWorkSpaceId = localStorage.getItem("lastWorkSpaceId");
-      console.log("lastWorkSpaceId In the first", lastWorkSpaceId);
-      if (lastWorkSpaceId) {
-        const lastWorkspace = workspaces.filter(
-          (workspace) => workspace.id === lastWorkSpaceId
-        );
-        if (lastWorkspace) {
-          return c.json({ data: lastWorkspace });
-        }
-      } else {
-        return c.json({ data: workspaces });
+    const lastWorkSpaceId = c.req.param("workspaceId") as string;
+    if (lastWorkSpaceId) {
+      const lastWorkspace = workspaces.filter(
+        (workspace) => workspace.id === lastWorkSpaceId
+      );
+      if (lastWorkspace) {
+        return c.json({ data: lastWorkspace });
       }
-    } catch (error) {
-      console.error("Error while getting last workspace", error);
+    } else {
       return c.json({ data: workspaces });
     }
+  })
+  .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
+    const userId = c.get("userId") as string;
+    const workspaceId = c.req.param("workspaceId") as string;
+    const members = await db
+      .select()
+      .from(member)
+      .where(eq(member.userId, userId));
+    if (members.length === 0) {
+      return c.json(
+        {
+          error: "Forbidden",
+          message: "You are not a member of this workspace",
+        },
+        403
+      );
+    }
+    const workspacesIds = members.map((member) => member.workspaceId);
+    const workspace = await db
+      .select()
+      .from(workSpaces)
+      .where(
+        inArray(workSpaces.id, workspacesIds) && eq(workSpaces.id, workspaceId)
+      );
+    if (workspace.length === 0) {
+      return c.json(
+        {
+          error: "NotFound",
+          message: "Workspace not found",
+        },
+        404
+      );
+    }
+    return c.json({ data: workspace[0] });
   })
   .post(
     "/",
@@ -86,10 +114,7 @@ const app = new Hono()
       } else {
         uploadedImage = image;
       }
-      console.log("uploadedImage", c.req);
       const userId = c.get("userId") as string;
-      console.log("userId", userId);
-
       let newWorkspace;
 
       try {
@@ -142,6 +167,97 @@ const app = new Hono()
           {
             error: "InternalServerError",
             message: "Failed to create workspace",
+          },
+          500
+        );
+      }
+    }
+  )
+  .patch(
+    "/",
+    zValidator("form", createWorkspaceSchema),
+    sessionMiddleware,
+    async (c) => {
+      const { name, image, description, id } = c.req.valid("form");
+      const userId = c.get("userId") as string;
+
+      // Process the image
+      let uploadedImage: string | undefined;
+      if (image instanceof File) {
+        try {
+          const fileReader = await image.arrayBuffer();
+          uploadedImage = `data:${image.type};base64,${Buffer.from(
+            fileReader
+          ).toString("base64")}`;
+        } catch (err) {
+          console.error("Error while processing image file", err);
+          return c.json(
+            {
+              error: "InvalidImage",
+              message: "Failed to process the image file",
+            },
+            400
+          );
+        }
+      } else {
+        uploadedImage = image;
+      }
+      try {
+        const workspace = await db
+          .select()
+          .from(workSpaces)
+          .where(eq(workSpaces.id, id!))
+          .then((results) => results[0]);
+
+        if (!workspace) {
+          return c.json(
+            {
+              error: "NotFound",
+              message: "Workspace not found",
+            },
+            404
+          );
+        }
+
+        if (workspace.createdBy !== userId) {
+          return c.json(
+            {
+              error: "Forbidden",
+              message: "You are not authorized to update this workspace",
+            },
+            403
+          );
+        }
+
+        // Update the workspace
+        const updatedWorkspace = await db
+          .update(workSpaces)
+          .set({
+            name: name.trim(),
+            description: description.trim(),
+            image: uploadedImage,
+          })
+          .where(eq(workSpaces.id, id!))
+          .returning()
+          .then((results) => results[0]);
+
+        if (!updatedWorkspace) {
+          return c.json(
+            {
+              error: "InternalServerError",
+              message: "Failed to update the workspace",
+            },
+            500
+          );
+        }
+
+        return c.json({ data: updatedWorkspace });
+      } catch (err) {
+        console.error("Error while updating workspace", err);
+        return c.json(
+          {
+            error: "InternalServerError",
+            message: "Failed to update the workspace",
           },
           500
         );

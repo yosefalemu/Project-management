@@ -7,14 +7,16 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen">
-      <div className="flex w-full h-full">
+      <div className="flex w-full h-full gap-x-2">
         <div className="fixed left-0 top-0 hidden lg:block lg:w-[264px] h-full overflow-y-auto">
           <Sidebar />
         </div>
-        <div className="lg:pl-[264px] w-full">
+        <div className="lg:pl-[264px] w-full flex flex-col min-h-screen">
           <Navbar />
-          <div className="mx-auto max-w-screen-2xl h-full">
-            <main className="h-full py-8 px-6 flex-col">{children}</main>
+          <div className="max-w-screen-2xl flex-1">
+            <main className="h-full py-8 px-6 flex-col min-h-full">
+              {children}
+            </main>
           </div>
         </div>
       </div>

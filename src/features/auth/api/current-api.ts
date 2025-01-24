@@ -6,7 +6,6 @@ export const useCurrentUser = () => {
     queryKey: ["currentUser"],
     queryFn: async () => {
       const response = await client.api.auth.current.$get();
-      console.log("Current user", response);
       if (!response.ok) {
         return null;
       }

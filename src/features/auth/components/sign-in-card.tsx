@@ -56,19 +56,19 @@ export default function SignInCard() {
           onReset={() => loginMutation.reset()}
         />
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(handleLogin)}>
+          <form className="space-y-2" onSubmit={form.handleSubmit(handleLogin)}>
             <CustomInputLabel
               fieldTitle="Email"
               nameInSchema="email"
-              className="h-12"
               placeHolder="Enter email address"
             />
             <CustomPasswordInput
               fieldTitle="Password"
               nameInSchema="password"
-              className="h-12"
               placeHolder="Enter password"
+              className="h-12"
             />
+            <DootedSeparator className="py-2" />
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
@@ -85,7 +85,6 @@ export default function SignInCard() {
             </Button>
           </form>
         </Form>
-        <DootedSeparator />
         <CardFooter className="w-full space-y-4 flex flex-col p-0">
           <Button
             type="button"
