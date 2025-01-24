@@ -152,7 +152,7 @@ const app = new Hono()
           );
         }
 
-        return c.json({ data: newWorkspace });
+        return c.json({ data: newWorkspace }, 200);
       } catch (err) {
         console.error("ERROR WHILE CREATING WORKSPACE", err);
 

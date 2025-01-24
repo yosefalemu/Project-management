@@ -18,7 +18,11 @@ export default function UserButton() {
   const { data, isLoading, isError } = useCurrentUser();
 
   const handleLogout = () => {
-    logoutMutation.mutate();
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        localStorage.removeItem("lastWorkspaceId");
+      },
+    });
   };
   return (
     <>

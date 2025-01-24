@@ -18,15 +18,19 @@ import { useCreateWorkspace } from "../api/create-workspace-api";
 import { useEffect } from "react";
 import LoadingLayout from "@/app/(dashboard)/_components/loading-layout";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
+import { useRouter } from "next/navigation";
 
 interface CreateWorkSpaceFormProps {
   workspaces?: insertWorkspaceType;
   isLoadingWorkspaces?: boolean;
+  onModal?: boolean;
 }
 export default function CreateWorkSpaceForm({
   workspaces,
   isLoadingWorkspaces,
+  onModal = false,
 }: CreateWorkSpaceFormProps) {
+  const router = useRouter();
   const createWorkspaceMutation = useCreateWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspace();
 
@@ -50,22 +54,32 @@ export default function CreateWorkSpaceForm({
     }
   }, [workspaces, form]);
 
-  const handleCreateWorkspace = (data: insertWorkspaceType) => {
+  const handleCreateWorkspace = (values: insertWorkspaceType) => {
     if (workspaces) {
       const finalValues = {
         id: workspaces.id ?? undefined,
-        name: data.name,
-        description: data.description,
-        image: data.image instanceof File ? data.image : "",
+        name: values.name,
+        description: values.description,
+        image: values.image instanceof File ? values.image : "",
       };
       updateWorkspaceMutation.mutate({ form: finalValues });
     } else {
       const finalValues = {
-        name: data.name,
-        description: data.description,
-        image: data.image instanceof File ? data.image : "",
+        name: values.name,
+        description: values.description,
+        image: values.image instanceof File ? values.image : "",
       };
-      createWorkspaceMutation.mutate({ form: finalValues });
+      createWorkspaceMutation.mutate(
+        { form: finalValues },
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onSuccess: (data: any) => {
+            if (data) {
+              router.push(`/workspaces/${data.data.id}`);
+            }
+          },
+        }
+      );
     }
   };
 
@@ -106,7 +120,11 @@ export default function CreateWorkSpaceForm({
             />
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-                <div className="flex flex-col xl:flex-row items-start gap-4">
+                <div
+                  className={`flex flex-col items-start gap-4 ${
+                    onModal ? "" : "xl:flex-row"
+                  }`}
+                >
                   <div className="flex flex-col gap-y-4 w-full">
                     <CustomInputLabel
                       fieldTitle="Workspace Name"

@@ -13,6 +13,7 @@ import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import { Skeleton } from "./ui/skeleton";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCreateWorkspaceModalHook } from "@/features/workspace/hooks/use-create-workspace-modal";
 
 export default function WorkspaceSwitcher() {
   const router = useRouter();
@@ -20,6 +21,7 @@ export default function WorkspaceSwitcher() {
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
     null
   );
+  const { open } = useCreateWorkspaceModalHook();
 
   useEffect(() => {
     const lastWorkspaceId = localStorage.getItem("lastWorkspaceId");
@@ -42,7 +44,10 @@ export default function WorkspaceSwitcher() {
       ) : data?.length === 0 ? (
         <div className="flex items-center justify-between">
           <p className="text-xs uppercase text-neutral-500">No Workspace</p>
-          <RiAddCircleFill className="size-5 text-neutral-500 cursor-pointer hover:opacity-75" />
+          <RiAddCircleFill
+            className="size-5 text-neutral-500 cursor-pointer hover:opacity-75"
+            onClick={() => router.push("?create-workspace=true")}
+          />
         </div>
       ) : (
         <>
@@ -50,7 +55,10 @@ export default function WorkspaceSwitcher() {
             <p className="text-xs uppercase text-neutral-500">
               {data.length > 1 ? `${data.length} Workspaces` : "Workspace"}
             </p>
-            <RiAddCircleFill className="size-5 text-neutral-500 cursor-pointer hover:opacity-75" />
+            <RiAddCircleFill
+              className="size-5 text-neutral-500 cursor-pointer hover:opacity-75"
+              onClick={open}
+            />
           </div>
           <Select
             onValueChange={handleWorkspaceChange}
