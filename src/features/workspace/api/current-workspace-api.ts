@@ -19,7 +19,7 @@ export const useCurrentGetWorkspace = (workspaceId: string | undefined) => {
       if (!response.ok) {
         throw new Error("An error occurred while fetching");
       }
-      const { data } = (await response.json()) as WorkspaceResponse;
+      const { data } = (await response.json()) as unknown as WorkspaceResponse;
       return data;
     },
     enabled: !!workspaceId,

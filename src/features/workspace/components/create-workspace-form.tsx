@@ -15,19 +15,15 @@ import DisplayServerActionResponse from "@/components/DisplayServerActionRespons
 import CustomImageUploader from "@/components/inputs/custom-image-upload";
 import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { useCreateWorkspace } from "../api/create-workspace-api";
-import { useEffect } from "react";
-import LoadingLayout from "@/app/(dashboard)/_components/loading-layout";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
 import { useRouter } from "next/navigation";
 
 interface CreateWorkSpaceFormProps {
   workspaces?: insertWorkspaceType;
-  isLoadingWorkspaces?: boolean;
   onModal?: boolean;
 }
 export default function CreateWorkSpaceForm({
   workspaces,
-  isLoadingWorkspaces,
   onModal = false,
 }: CreateWorkSpaceFormProps) {
   const router = useRouter();
@@ -43,16 +39,6 @@ export default function CreateWorkSpaceForm({
       description: workspaces?.description ?? "",
     },
   });
-
-  useEffect(() => {
-    if (workspaces) {
-      form.reset({
-        name: workspaces.name,
-        image: workspaces.image,
-        description: workspaces.description,
-      });
-    }
-  }, [workspaces, form]);
 
   const handleCreateWorkspace = (values: insertWorkspaceType) => {
     if (workspaces) {
@@ -85,116 +71,108 @@ export default function CreateWorkSpaceForm({
 
   return (
     <div className="h-full">
-      {isLoadingWorkspaces ? (
-        <LoadingLayout />
-      ) : (
-        <Card className="shadow-none border-none">
-          <CardHeader className="flex p-7">
-            <CardTitle className="text-xl font-bold">
-              {workspaces ? "Edit a new workspace" : "Create a new workspace"}
-            </CardTitle>
-          </CardHeader>
-          <div className="px-7">
-            <DootedSeparator />
-          </div>
-          <CardContent className="p-7">
-            <DisplayServerActionResponse
-              data={
-                createWorkspaceMutation.data
-                  ? { message: "Workspace created successfully" }
-                  : updateWorkspaceMutation.data
-                  ? { message: "Workspace updated successfully" }
-                  : undefined
-              }
-              error={
-                createWorkspaceMutation.error
-                  ? { message: createWorkspaceMutation.error.message }
-                  : updateWorkspaceMutation.error
-                  ? {
-                      message: updateWorkspaceMutation.error.message,
-                    }
-                  : undefined
-              }
-              routePath="/"
-              onReset={() => form.reset()}
-            />
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-                <div
-                  className={`flex flex-col items-start gap-4 ${
-                    onModal ? "" : "xl:flex-row"
-                  }`}
-                >
-                  <div className="flex flex-col gap-y-4 w-full">
-                    <CustomInputLabel
-                      fieldTitle="Workspace Name"
-                      nameInSchema="name"
-                      placeHolder="Enter workspace name"
-                      className=""
-                      maxCharLength={15}
-                    />
-                    <CustomTextareaLabel
-                      fieldTitle="Workspace Description"
-                      nameInSchema="description"
-                      placeHolder="Enter workspace description"
-                      maxCharLength={500}
-                      rows={8}
-                      className=""
-                    />
-                    <CustomImageUploader
-                      fieldTitle="Image"
-                      nameInSchema="image"
-                      isPending={
-                        createWorkspaceMutation.isPending ||
-                        updateWorkspaceMutation.isPending
-                      }
-                      className=""
-                    />
-                  </div>
-                  <DootedSeparator className="block xl:hidden py-7" />
-                  <div className="flex flex-col gap-y-4 w-full">Column Two</div>
-                </div>
-                <DootedSeparator className="py-7" />
-                <div className="flex items-center justify-between">
-                  <Button
-                    type="button"
-                    size="lg"
-                    variant="secondary"
-                    onClick={() => form.reset()}
-                    disabled={
-                      createWorkspaceMutation.isPending ||
-                      updateWorkspaceMutation.isPending
-                    }
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    size="lg"
+      <Card className="shadow-none border-none">
+        <CardHeader className="flex p-7">
+          <CardTitle className="text-xl font-bold">
+            {workspaces ? "Edit a new workspace" : "Create a new workspace"}
+          </CardTitle>
+        </CardHeader>
+        <div className="px-7">
+          <DootedSeparator />
+        </div>
+        <CardContent className="p-7">
+          <DisplayServerActionResponse
+            data={
+              createWorkspaceMutation.data
+                ? { message: "Workspace created successfully" }
+                : updateWorkspaceMutation.data
+                ? { message: "Workspace updated successfully" }
+                : undefined
+            }
+            error={
+              createWorkspaceMutation.error
+                ? { message: createWorkspaceMutation.error.message }
+                : updateWorkspaceMutation.error
+                ? {
+                    message: updateWorkspaceMutation.error.message,
+                  }
+                : undefined
+            }
+          />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
+              <div
+                className={`flex flex-col items-start gap-4 ${
+                  onModal ? "" : "xl:flex-row"
+                }`}
+              >
+                <div className="flex flex-col gap-y-4 w-full">
+                  <CustomInputLabel
+                    fieldTitle="Workspace Name"
+                    nameInSchema="name"
+                    placeHolder="Enter workspace name"
                     className=""
-                    disabled={
+                    maxCharLength={15}
+                  />
+                  <CustomTextareaLabel
+                    fieldTitle="Workspace Description"
+                    nameInSchema="description"
+                    placeHolder="Enter workspace description"
+                    maxCharLength={500}
+                    rows={8}
+                    className=""
+                  />
+                  <CustomImageUploader
+                    fieldTitle="Image"
+                    nameInSchema="image"
+                    isPending={
                       createWorkspaceMutation.isPending ||
                       updateWorkspaceMutation.isPending
                     }
-                  >
-                    {createWorkspaceMutation.isPending ||
-                    updateWorkspaceMutation.isPending ? (
-                      <span className="flex items-center justify-center">
-                        <LoaderCircle className="mr-2 animate-spin" />
-                        <p>{workspaces ? "Editing" : "Creating"}</p>
-                      </span>
-                    ) : (
-                      <p>
-                        {workspaces ? "Edit workspace" : "Create Workspace"}
-                      </p>
-                    )}
-                  </Button>
+                    className=""
+                  />
                 </div>
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
-      )}
+                <DootedSeparator className="block xl:hidden py-7" />
+                <div className="flex flex-col gap-y-4 w-full">Column Two</div>
+              </div>
+              <DootedSeparator className="py-7" />
+              <div className="flex items-center justify-between">
+                <Button
+                  type="button"
+                  size="lg"
+                  variant="secondary"
+                  onClick={() => form.reset()}
+                  disabled={
+                    createWorkspaceMutation.isPending ||
+                    updateWorkspaceMutation.isPending
+                  }
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className=""
+                  disabled={
+                    createWorkspaceMutation.isPending ||
+                    updateWorkspaceMutation.isPending
+                  }
+                >
+                  {createWorkspaceMutation.isPending ||
+                  updateWorkspaceMutation.isPending ? (
+                    <span className="flex items-center justify-center">
+                      <LoaderCircle className="mr-2 animate-spin" />
+                      <p>{workspaces ? "Editing" : "Creating"}</p>
+                    </span>
+                  ) : (
+                    <p>{workspaces ? "Edit workspace" : "Create Workspace"}</p>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

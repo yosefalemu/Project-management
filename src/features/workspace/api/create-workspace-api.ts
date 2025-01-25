@@ -14,7 +14,10 @@ type ErrorResponse = {
   userId?: string;
 };
 
-type ResponseType = InferResponseType<(typeof client.api.workspace)["$post"]>;
+type ResponseType = InferResponseType<
+  (typeof client.api.workspace)["$post"],
+  200
+>;
 type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
 
 const queryClient = new QueryClient();

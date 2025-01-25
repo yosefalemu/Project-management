@@ -69,16 +69,34 @@ export default function CustomImageUploader({
                   onChange={handleImageChange}
                   accept=".jpg, .png, .jpeg, .svg"
                 />
-                <Button
-                  type="button"
-                  variant="secondary"
-                  disabled={isPending}
-                  size="sm"
-                  className="w-fit mt-2"
-                  onClick={() => inputRef.current?.click()}
-                >
-                  Upload Image
-                </Button>
+                {field.value ? (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isPending}
+                    size="sm"
+                    className="w-fit mt-2"
+                    onClick={() => {
+                      field.onChange("");
+                      if (inputRef.current) {
+                        inputRef.current.value = "";
+                      }
+                    }}
+                  >
+                    Remove Image
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={isPending}
+                    size="sm"
+                    className="w-fit mt-2"
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    Upload Image
+                  </Button>
+                )}
               </div>
             </div>
           </div>

@@ -27,15 +27,12 @@ export default function WorkspacePage() {
 
   return (
     <div className="h-full">
-      {isLoading ? (
+      {isLoading || isRefetching ? (
         <LoadingLayout />
       ) : isError ? (
         <div>Error</div>
       ) : transformedData ? (
-        <CreateWorkSpaceForm
-          workspaces={transformedData}
-          isLoadingWorkspaces={isLoading || isRefetching}
-        />
+        <CreateWorkSpaceForm workspaces={transformedData} />
       ) : null}
     </div>
   );

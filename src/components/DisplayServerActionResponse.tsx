@@ -10,7 +10,7 @@ type Props = {
     message?: string;
   };
   routePath?: string;
-  onReset: () => void;
+  onReset?: () => void;
 };
 
 const MessageBox = ({

@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useParams } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import {
@@ -16,7 +16,7 @@ import {
   IoSettingsSharp,
 } from "react-icons/io5";
 const routes = [
-  { label: "Home", href: "/", icon: GoHome, activeIcon: GoHomeFill },
+  { label: "Home", href: "", icon: GoHome, activeIcon: GoHomeFill },
   {
     label: "Tasks",
     href: "/tasks",
@@ -37,14 +37,19 @@ const routes = [
   },
 ];
 export default function Navigation() {
+  const params = useParams();
   const pathname = usePathname();
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
-        const isActive = pathname === item.href;
+        const fullHref =
+          item.href === ""
+            ? `/workspaces/${params.workspacesId}`
+            : `/stworkspaces/${params.workspacesId}${item.href}`;
+        const isActive = pathname === fullHref;
         const Icon = isActive ? item.activeIcon : item.icon;
         return (
-          <Link key={item.href} href={item.href}>
+          <Link key={item.href} href={fullHref}>
             <div
               className={cn(
                 "flex items-center gap-2.5 p-2.5 rounded-md font-medium hover:text-primary text-neutral-500 transition",

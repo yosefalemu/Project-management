@@ -46,8 +46,10 @@ const app = new Hono()
       const lastWorkspace = workspaces.filter(
         (workspace) => workspace.id === lastWorkSpaceId
       );
-      if (lastWorkspace) {
+      if (lastWorkspace.length > 0) {
         return c.json({ data: lastWorkspace });
+      } else {
+        return c.json({ data: workspaces });
       }
     } else {
       return c.json({ data: workspaces });
@@ -112,7 +114,7 @@ const app = new Hono()
           );
         }
       } else {
-        uploadedImage = image;
+        uploadedImage = image || "";
       }
       const userId = c.get("userId") as string;
       let newWorkspace;
@@ -182,7 +184,7 @@ const app = new Hono()
       const userId = c.get("userId") as string;
 
       // Process the image
-      let uploadedImage: string | undefined;
+      let uploadedImage: string | "";
       if (image instanceof File) {
         try {
           const fileReader = await image.arrayBuffer();
@@ -200,7 +202,7 @@ const app = new Hono()
           );
         }
       } else {
-        uploadedImage = image;
+        uploadedImage = image || "";
       }
       try {
         const workspace = await db
