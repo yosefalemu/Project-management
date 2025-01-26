@@ -1,16 +1,14 @@
 "use client";
-import { useCurrentGetWorkspace } from "@/features/workspace/api/current-workspace-api";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import LoadingLayout from "./loading-layout";
+import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 
 export default function Dashboard() {
-  const workspaceIdFromLocalStorage = localStorage.getItem("lastWorkspaceId");
-  const workspaceId = workspaceIdFromLocalStorage || "randomworkspaceid";
   const router = useRouter();
 
   const { data, isLoading, isError, isRefetching, refetch } =
-    useCurrentGetWorkspace(workspaceId);
+    useGetWorkspaces();
 
   const loading = isLoading || isRefetching;
 

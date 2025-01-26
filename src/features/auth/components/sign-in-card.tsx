@@ -19,7 +19,7 @@ import Link from "next/link";
 import { useLogin } from "../api/login-api";
 import { selectUserSchema, selectUserType } from "@/zod-schemas/users-schema";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
-import { LoaderCircle } from "lucide-react";
+import { Loader } from "lucide-react";
 
 export default function SignInCard() {
   const loginMutation = useLogin();
@@ -76,7 +76,7 @@ export default function SignInCard() {
             >
               {loginMutation.isPending ? (
                 <span className="flex items-center justify-center">
-                  <LoaderCircle className="mr-2 animate-spin" />
+                  <Loader className="mr-2 animate-spin" />
                   <p>Logging</p>
                 </span>
               ) : (

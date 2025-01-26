@@ -12,28 +12,15 @@ import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import { Skeleton } from "./ui/skeleton";
 import { useRouter, useParams } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useCreateWorkspaceModalHook } from "@/features/workspace/hooks/use-create-workspace-modal";
 
 export default function WorkspaceSwitcher() {
   const router = useRouter();
   const params = useParams();
   const { data, isPending, isError } = useGetWorkspaces();
-  const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(
-    null
-  );
   const { open } = useCreateWorkspaceModalHook();
 
-  useEffect(() => {
-    const lastWorkspaceId = localStorage.getItem("lastWorkspaceId");
-    if (lastWorkspaceId) {
-      setSelectedWorkspaceId(lastWorkspaceId);
-    }
-  }, []);
-
   const handleWorkspaceChange = (value: string) => {
-    setSelectedWorkspaceId(value);
-    localStorage.setItem("lastWorkspaceId", value);
     router.push(`/workspaces/${value}`);
   };
   return (
@@ -63,7 +50,7 @@ export default function WorkspaceSwitcher() {
           </div>
           <Select
             onValueChange={handleWorkspaceChange}
-            value={selectedWorkspaceId || (params.workspacesId as string)}
+            value={params.workspacesId as string}
           >
             <SelectTrigger className="w-full h-fit bg-neutral-200 font-medium p-1 border shadow-blue-700 shadow-sm px-4 py-2 text-sm focus:ring-transparent">
               <SelectValue placeholder="No selected workspaces" />

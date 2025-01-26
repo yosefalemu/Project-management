@@ -10,40 +10,46 @@ import {
 } from "@/zod-schemas/workspace-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { LoaderCircle } from "lucide-react";
+import { Loader } from "lucide-react";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import CustomImageUploader from "@/components/inputs/custom-image-upload";
 import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { useCreateWorkspace } from "../api/create-workspace-api";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
 import { useRouter } from "next/navigation";
+import DangerZone from "./danger-zone";
+import ReserveZone from "./reserve-zone";
+import { useMedia } from "react-use";
+import { useState } from "react";
 
 interface CreateWorkSpaceFormProps {
-  workspaces?: insertWorkspaceType;
+  workspace?: insertWorkspaceType;
   onModal?: boolean;
 }
 export default function CreateWorkSpaceForm({
-  workspaces,
+  workspace,
   onModal = false,
 }: CreateWorkSpaceFormProps) {
   const router = useRouter();
+  const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspace();
+  const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
 
   const form = useForm<insertWorkspaceType>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
-      id: workspaces?.id ?? undefined,
-      name: workspaces?.name ?? "",
-      image: workspaces?.image ?? "",
-      description: workspaces?.description ?? "",
+      id: workspace?.id ?? undefined,
+      name: workspace?.name ?? "",
+      image: workspace?.image ?? "",
+      description: workspace?.description ?? "",
     },
   });
 
   const handleCreateWorkspace = (values: insertWorkspaceType) => {
-    if (workspaces) {
+    if (workspace) {
       const finalValues = {
-        id: workspaces.id ?? undefined,
+        id: workspace.id ?? undefined,
         name: values.name,
         description: values.description,
         image: values.image instanceof File ? values.image : "",
@@ -70,11 +76,13 @@ export default function CreateWorkSpaceForm({
   };
 
   return (
-    <div className="h-full">
-      <Card className="shadow-none border-none">
+    <div className="h-full flex flex-col gap-y-4">
+      <Card
+        className={`shadow-none border-none ${onModal ? "" : "bg-neutral-100"}`}
+      >
         <CardHeader className="flex p-7">
           <CardTitle className="text-xl font-bold">
-            {workspaces ? "Edit a new workspace" : "Create a new workspace"}
+            {workspace ? "Edit a new workspace" : "Create a new workspace"}
           </CardTitle>
         </CardHeader>
         <div className="px-7">
@@ -127,7 +135,8 @@ export default function CreateWorkSpaceForm({
                     nameInSchema="image"
                     isPending={
                       createWorkspaceMutation.isPending ||
-                      updateWorkspaceMutation.isPending
+                      updateWorkspaceMutation.isPending ||
+                      isDeleteLoading
                     }
                     className=""
                   />
@@ -139,33 +148,35 @@ export default function CreateWorkSpaceForm({
               <div className="flex items-center justify-between">
                 <Button
                   type="button"
-                  size="lg"
+                  size={isDesktop ? "lg" : "sm"}
                   variant="secondary"
                   onClick={() => form.reset()}
                   disabled={
                     createWorkspaceMutation.isPending ||
-                    updateWorkspaceMutation.isPending
+                    updateWorkspaceMutation.isPending ||
+                    isDeleteLoading
                   }
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
-                  size="lg"
+                  size={isDesktop ? "lg" : "sm"}
                   className=""
                   disabled={
                     createWorkspaceMutation.isPending ||
-                    updateWorkspaceMutation.isPending
+                    updateWorkspaceMutation.isPending ||
+                    isDeleteLoading
                   }
                 >
                   {createWorkspaceMutation.isPending ||
                   updateWorkspaceMutation.isPending ? (
                     <span className="flex items-center justify-center">
-                      <LoaderCircle className="mr-2 animate-spin" />
-                      <p>{workspaces ? "Editing" : "Creating"}</p>
+                      <Loader className="mr-2 animate-spin" />
+                      <p>{workspace ? "Editing" : "Creating"}</p>
                     </span>
                   ) : (
-                    <p>{workspaces ? "Edit workspace" : "Create Workspace"}</p>
+                    <p>{workspace ? "Edit workspace" : "Create Workspace"}</p>
                   )}
                 </Button>
               </div>
@@ -173,6 +184,15 @@ export default function CreateWorkSpaceForm({
           </Form>
         </CardContent>
       </Card>
+      {workspace && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
+          <ReserveZone />
+          <DangerZone
+            workspaceId={workspace.id!}
+            setIsDeleteLoading={setIsDeleteLoading}
+          />
+        </div>
+      )}
     </div>
   );
 }

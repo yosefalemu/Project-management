@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import QueryProviders from "@/components/query-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -18,6 +19,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cn(inter.className, "antialiased min-h-screen")}>
+        <Toaster />
         <QueryProviders>{children}</QueryProviders>
       </body>
     </html>

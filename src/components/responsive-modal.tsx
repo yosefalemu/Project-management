@@ -17,7 +17,7 @@ export default function ResponsiveModal({
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogTitle className="hidden" />
-        <DialogContent className="w-full sm:max-w-lg py-2 border-none overflow-y-auto max-h-[85vh] hide-scrollbar">
+        <DialogContent className="w-full sm:max-w-xl border-none overflow-y-auto max-h-[85vh] hide-scrollbar">
           {children}
         </DialogContent>
       </Dialog>

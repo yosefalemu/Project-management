@@ -9,6 +9,7 @@ import { Context, Hono } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { MemberRole } from "@/features/members/types/type";
 import { generateInviteCode } from "@/lib/utils";
+import { z } from "zod";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -26,34 +27,6 @@ const app = new Hono()
       .from(workSpaces)
       .where(inArray(workSpaces.id, workspacesIds));
     return c.json({ data: workspaces });
-  })
-  .get("/current/:workspaceId", sessionMiddleware, async (c: Context) => {
-    const userId = c.get("userId") as string;
-    const members = await db
-      .select()
-      .from(member)
-      .where(eq(member.userId, userId));
-    if (members.length === 0) {
-      return c.json({ data: [] });
-    }
-    const workspacesIds = members.map((member) => member.workspaceId);
-    const workspaces = await db
-      .select()
-      .from(workSpaces)
-      .where(inArray(workSpaces.id, workspacesIds));
-    const lastWorkSpaceId = c.req.param("workspaceId") as string;
-    if (lastWorkSpaceId) {
-      const lastWorkspace = workspaces.filter(
-        (workspace) => workspace.id === lastWorkSpaceId
-      );
-      if (lastWorkspace.length > 0) {
-        return c.json({ data: lastWorkspace });
-      } else {
-        return c.json({ data: workspaces });
-      }
-    } else {
-      return c.json({ data: workspaces });
-    }
   })
   .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
     const userId = c.get("userId") as string;
@@ -264,6 +237,84 @@ const app = new Hono()
           500
         );
       }
+    }
+  )
+  .delete(
+    "/:workspaceId",
+    zValidator("param", z.object({ workspaceId: z.string() })),
+    sessionMiddleware,
+    async (c) => {
+      const userId = c.get("userId") as string;
+      const workSpaceId = c.req.param("workspaceId") as string;
+      console.log("WORKSPACE TO DELETE", workSpaceId);
+      // Fetch the members
+      try {
+        const members = await db
+          .select()
+          .from(member)
+          .where(eq(member.workspaceId, workSpaceId));
+        if (members.length === 0) {
+          return c.json(
+            {
+              error: "Forbidden",
+              message: "You are not a member of this workspace",
+            },
+            403
+          );
+        }
+      } catch (error) {
+        console.log("Error while deleting", error);
+        return c.json({
+          error: "InternalServerError",
+          message: "",
+        });
+      }
+      //select the workspace
+      try {
+        const workspaces = await db
+          .select()
+          .from(workSpaces)
+          .where(eq(workSpaces.id, workSpaceId));
+        if (workspaces.length === 0) {
+          return c.json({
+            error: "NotFound",
+            message: "Workspace not found",
+          });
+        }
+        if (workspaces[0].createdBy !== userId) {
+          return c.json({
+            error: "Unauthorized",
+            message: "You can not delete others",
+          });
+        }
+      } catch (error) {
+        console.log(error);
+        return c.json({
+          error: "InternalServerError",
+          message: "",
+        });
+      }
+      //delete workspace
+      try {
+        await db.delete(workSpaces).where(eq(workSpaces.id, workSpaceId));
+      } catch (error) {
+        console.log(error);
+        return c.json({
+          error: "InternalServerError",
+          message: "",
+        });
+      }
+      //delete all members
+      try {
+        await db.delete(member).where(eq(member.workspaceId, workSpaceId));
+      } catch (error) {
+        console.log(error);
+        return c.json({
+          error: "InternalServerError",
+          message: "",
+        });
+      }
+      return c.json({ data: "Workspace deleted" });
     }
   );
 

@@ -20,7 +20,7 @@ import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { useRegister } from "../api/register-user-api";
 import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
-import { LoaderCircle } from "lucide-react";
+import { Loader } from "lucide-react";
 import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 
 export default function SignUpCard() {
@@ -111,7 +111,7 @@ export default function SignUpCard() {
             >
               {registerMutation.isPending ? (
                 <span className="flex items-center justify-center">
-                  <LoaderCircle className="mr-2 animate-spin" />
+                  <Loader className="mr-2 animate-spin" />
                   <p>Signing Up</p>
                 </span>
               ) : (

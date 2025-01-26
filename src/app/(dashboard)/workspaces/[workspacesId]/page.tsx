@@ -32,7 +32,7 @@ export default function WorkspacePage() {
       ) : isError ? (
         <div>Error</div>
       ) : transformedData ? (
-        <CreateWorkSpaceForm workspaces={transformedData} />
+        <CreateWorkSpaceForm workspace={transformedData} />
       ) : null}
     </div>
   );
