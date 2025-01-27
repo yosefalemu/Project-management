@@ -9,7 +9,7 @@ import { Context, Hono } from "hono";
 import { eq, inArray } from "drizzle-orm";
 import { MemberRole } from "@/features/members/types/type";
 import { generateInviteCode } from "@/lib/utils";
-import { z } from "zod";
+import { insertMemberSchemaType } from "@/zod-schemas/member-schema";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
@@ -239,83 +239,170 @@ const app = new Hono()
       }
     }
   )
-  .delete(
-    "/:workspaceId",
-    zValidator("param", z.object({ workspaceId: z.string() })),
-    sessionMiddleware,
-    async (c) => {
-      const userId = c.get("userId") as string;
-      const workSpaceId = c.req.param("workspaceId") as string;
-      console.log("WORKSPACE TO DELETE", workSpaceId);
-      // Fetch the members
-      try {
-        const members = await db
-          .select()
-          .from(member)
-          .where(eq(member.workspaceId, workSpaceId));
-        if (members.length === 0) {
-          return c.json(
-            {
-              error: "Forbidden",
-              message: "You are not a member of this workspace",
-            },
-            403
-          );
-        }
-      } catch (error) {
-        console.log("Error while deleting", error);
+  .delete("/:workspaceId", sessionMiddleware, async (c) => {
+    const userId = c.get("userId") as string;
+    const workSpaceId = c.req.param("workspaceId") as string;
+    // Fetch the members
+    let membersFound: insertMemberSchemaType[] = [];
+    try {
+      const members = await db
+        .select()
+        .from(member)
+        .where(eq(member.workspaceId, workSpaceId));
+      if (members.length === 0) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "You are not a member of this workspace",
+          },
+          403
+        );
+      }
+      membersFound = members;
+    } catch (error) {
+      console.log("Error while deleting", error);
+      return c.json({
+        error: "InternalServerError",
+        message: "",
+      });
+    }
+    //select the workspace
+    try {
+      const workspaces = await db
+        .select()
+        .from(workSpaces)
+        .where(eq(workSpaces.id, workSpaceId));
+      if (workspaces.length === 0) {
         return c.json({
-          error: "InternalServerError",
-          message: "",
+          error: "NotFound",
+          message: "Workspace not found",
         });
       }
-      //select the workspace
-      try {
-        const workspaces = await db
-          .select()
-          .from(workSpaces)
-          .where(eq(workSpaces.id, workSpaceId));
-        if (workspaces.length === 0) {
-          return c.json({
-            error: "NotFound",
-            message: "Workspace not found",
-          });
-        }
-        if (workspaces[0].createdBy !== userId) {
-          return c.json({
+      const currentWorkSpaceFromMembersFound = membersFound.find(
+        (member) => member.workspaceId === workSpaceId
+      );
+      if (
+        workspaces[0].createdBy !== userId ||
+        currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
+      ) {
+        return c.json({
+          error: "Unauthorized",
+          message: "You can not delete others",
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      return c.json({
+        error: "InternalServerError",
+        message: "",
+      });
+    }
+    //delete workspace
+    try {
+      await db.delete(workSpaces).where(eq(workSpaces.id, workSpaceId));
+    } catch (error) {
+      console.log(error);
+      return c.json({
+        error: "InternalServerError",
+        message: "",
+      });
+    }
+    //delete all members
+    try {
+      await db.delete(member).where(eq(member.workspaceId, workSpaceId));
+    } catch (error) {
+      console.log(error);
+      return c.json({
+        error: "InternalServerError",
+        message: "",
+      });
+    }
+    return c.json({ data: "Workspace deleted" });
+  })
+  .patch("/:workspaceId/invite-code", sessionMiddleware, async (c) => {
+    const userId = c.get("userId") as string;
+    const workSpaceId = c.req.param("workspaceId") as string;
+    // Fetch the members
+    let membersFound: insertMemberSchemaType[] = [];
+    try {
+      const members = await db
+        .select()
+        .from(member)
+        .where(eq(member.workspaceId, workSpaceId));
+      if (members.length === 0) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "You are not a member of this workspace",
+          },
+          403
+        );
+      }
+      membersFound = members;
+    } catch (error) {
+      console.log("Error while deleting", error);
+      return c.json({
+        error: "InternalServerError",
+        message: "",
+      });
+    }
+    //select the workspace
+    try {
+      const workspaces = await db
+        .select()
+        .from(workSpaces)
+        .where(eq(workSpaces.id, workSpaceId));
+      if (workspaces.length === 0) {
+        return c.json({
+          error: "NotFound",
+          message: "Workspace not found",
+        });
+      }
+      const currentWorkSpaceFromMembersFound = membersFound.find(
+        (member) => member.workspaceId === workSpaceId
+      );
+      if (
+        workspaces[0].createdBy !== userId ||
+        currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
+      ) {
+        return c.json(
+          {
             error: "Unauthorized",
             message: "You can not delete others",
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        return c.json({
+          },
+          403
+        );
+      }
+    } catch (error) {
+      console.log(error);
+      return c.json(
+        {
           error: "InternalServerError",
           message: "",
-        });
-      }
-      //delete workspace
-      try {
-        await db.delete(workSpaces).where(eq(workSpaces.id, workSpaceId));
-      } catch (error) {
-        console.log(error);
-        return c.json({
-          error: "InternalServerError",
-          message: "",
-        });
-      }
-      //delete all members
-      try {
-        await db.delete(member).where(eq(member.workspaceId, workSpaceId));
-      } catch (error) {
-        console.log(error);
-        return c.json({
-          error: "InternalServerError",
-          message: "",
-        });
-      }
-      return c.json({ data: "Workspace deleted" });
+        },
+        500
+      );
     }
-  );
+    //update the workspace invite code
+    try {
+      const inviteCode = generateInviteCode(10);
+      await db
+        .update(workSpaces)
+        .set({
+          inviteCode,
+        })
+        .where(eq(workSpaces.id, workSpaceId));
+    } catch (error) {
+      console.log(error);
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "",
+        },
+        500
+      );
+    }
+    return c.json({ data: "Invite code updated" }, 200);
+  });
 
 export default app;

@@ -18,9 +18,9 @@ import { useCreateWorkspace } from "../api/create-workspace-api";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
 import { useRouter } from "next/navigation";
 import DangerZone from "./danger-zone";
-import ReserveZone from "./reserve-zone";
 import { useMedia } from "react-use";
 import { useState } from "react";
+import InviteCode from "./invite-code";
 
 interface CreateWorkSpaceFormProps {
   workspace?: insertWorkspaceType;
@@ -35,6 +35,8 @@ export default function CreateWorkSpaceForm({
   const createWorkspaceMutation = useCreateWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspace();
   const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
+  const [isResetInviteCodeLoading, setIsResetInviteCodeLoading] =
+    useState<boolean>(false);
 
   const form = useForm<insertWorkspaceType>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -78,7 +80,7 @@ export default function CreateWorkSpaceForm({
   return (
     <div className="h-full flex flex-col gap-y-4">
       <Card
-        className={`shadow-none border-none ${onModal ? "" : "bg-neutral-100"}`}
+        className={`shadow-none border-none ${onModal ? "" : "bg-neutral-50"}`}
       >
         <CardHeader className="flex p-7">
           <CardTitle className="text-xl font-bold">
@@ -154,7 +156,8 @@ export default function CreateWorkSpaceForm({
                   disabled={
                     createWorkspaceMutation.isPending ||
                     updateWorkspaceMutation.isPending ||
-                    isDeleteLoading
+                    isDeleteLoading ||
+                    isResetInviteCodeLoading
                   }
                 >
                   Cancel
@@ -166,7 +169,8 @@ export default function CreateWorkSpaceForm({
                   disabled={
                     createWorkspaceMutation.isPending ||
                     updateWorkspaceMutation.isPending ||
-                    isDeleteLoading
+                    isDeleteLoading ||
+                    isResetInviteCodeLoading
                   }
                 >
                   {createWorkspaceMutation.isPending ||
@@ -185,10 +189,26 @@ export default function CreateWorkSpaceForm({
         </CardContent>
       </Card>
       {workspace && (
-        <div className="grid grid-cols-1 xl:grid-cols-2 gap-2">
-          <ReserveZone />
+        <div className="flex flex-col gap-y-4">
+          <InviteCode
+            workspaceId={workspace.id!}
+            inviteCode={workspace.inviteCode!}
+            loadingState={
+              createWorkspaceMutation.isPending ||
+              updateWorkspaceMutation.isPending ||
+              isDeleteLoading ||
+              isResetInviteCodeLoading
+            }
+            setIsResetInviteCodeLoading={setIsResetInviteCodeLoading}
+          />
           <DangerZone
             workspaceId={workspace.id!}
+            loadingState={
+              createWorkspaceMutation.isPending ||
+              updateWorkspaceMutation.isPending ||
+              isDeleteLoading ||
+              isResetInviteCodeLoading
+            }
             setIsDeleteLoading={setIsDeleteLoading}
           />
         </div>

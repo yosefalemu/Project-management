@@ -5,13 +5,16 @@ import { useMedia } from "react-use";
 import { useDeleteWorkspace } from "../api/delete-workspace-api";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
+import DootedSeparator from "@/components/dooted-separator";
 
 interface DangerZoneProps {
   workspaceId: string;
+  loadingState: boolean;
   setIsDeleteLoading: (status: boolean) => void;
 }
 export default function DangerZone({
   workspaceId,
+  loadingState,
   setIsDeleteLoading,
 }: DangerZoneProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
@@ -46,21 +49,22 @@ export default function DangerZone({
   return (
     <div>
       <DeleteDialog />
-      <Card className="shadow-none border-none bg-neutral-100 col-span-1">
+      <Card className="shadow-none border-none bg-neutral-50 col-span-1">
         <CardContent className="p-7">
           <div className="flex flex-col">
-            <h3 className="font-bold">Danger Zone</h3>
+            <h3 className="font-bold text-lg">Danger Zone</h3>
             <p className="text-sm text-muted-foreground">
               Deleting a workspace is irreversible and will remove all
               associated data.
             </p>
+            <DootedSeparator className="py-7" />
             <Button
               className="mt-6 w-fit ml-auto"
               size={isDesktop ? "lg" : "sm"}
               variant="destructive"
               type="button"
               onClick={handleDeleteWorkspace}
-              disabled={isPending}
+              disabled={loadingState}
             >
               {isPending ? <Loader className="animate-spin" /> : null}
               {isPending ? "Deleting" : "Delete Workspace"}
