@@ -341,10 +341,13 @@ const app = new Hono()
       membersFound = members;
     } catch (error) {
       console.log("Error while deleting", error);
-      return c.json({
-        error: "InternalServerError",
-        message: "",
-      });
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "",
+        },
+        500
+      );
     }
     //select the workspace
     try {
@@ -353,10 +356,13 @@ const app = new Hono()
         .from(workSpaces)
         .where(eq(workSpaces.id, workSpaceId));
       if (workspaces.length === 0) {
-        return c.json({
-          error: "NotFound",
-          message: "Workspace not found",
-        });
+        return c.json(
+          {
+            error: "NotFound",
+            message: "Workspace not found",
+          },
+          404
+        );
       }
       const currentWorkSpaceFromMembersFound = membersFound.find(
         (member) => member.workspaceId === workSpaceId
@@ -384,8 +390,9 @@ const app = new Hono()
       );
     }
     //update the workspace invite code
+    let inviteCode: string;
     try {
-      const inviteCode = generateInviteCode(10);
+      inviteCode = generateInviteCode(10);
       await db
         .update(workSpaces)
         .set({
@@ -402,7 +409,7 @@ const app = new Hono()
         500
       );
     }
-    return c.json({ data: "Invite code updated" }, 200);
+    return c.json({ data: inviteCode }, 200);
   });
 
 export default app;

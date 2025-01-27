@@ -7,6 +7,7 @@ import { CopyIcon, Loader } from "lucide-react";
 import { useMedia } from "react-use";
 import { toast } from "sonner";
 import { useUpdateInviteCodeWorkspace } from "../api/update-invitecode-api";
+import { useState } from "react";
 
 interface InvitecodeProps {
   inviteCode: string;
@@ -21,7 +22,8 @@ export default function InviteCode({
   setIsResetInviteCodeLoading,
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
-  const fullInviteCode = `${window.location.origin}/stworkspaces/${workspaceId}/join/${inviteCode}`;
+  const [localInviteCode, setLocalInviteCode] = useState(inviteCode);
+  const fullInviteCode = `${window.location.origin}/stworkspaces/${workspaceId}/join/${localInviteCode}`;
   const { mutate, isPending } = useUpdateInviteCodeWorkspace();
   const [ResetInviteCode, confirmReset] = useConfirm(
     "Reset invite code",
@@ -37,10 +39,10 @@ export default function InviteCode({
     mutate(
       { param: { workspaceId: workspaceId } },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
           setIsResetInviteCodeLoading(false);
+          setLocalInviteCode(data.data);
           toast.success("Invite code reset successfully");
-          window.location.href = `/workspaces/${workspaceId}`;
         },
         onError: () => {
           setIsResetInviteCodeLoading(false);

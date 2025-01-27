@@ -23,7 +23,6 @@ export default function DangerZone({
     "This action cannot be undo",
     "destructive"
   );
-  console.log("WORKSPACE ID TO DELETE", workspaceId);
   const { mutate, isPending } = useDeleteWorkspace();
   const handleDeleteWorkspace = async () => {
     const ok = await confirmDelete();
