@@ -1,0 +1,1 @@
+ALTER TABLE "work_spaces" ADD COLUMN "invite_code_expire" timestamp NOT NULL;

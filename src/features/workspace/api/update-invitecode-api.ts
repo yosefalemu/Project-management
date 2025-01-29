@@ -10,8 +10,6 @@ type ZodErrorDetail = {
 type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
-  name?: string;
-  userId?: string;
 };
 
 type ResponseType = InferResponseType<
@@ -34,7 +32,7 @@ export const useUpdateInviteCodeWorkspace = () => {
       });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("Error while updating invite code", errorData);
+        console.log("ERROR WHILE UPDATING INVITECODE", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&

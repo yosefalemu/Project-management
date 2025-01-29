@@ -10,15 +10,25 @@ import {
 import { LogOut } from "lucide-react";
 import { IoPersonOutline } from "react-icons/io5";
 import { useLogout } from "../api/logout-api";
-import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import { useCurrentUser } from "../api/current-api";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function UserButton() {
   const logoutMutation = useLogout();
+  const router = useRouter();
   const { data, isLoading, isError } = useCurrentUser();
 
   const handleLogout = () => {
-    logoutMutation.mutate(undefined, {});
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast.success("Logged out successfully");
+        router.push("/sign-in");
+      },
+      onError: () => {
+        toast.error("An error occured while logging out");
+      },
+    });
   };
   return (
     <>
@@ -71,24 +81,6 @@ export default function UserButton() {
       ) : (
         <div className="bg-neutral-200 font-medium rounded-full size-10 overflow-hidden flex items-center justify-center">
           <IoPersonOutline className="text-neutral-500 text-lg" />
-        </div>
-      )}
-
-      {logoutMutation.data && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2">
-          <DisplayServerActionResponse
-            data={logoutMutation.data}
-            onReset={logoutMutation.reset}
-            routePath="/sign-in"
-          />
-        </div>
-      )}
-      {logoutMutation.error && (
-        <div className="absolute top-2 left-1/2 -translate-x-1/2">
-          <DisplayServerActionResponse
-            error={logoutMutation.error}
-            onReset={logoutMutation.reset}
-          />
         </div>
       )}
     </>

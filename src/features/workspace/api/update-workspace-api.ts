@@ -10,8 +10,6 @@ type ZodErrorDetail = {
 type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
-  name?: string;
-  userId?: string;
 };
 
 type ResponseType = InferResponseType<
@@ -28,7 +26,7 @@ export const useUpdateWorkspace = () => {
       const response = await client.api.workspace["$patch"]({ form });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("Error while updating", errorData);
+        console.log("ERROR WHILE UPDATING WORKSPACES", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&
@@ -39,7 +37,7 @@ export const useUpdateWorkspace = () => {
           throw new Error(errorDataDetail);
         }
         throw new Error(
-          errorData.message || "An error occurred while updating"
+          errorData.message || "An error occurred while updating workspaces"
         );
       }
       return (await response.json()) as ResponseType;

@@ -21,9 +21,11 @@ import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { useRegister } from "../api/register-user-api";
 import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
-import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SignUpCard() {
+  const router = useRouter();
   const registerMutation = useRegister();
   const form = useForm<insertUserType>({
     resolver: zodResolver(insertUserSchema),
@@ -36,7 +38,22 @@ export default function SignUpCard() {
   });
 
   const handleSignUp = (data: insertUserType) => {
-    registerMutation.mutate({ json: data });
+    registerMutation.mutate(
+      { json: data },
+      {
+        onSuccess: () => {
+          toast.success("User registered successfully");
+          router.push("/sign-in");
+        },
+        onError: () => {
+          toast.error(
+            registerMutation.error
+              ? registerMutation.error.message
+              : "An error occured while registering"
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -63,19 +80,6 @@ export default function SignUpCard() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <DisplayServerActionResponse
-          data={
-            registerMutation.data
-              ? { message: "User registered successfully" }
-              : undefined
-          }
-          error={
-            registerMutation.error
-              ? { message: registerMutation.error.message }
-              : undefined
-          }
-          onReset={() => registerMutation.reset()}
-        />
         <Form {...form}>
           <form
             className="space-y-2"

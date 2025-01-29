@@ -11,7 +11,6 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader } from "lucide-react";
-import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import CustomImageUploader from "@/components/inputs/custom-image-upload";
 import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { useCreateWorkspace } from "../api/create-workspace-api";
@@ -21,6 +20,7 @@ import DangerZone from "./danger-zone";
 import { useMedia } from "react-use";
 import { useState } from "react";
 import InviteCode from "./invite-code";
+import { toast } from "sonner";
 
 interface CreateWorkSpaceFormProps {
   workspace?: insertWorkspaceType;
@@ -56,7 +56,25 @@ export default function CreateWorkSpaceForm({
         description: values.description,
         image: values.image instanceof File ? values.image : "",
       };
-      updateWorkspaceMutation.mutate({ form: finalValues });
+      updateWorkspaceMutation.mutate(
+        { form: finalValues },
+        {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          onSuccess: (data: any) => {
+            toast.success("Workspace updated successfully");
+            if (data) {
+              router.push(`/workspaces/${data.data.id}`);
+            }
+          },
+          onError: () => {
+            toast.error(
+              updateWorkspaceMutation.error
+                ? updateWorkspaceMutation.error.message
+                : "An error occured"
+            );
+          },
+        }
+      );
     } else {
       const finalValues = {
         name: values.name,
@@ -68,9 +86,17 @@ export default function CreateWorkSpaceForm({
         {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onSuccess: (data: any) => {
+            toast.success("Workspace created successfully");
             if (data) {
               router.push(`/workspaces/${data.data.id}`);
             }
+          },
+          onError: () => {
+            toast.error(
+              createWorkspaceMutation.error
+                ? createWorkspaceMutation.error.message
+                : "An error occured"
+            );
           },
         }
       );
@@ -78,7 +104,7 @@ export default function CreateWorkSpaceForm({
   };
 
   return (
-    <div className="h-full flex flex-col gap-y-4">
+    <div className="h-full w-full flex flex-col gap-y-4">
       <Card
         className={`shadow-none border-none ${onModal ? "" : "bg-neutral-50"}`}
       >
@@ -91,24 +117,6 @@ export default function CreateWorkSpaceForm({
           <DootedSeparator />
         </div>
         <CardContent className="p-7">
-          <DisplayServerActionResponse
-            data={
-              createWorkspaceMutation.data
-                ? { message: "Workspace created successfully" }
-                : updateWorkspaceMutation.data
-                ? { message: "Workspace updated successfully" }
-                : undefined
-            }
-            error={
-              createWorkspaceMutation.error
-                ? { message: createWorkspaceMutation.error.message }
-                : updateWorkspaceMutation.error
-                ? {
-                    message: updateWorkspaceMutation.error.message,
-                  }
-                : undefined
-            }
-          />
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
               <div

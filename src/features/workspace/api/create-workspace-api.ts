@@ -10,8 +10,6 @@ type ZodErrorDetail = {
 type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
-  name?: string;
-  userId?: string;
 };
 
 type ResponseType = InferResponseType<
@@ -28,7 +26,7 @@ export const useCreateWorkspace = () => {
       const response = await client.api.workspace["$post"]({ form });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("Error while creating", errorData);
+        console.log("ERROR WHILE CREATING WORKSPACE", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&

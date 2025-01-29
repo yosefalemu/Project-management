@@ -16,7 +16,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <div className="lg:pl-[264px] w-full flex flex-col min-h-screen">
           <Navbar />
           <div className="max-w-screen-2xl flex-1">
-            <main className="h-full py-8 px-6 flex-col min-h-full">
+            <main className="h-fullz py-8 px-6 flex-col min-h-full">
               {children}
             </main>
           </div>

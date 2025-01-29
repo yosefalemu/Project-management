@@ -50,7 +50,7 @@ export default function WorkspaceSwitcher() {
           </div>
           <Select
             onValueChange={handleWorkspaceChange}
-            value={params.workspacesId as string}
+            value={params.workspaceId as string}
           >
             <SelectTrigger className="w-full h-fit bg-neutral-200 font-medium p-1 border shadow-blue-700 shadow-sm px-4 py-2 text-sm focus:ring-transparent">
               <SelectValue placeholder="No selected workspaces" />

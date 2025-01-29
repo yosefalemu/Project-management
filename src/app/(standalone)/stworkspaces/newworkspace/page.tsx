@@ -2,7 +2,7 @@ import CreateWorkSpaceForm from "@/features/workspace/components/create-workspac
 
 export default function CreateWorkspacePage() {
   return (
-    <div className="w-full lg:max-w-6xl">
+    <div className="w-full mx-auto">
       <CreateWorkSpaceForm />
     </div>
   );

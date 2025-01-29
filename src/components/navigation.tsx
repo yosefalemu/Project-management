@@ -1,6 +1,6 @@
 "use client";
 import Link from "next/link";
-import { usePathname, useParams } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import {
@@ -36,16 +36,17 @@ const routes = [
     activeIcon: IoPersonSharp,
   },
 ];
+
 export default function Navigation() {
-  const params = useParams();
   const pathname = usePathname();
+  const params = useParams();
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
         const fullHref =
           item.href === ""
-            ? `/workspaces/${params.workspacesId}`
-            : `/stworkspaces/${params.workspacesId}${item.href}`;
+            ? `/workspaces/${params.workspaceId}`
+            : `/stworkspaces/${params.workspaceId}${item.href}`;
         const isActive = pathname === fullHref;
         const Icon = isActive ? item.activeIcon : item.icon;
         return (

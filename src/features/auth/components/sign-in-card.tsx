@@ -18,10 +18,12 @@ import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
 import { useLogin } from "../api/login-api";
 import { selectUserSchema, selectUserType } from "@/zod-schemas/users-schema";
-import DisplayServerActionResponse from "@/components/DisplayServerActionResponse";
 import { Loader } from "lucide-react";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 export default function SignInCard() {
+  const router = useRouter();
   const loginMutation = useLogin();
   const form = useForm<selectUserType>({
     resolver: zodResolver(selectUserSchema),
@@ -32,7 +34,22 @@ export default function SignInCard() {
   });
 
   const handleLogin = (data: selectUserType) => {
-    loginMutation.mutate({ json: data });
+    loginMutation.mutate(
+      { json: data },
+      {
+        onSuccess: () => {
+          toast.success("Logged in successfully");
+          router.push("/");
+        },
+        onError: () => {
+          toast.error(
+            loginMutation.error
+              ? loginMutation.error.message
+              : "An error occured while logging in"
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -41,20 +58,6 @@ export default function SignInCard() {
         <CardTitle className="text-2xl">Welcome back!</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <DisplayServerActionResponse
-          data={
-            loginMutation.data
-              ? { message: "User logged in successfully" }
-              : undefined
-          }
-          error={
-            loginMutation.error
-              ? { message: loginMutation.error.message }
-              : undefined
-          }
-          routePath="/"
-          onReset={() => loginMutation.reset()}
-        />
         <Form {...form}>
           <form className="space-y-2" onSubmit={form.handleSubmit(handleLogin)}>
             <CustomInputLabel
