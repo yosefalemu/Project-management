@@ -27,7 +27,7 @@ export const selectUserSchema = createSelectSchema(users, {
   name: (schema) => schema.optional(),
   email: (schema) =>
     schema.nonempty("Email is required").email("Invalid email"),
-  password: (schema) => schema.nonempty("Password is required"),
+  password: (schema) => schema.nonempty("Password is required").optional(),
   confirm_password: (schema) => schema.optional(),
   createdAt: (schema) => schema.optional(),
   updatedAt: (schema) => schema.optional(),

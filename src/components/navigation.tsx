@@ -43,10 +43,7 @@ export default function Navigation() {
   return (
     <ul className="flex flex-col">
       {routes.map((item) => {
-        const fullHref =
-          item.href === ""
-            ? `/workspaces/${params.workspaceId}`
-            : `/stworkspaces/${params.workspaceId}${item.href}`;
+        const fullHref = `/workspaces/${params.workspaceId}${item.href}`;
         const isActive = pathname === fullHref;
         const Icon = isActive ? item.activeIcon : item.icon;
         return (

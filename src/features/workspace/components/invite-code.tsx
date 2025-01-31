@@ -23,7 +23,7 @@ export default function InviteCode({
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const [localInviteCode, setLocalInviteCode] = useState(inviteCode);
-  const fullInviteCode = `${window.location.origin}/stworkspaces/${workspaceId}/join/${localInviteCode}`;
+  const fullInviteCode = `${window.location.origin}/workspaces/${workspaceId}/join/${localInviteCode}`;
   const { mutate, isPending } = useUpdateInviteCodeWorkspace();
   const [ResetInviteCode, confirmReset] = useConfirm(
     "Reset invite code",
@@ -57,7 +57,9 @@ export default function InviteCode({
       <Card className="shadow-none border-none bg-neutral-0 col-span-1 bg-neutral-50">
         <CardContent className="p-7">
           <div className="flex flex-col">
-            <h3 className="font-bold text-lg">Invite code</h3>
+            <h3 className="font-bold text-lg" onClick={() => {}}>
+              Invite code
+            </h3>
             <p className="text-sm text-muted-foreground">
               Use the invite code to add members to your workspace.
             </p>

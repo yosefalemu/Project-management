@@ -15,7 +15,7 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !isError && data) {
       if (data.length === 0) {
-        router.push("/stworkspaces/newworkspace");
+        router.push("/workspaces/createworkspace");
       } else {
         router.push(`/workspaces/${data[0].id}`);
       }

@@ -447,6 +447,7 @@ const app = new Hono()
         .update(workSpaces)
         .set({
           inviteCode,
+          inviteCodeExpire: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         })
         .where(eq(workSpaces.id, workSpaceId));
     } catch (error) {
@@ -498,15 +499,10 @@ const app = new Hono()
           inviteCodeExpire &&
           isBefore(new Date(inviteCodeExpire), new Date())
         ) {
-          if (
-            inviteCodeExpire &&
-            isBefore(new Date(inviteCodeExpire), new Date())
-          ) {
-            return c.json(
-              { error: "Expired", message: "Invitation link has expired" },
-              410
-            );
-          }
+          return c.json(
+            { error: "Expired", message: "Invitation link has expired" },
+            410
+          );
         }
         //check if the user is already a member else add the user
         const membersFound = await db

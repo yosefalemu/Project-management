@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import Link from "next/link";
 import { useJoinWorkspace } from "../api/join-method-api";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -52,6 +51,7 @@ export default function JoinWorkspaceForm({
                 src={workspaceFound.image}
                 alt={workspaceFound.name}
                 fill
+                className="object-cover"
               />
             </div>
           </div>
@@ -74,10 +74,10 @@ export default function JoinWorkspaceForm({
             size="lg"
             type="button"
             className="w-full lg:w-1/2"
-            asChild
+            onClick={() => router.push("/")}
             disabled={isPending}
           >
-            <Link href="/">Cancel</Link>
+            Cancel
           </Button>
           <Button
             size="lg"

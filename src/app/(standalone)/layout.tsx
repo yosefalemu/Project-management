@@ -8,14 +8,14 @@ interface StandAloneLayoutProps {
 export default function StandAloneLayout({ children }: StandAloneLayoutProps) {
   return (
     <main className="bg-neutral-100 h-screen">
-      <div className="mx-auto max-w-screen-2xl p-4 flex flex-col h-full">
+      <div className="mx-auto max-w-screen-2xl p-4 flex flex-col gap-y-2 h-full">
         <nav className="flex justify-between items-center h-[73px]">
           <Link href="/">
             <Image src="/logo.svg" alt="logo" width={152} height={56} />
           </Link>
           <UserButton />
         </nav>
-        <div className="flex-1 py-4 w-full">{children}</div>
+        <div className="flex-1 w-full">{children}</div>
       </div>
     </main>
   );
