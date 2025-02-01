@@ -1,1 +1,0 @@
-ALTER TABLE "work_spaces" ADD COLUMN "invite_code" varchar NOT NULL;

@@ -31,7 +31,7 @@ const app = new Hono()
           401
         );
       }
-      const isPasswordValid = await bcrypt.compare(password, user[0].password);
+      const isPasswordValid = await bcrypt.compare(password!, user[0].password);
       if (!isPasswordValid) {
         return c.json(
           { error: "Unauthorized", message: "Incorrect password" },

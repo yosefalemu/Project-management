@@ -1,3 +1,4 @@
+import LoadingLayout from "@/components/loading-layout";
 import Navbar from "@/components/navbar";
 import Sidebar from "@/components/sidebar";
 import CreateWorkspaceModal from "@/features/workspace/components/create-workspace-modal";
@@ -7,9 +8,9 @@ interface DashboardLayoutProps {
 }
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="min-h-screen">
+    <div className="h-full w-full">
       <CreateWorkspaceModal />
-      <div className="flex w-full h-full gap-x-2">
+      <div className="flex w-full h-full gap-x-2 relative">
         <div className="fixed left-0 top-0 hidden lg:block lg:w-[264px] h-full overflow-y-auto">
           <Sidebar />
         </div>
@@ -21,6 +22,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </main>
           </div>
         </div>
+        <LoadingLayout />
       </div>
     </div>
   );

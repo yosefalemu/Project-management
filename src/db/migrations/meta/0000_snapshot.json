@@ -1,5 +1,5 @@
 {
-  "id": "4f2bb502-c1e8-40e7-8e63-676878d3ddad",
+  "id": "d07f4e31-c989-446e-94e9-bc46ae5305d8",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -8,13 +8,6 @@
       "name": "member",
       "schema": "",
       "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
         "workspace_id": {
           "name": "workspace_id",
           "type": "uuid",
@@ -50,8 +43,43 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
+      "foreignKeys": {
+        "member_workspace_id_work_spaces_id_fk": {
+          "name": "member_workspace_id_work_spaces_id_fk",
+          "tableFrom": "member",
+          "tableTo": "work_spaces",
+          "columnsFrom": [
+            "workspace_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "member_user_id_users_id_fk": {
+          "name": "member_user_id_users_id_fk",
+          "tableFrom": "member",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "member_workspace_id_user_id_pk": {
+          "name": "member_workspace_id_user_id_pk",
+          "columns": [
+            "workspace_id",
+            "user_id"
+          ]
+        }
+      },
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
@@ -70,7 +98,7 @@
         },
         "name": {
           "name": "name",
-          "type": "varchar",
+          "type": "varchar(50)",
           "primaryKey": false,
           "notNull": true
         },
@@ -161,6 +189,19 @@
           "notNull": true,
           "default": "''"
         },
+        "invite_code": {
+          "name": "invite_code",
+          "type": "varchar",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "invite_code_expire": {
+          "name": "invite_code_expire",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "NOW() + INTERVAL '7 days'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -194,13 +235,30 @@
     }
   },
   "enums": {
+    "public.issue_type": {
+      "name": "issue_type",
+      "schema": "public",
+      "values": [
+        "STORY",
+        "BUG",
+        "TASK"
+      ]
+    },
+    "public.priority": {
+      "name": "priority",
+      "schema": "public",
+      "values": [
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ]
+    },
     "public.role_enum": {
       "name": "role_enum",
       "schema": "public",
       "values": [
-        "admin",
-        "member",
-        "viewer"
+        "ADMIN",
+        "MEMBER"
       ]
     }
   },

@@ -21,6 +21,7 @@ import { useMedia } from "react-use";
 import { useState } from "react";
 import InviteCode from "./invite-code";
 import { toast } from "sonner";
+import BackButton from "@/components/back-button";
 
 interface CreateWorkSpaceFormProps {
   workspace?: insertWorkspaceType;
@@ -106,9 +107,10 @@ export default function CreateWorkSpaceForm({
   return (
     <div className="h-full w-full flex flex-col gap-y-4">
       <Card
-        className={`shadow-none border-none ${onModal ? "" : "bg-neutral-50"}`}
+        className={`shadow-none border-none w-full ${onModal ? "" : "bg-neutral-50"}`}
       >
-        <CardHeader className="flex p-7">
+        <CardHeader className="flex flex-row items-center gap-x-4 p-7">
+          <BackButton />
           <CardTitle className="text-xl font-bold">
             {workspace ? "Edit a new workspace" : "Create a new workspace"}
           </CardTitle>

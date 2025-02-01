@@ -8,6 +8,7 @@ import { Fragment } from "react";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import { Button } from "@/components/ui/button";
 import { MoreVerticalIcon } from "lucide-react";
+import { FaCheckCircle } from "react-icons/fa";
 import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
@@ -19,97 +20,185 @@ import { GrUserAdmin } from "react-icons/gr";
 import { RxPerson } from "react-icons/rx";
 import { LuView } from "react-icons/lu";
 import { IoPersonRemoveOutline } from "react-icons/io5";
+import { useConfirm } from "@/hooks/use-confirm";
+import { useUpdateMember } from "@/features/members/api/update-member-api";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
+import LoadingLayout from "@/components/loading-layout";
 
 export default function MembersList() {
   const params = useParams();
+  const { mutate: updateMemberMutate, isPending: updateMemberIsPending } =
+    useUpdateMember();
+  const [ConfirmDialog, confirm] = useConfirm(
+    "Remove member",
+    "This member will be removed from the workspace",
+    "destructive"
+  );
   const { data, isPending, isError } = useGetMembers(
     params.workspaceId as string
   );
 
+  const handleUpdateRole = async (
+    memberId: string,
+    role: "member" | "admin" | "viewer"
+  ) => {
+    console.log("Updating role", memberId, role);
+    updateMemberMutate(
+      {
+        memberId,
+        workspaceId: params.workspaceId as string,
+        role,
+      },
+      {
+        onSuccess: () => {
+          toast.success("Member role updated successfully");
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
+      }
+    );
+  };
+  const handleRemoveMember = async (memberId: string) => {
+    const ok = await confirm();
+    if (!ok) return;
+    console.log("Removing member", memberId);
+    //TODO EMPLEMENT REMOVE MEMBER
+  };
+
   return (
     <div className="w-full h-full flex flex-col">
       {isPending ? (
-        <div>Loading...</div>
+        <div className="relative">
+                    <LoadingLayout />
+                  </div>
       ) : isError ? (
         <div>Error...</div>
       ) : data ? (
-        <Card className="w-full h-full flex flex-col border-none shadow-none">
-          <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0 w-full">
-            <BackButton />
-            <CardTitle className="text-xl font-bold">Members List</CardTitle>
-          </CardHeader>
-          <DootedSeparator className="px-7" />
-          <CardContent className="p-7 h-[610px] overflow-y-auto flex flex-col gap-y-2">
-            {data?.map((member) => (
-              <Fragment key={member.id}>
-                <div className="flex items-center gap-2">
-                  <MemberAvatar name={member.name!} key={member.id!} />
-                  <div className="flex flex-col">
-                    <p className="text-sm font-medium">{member.name}</p>
-                    <p className="text-xs font-muted-foreground">
-                      {member.email}
-                    </p>
+        <div className="w-full h-full relative">
+          {updateMemberIsPending && <LoadingLayout />}
+          <Card className="w-full h-full flex flex-col border-none shadow-none">
+            <ConfirmDialog />
+            <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0 w-full">
+              <BackButton />
+              <CardTitle className="text-xl font-bold">Members List</CardTitle>
+            </CardHeader>
+            <DootedSeparator className="px-7" />
+            <CardContent className="p-7 h-[610px] overflow-y-auto flex flex-col gap-y-2">
+              {data?.map((member) => (
+                <Fragment key={member.id}>
+                  <div className="flex items-center gap-2">
+                    <MemberAvatar name={member.name!} key={member.id!} />
+                    <div className="flex flex-col">
+                      <p className="text-sm font-medium">{member.name}</p>
+                      <p className="text-xs font-muted-foreground">
+                        {member.email}
+                      </p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          size="icon"
+                          variant="secondary"
+                          className="ml-auto"
+                        >
+                          <MoreVerticalIcon className="size-4 text-muted-foreground" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent
+                        align="end"
+                        side="bottom"
+                        className="px-1"
+                      >
+                        <DropdownMenuItem
+                          className={cn(
+                            "font-medium cursor-pointer py-3",
+                            `${
+                              member.userRole === "admin" ? "bg-neutral-50" : ""
+                            }`
+                          )}
+                          onClick={() => {
+                            handleUpdateRole(member.id!, "admin");
+                          }}
+                          disabled={updateMemberIsPending}
+                        >
+                          <span className="w-4">
+                            {member.userRole === "admin" && (
+                              <FaCheckCircle className="text-green-700" />
+                            )}
+                          </span>
+                          <GrUserAdmin className="mr-1" />
+                          Set as Administrator
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={cn(
+                            "font-medium cursor-pointer py-3",
+                            `${
+                              member.userRole === "member"
+                                ? "bg-neutral-50"
+                                : ""
+                            }`
+                          )}
+                          onClick={() => {
+                            handleUpdateRole(member.id!, "member");
+                          }}
+                          disabled={updateMemberIsPending}
+                        >
+                          <span className="w-4">
+                            {member.userRole === "member" && (
+                              <FaCheckCircle className="text-green-700" />
+                            )}
+                          </span>
+                          <RxPerson className="mr-1" />
+                          Set as Member
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className={cn(
+                            "font-medium cursor-pointer py-3",
+                            `${
+                              member.userRole === "viewer"
+                                ? "bg-neutral-50"
+                                : ""
+                            }`
+                          )}
+                          onClick={() => {
+                            handleUpdateRole(member.id!, "viewer");
+                          }}
+                          disabled={false}
+                        >
+                          <span className="w-4">
+                            {member.userRole === "viewer" && (
+                              <FaCheckCircle className="text-green-700" />
+                            )}
+                          </span>
+                          <LuView className="mr-1" />
+                          Set as Viewer
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="font-medium cursor-pointer py-3"
+                          onClick={() => {
+                            handleRemoveMember(member.id!);
+                          }}
+                          disabled={updateMemberIsPending}
+                        >
+                          <span className="w-4" />
+                          <IoPersonRemoveOutline className="mr-1" />
+                          <span className="text-amber-700">
+                            Remove {member.name}
+                          </span>
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="icon"
-                        variant="secondary"
-                        className="ml-auto"
-                      >
-                        <MoreVerticalIcon className="size-4 text-muted-foreground" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                      align="end"
-                      side="bottom"
-                      className="px-1"
-                    >
-                      <DropdownMenuItem
-                        className="font-medium cursor-pointer"
-                        onClick={() => {}}
-                        disabled={false}
-                      >
-                        <GrUserAdmin className="mr-1" />
-                        Set as Administrator
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="font-medium cursor-pointer"
-                        onClick={() => {}}
-                        disabled={false}
-                      >
-                        <RxPerson className="mr-1" />
-                        Set as Member
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="font-medium cursor-pointer"
-                        onClick={() => {}}
-                        disabled={false}
-                      >
-                        <LuView className="mr-1" />
-                        Set as Viewer
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        className="font-medium cursor-pointer"
-                        onClick={() => {}}
-                        disabled={false}
-                      >
-                        <IoPersonRemoveOutline className="mr-1" />
-
-                        <span className="text-amber-700">
-                          Remove {member.name}
-                        </span>
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-                {data.indexOf(member) !== data.length - 1 && (
-                  <Separator className="my-2.5" />
-                )}
-              </Fragment>
-            ))}
-          </CardContent>
-        </Card>
+                  {data.indexOf(member) !== data.length - 1 && (
+                    <Separator className="my-2.5" />
+                  )}
+                </Fragment>
+              ))}
+            </CardContent>
+          </Card>
+        </div>
       ) : null}
     </div>
   );

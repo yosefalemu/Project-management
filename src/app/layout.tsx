@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import QueryProviders from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
+import StoreProvider from "@/store/store-provider";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -20,7 +21,9 @@ export default function RootLayout({
     <html lang="en">
       <body className={cn(inter.className, "antialiased min-h-screen")}>
         <Toaster position="top-right" richColors />
-        <QueryProviders>{children}</QueryProviders>
+        <StoreProvider>
+          <QueryProviders>{children}</QueryProviders>
+        </StoreProvider>
       </body>
     </html>
   );

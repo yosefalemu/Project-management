@@ -1,15 +1,9 @@
-import SettingComponent from "./_components/main";
+import SettingComponent from "./_components/workspace-setting";
 
-export default async function SettingPage({
-  params,
-}: {
-  params: Promise<{ workspacesId: string }>;
-}) {
-  const { workspacesId } = await params;
-
+export default async function SettingPage() {
   return (
     <div className="w-full">
-      <SettingComponent workspacesId={workspacesId} />
+      <SettingComponent />
     </div>
   );
 }

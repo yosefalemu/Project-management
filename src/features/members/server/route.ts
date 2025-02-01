@@ -5,7 +5,7 @@ import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertMemberSchema } from "@/zod-schemas/member-schema";
 import { selectUserType } from "@/zod-schemas/users-schema";
 import { zValidator } from "@hono/zod-validator";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -15,13 +15,15 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("param", z.object({ workspaceId: z.string() })),
     async (c) => {
-      const workspaceId = c.req.param("workspaceId");
       try {
+        const workspaceId = c.req.param("workspaceId");
+
         const members = await db
           .select()
           .from(member)
           .where(eq(member.workspaceId, workspaceId));
-        if (members.length === 0) {
+
+        if (!members.length) {
           return c.json(
             {
               error: "Not Found",
@@ -30,31 +32,37 @@ const app = new Hono()
             404
           );
         }
-        let usersFound: selectUserType[];
-        const userIds = members.map((member) => member.userId);
-        try {
-          const currentMembers = await db
-            .select({ id: users.id, name: users.name, email: users.email })
-            .from(users)
-            .where(inArray(users.id, userIds));
-          usersFound = currentMembers;
-          return c.json({ data: usersFound });
-        } catch (error) {
-          console.log("Error while finding the users", error);
-          return c.json(
-            {
-              error: "Internal server error",
-              message: "Error while finding the users",
-            },
-            500
+
+        const userInMember = members.map((member) => ({
+          userId: member.userId,
+          userRole: member.role,
+        }));
+        const usersFound: selectUserType[] = await db
+          .select({ id: users.id, name: users.name, email: users.email })
+          .from(users)
+          .where(
+            inArray(
+              users.id,
+              userInMember.map((member) => member.userId)
+            )
           );
-        }
+        const result = usersFound.map((user) => {
+          const member = userInMember.find(
+            (member) => member.userId === user.id
+          );
+          return {
+            ...user,
+            userRole: member ? member.userRole : null,
+          };
+        });
+
+        return c.json({ data: result });
       } catch (error) {
-        console.log("Error while finding the workspace members", error);
+        console.error("Error fetching workspace members:", error);
         return c.json(
           {
-            error: "Internal server error",
-            message: "Error while finding the workspace members",
+            error: "Internal Server Error",
+            message: "Failed to fetch members",
           },
           500
         );
@@ -65,6 +73,86 @@ const app = new Hono()
     const { userId, workspaceId, role } = c.req.valid("json");
     console.log(userId, workspaceId, role);
     return c.json({ data: "Hello World" });
-  });
+  })
+  .patch(
+    "/:memberId",
+    sessionMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        role: z.enum(["member", "admin", "viewer"]),
+        workspaceId: z.string(),
+      })
+    ),
+    async (c) => {
+      try {
+        const memberId = c.req.param("memberId");
+        if (!memberId) {
+          return c.json(
+            {
+              error: "Bad Request",
+              message: "Member ID is required",
+            },
+            400
+          );
+        }
+        const { role, workspaceId } = c.req.valid("json");
+        const userId = c.get("userId") as string;
+        const membersFound = await db
+          .select()
+          .from(member)
+          .where(
+            and(
+              eq(member.userId, memberId),
+              eq(member.workspaceId, workspaceId)
+            )
+          );
+        if (membersFound.length === 0) {
+          return c.json(
+            {
+              error: "Not Found",
+              message: "Member not found in the workspace",
+            },
+            404
+          );
+        }
+        const currentLoggedInUserInWorkspace = await db
+          .select()
+          .from(member)
+          .where(
+            and(eq(member.userId, userId), eq(member.workspaceId, workspaceId))
+          );
+        if (currentLoggedInUserInWorkspace[0].role !== "admin") {
+          return c.json(
+            {
+              error: "Forbidden",
+              message: "You are not authorized to update roles",
+            },
+            403
+          );
+        }
+        if (currentLoggedInUserInWorkspace[0].role === role) {
+          return c.json(
+            {
+              error: "Bad Request",
+              message: "Role is already set to this user",
+            },
+            400
+          );
+        }
+        await db
+          .update(member)
+          .set({ role })
+          .where(eq(member.userId, memberId));
+        return c.json({ message: "Role updated successfully" }, 200);
+      } catch (error) {
+        console.error("Error updating role:", error);
+        return c.json(
+          { error: "Internal Server Error", message: "Failed to update role" },
+          500
+        );
+      }
+    }
+  );
 
 export default app;
