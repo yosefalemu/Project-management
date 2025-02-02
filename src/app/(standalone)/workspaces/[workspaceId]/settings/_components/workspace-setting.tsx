@@ -1,9 +1,9 @@
 "use client";
-import LoadingLayout from "@/components/loading-layout";
 import { useGetWorkspace } from "@/features/workspace/api/get-workspace-api";
 import CreateWorkSpaceForm from "@/features/workspace/components/create-workspace-form";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
+import LoadingComponent from "./loading-component";
 
 export default function SettingComponent() {
   const params = useParams();
@@ -30,7 +30,7 @@ export default function SettingComponent() {
       <div className="h-full w-full">
         {isLoading || isRefetching ? (
           <div className="relative">
-            <LoadingLayout />
+            <LoadingComponent />
           </div>
         ) : isError ? (
           <div>Error</div>

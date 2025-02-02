@@ -58,7 +58,7 @@ export const useUpdateMember = () => {
       return (await response.json()) as ResponseType;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: ["getMembers"] });
     },
   });
 

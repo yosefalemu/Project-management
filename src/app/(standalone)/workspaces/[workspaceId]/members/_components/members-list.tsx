@@ -24,10 +24,13 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useUpdateMember } from "@/features/members/api/update-member-api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import LoadingLayout from "@/components/loading-layout";
+import LoadingComponent from "./loading-component";
+import { useDispatch } from "react-redux";
+import { setLoading } from "@/store/loading-slice";
 
 export default function MembersList() {
   const params = useParams();
+  const dispatch = useDispatch();
   const { mutate: updateMemberMutate, isPending: updateMemberIsPending } =
     useUpdateMember();
   const [ConfirmDialog, confirm] = useConfirm(
@@ -44,6 +47,7 @@ export default function MembersList() {
     role: "member" | "admin" | "viewer"
   ) => {
     console.log("Updating role", memberId, role);
+    dispatch(setLoading(true));
     updateMemberMutate(
       {
         memberId,
@@ -53,9 +57,11 @@ export default function MembersList() {
       {
         onSuccess: () => {
           toast.success("Member role updated successfully");
+          dispatch(setLoading(false));
         },
         onError: (error) => {
           toast.error(error.message);
+          dispatch(setLoading(false));
         },
       }
     );
@@ -71,13 +77,12 @@ export default function MembersList() {
     <div className="w-full h-full flex flex-col">
       {isPending ? (
         <div className="relative">
-                    <LoadingLayout />
-                  </div>
+          <LoadingComponent />
+        </div>
       ) : isError ? (
         <div>Error...</div>
       ) : data ? (
         <div className="w-full h-full relative">
-          {updateMemberIsPending && <LoadingLayout />}
           <Card className="w-full h-full flex flex-col border-none shadow-none">
             <ConfirmDialog />
             <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0 w-full">

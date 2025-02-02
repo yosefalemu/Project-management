@@ -9,7 +9,7 @@ export default function LoadingLayout() {
     <div
       className={`${
         isLoading
-          ? "absolute h-screen w-screen flex items-center justify-center bg-neutral-50/40 z-50"
+          ? "absolute h-full w-full flex items-center justify-center bg-neutral-50/60 z-50"
           : "hidden"
       }`}
     >

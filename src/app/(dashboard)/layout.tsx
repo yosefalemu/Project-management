@@ -8,7 +8,7 @@ interface DashboardLayoutProps {
 }
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
-    <div className="h-full w-full">
+    <div className="h-full w-full px-0">
       <CreateWorkspaceModal />
       <div className="flex w-full h-full gap-x-2 relative">
         <div className="fixed left-0 top-0 hidden lg:block lg:w-[264px] h-full overflow-y-auto">

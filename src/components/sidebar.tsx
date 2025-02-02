@@ -4,6 +4,7 @@ import Link from "next/link";
 import DootedSeparator from "@/components/dooted-separator";
 import Navigation from "@/components/navigation";
 import WorkspaceSwitcher from "./workspace-switcher";
+import Projects from "./projects";
 
 export default function Sidebar() {
   return (
@@ -15,6 +16,8 @@ export default function Sidebar() {
       <WorkspaceSwitcher />
       <DootedSeparator className="my-4" />
       <Navigation />
+      <DootedSeparator className="my-4" />
+      <Projects />
     </aside>
   );
 }
