@@ -1,6 +1,6 @@
 "use client";
 import { useGetWorkspace } from "@/features/workspace/api/get-workspace-api";
-import CreateWorkSpaceForm from "@/features/workspace/components/create-workspace-form";
+import WorkSpaceForm  from "@/features/workspace/components/workspace-form";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
 import LoadingComponent from "./loading-component";
@@ -35,7 +35,7 @@ export default function SettingComponent() {
         ) : isError ? (
           <div>Error</div>
         ) : transformedData ? (
-          <CreateWorkSpaceForm workspace={transformedData} />
+          <WorkSpaceForm workspace={transformedData} />
         ) : null}
       </div>
     </div>

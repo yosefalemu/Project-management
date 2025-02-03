@@ -1,9 +1,9 @@
-import CreateWorkSpaceForm from "@/features/workspace/components/create-workspace-form";
+import WorkSpaceForm from "@/features/workspace/components/workspace-form";
 
 export default function CreateWorkspacePage() {
   return (
     <div className="w-full mx-auto">
-      <CreateWorkSpaceForm />
+      <WorkSpaceForm />
     </div>
   );
 }

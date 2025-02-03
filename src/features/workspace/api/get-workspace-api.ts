@@ -3,7 +3,7 @@ import { client } from "@/lib/rpc";
 
 export const useGetWorkspace = (workspaceId: string | undefined) => {
   const query = useQuery({
-    queryKey: ["getworkspace"],
+    queryKey: ["workspace"],
     queryFn: async () => {
       if (!workspaceId) {
         throw new Error("Workspace ID is required");

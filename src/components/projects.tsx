@@ -1,5 +1,7 @@
 "use client";
 import { useGetProjects } from "@/features/projects/api/get-projects-api";
+import ProjectAvatar from "@/features/projects/components/project-avatar";
+import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
@@ -8,6 +10,7 @@ import { RiAddCircleFill } from "react-icons/ri";
 export default function Projects() {
   const params = useParams();
   const pathname = usePathname();
+  const { open } = useProjectModalHook();
   const { data } = useGetProjects({
     workspaceId: params.workspaceId! as string,
   });
@@ -17,7 +20,7 @@ export default function Projects() {
         <p className="text-xs uppercase text-neutral-500">Projects</p>
         <RiAddCircleFill
           className="size-5 text-neutral-500 cursor-pointer hover:opacity-75"
-          onClick={() => {}}
+          onClick={open}
         />
       </div>
       {data?.map((project) => {
@@ -31,7 +34,14 @@ export default function Projects() {
                 isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
               )}
             >
-              <span className="truncate">{project.name}</span>
+              <div className="flex items-center justify-start font-medium gap-2">
+                <ProjectAvatar name={project.name} image={project.image} />
+                <span className="truncate">
+                  {project.name.length > 15
+                    ? `${project.name.slice(0, 15)}...`
+                    : project.name}
+                </span>
+              </div>
             </div>
           </Link>
         );

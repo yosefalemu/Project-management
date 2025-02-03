@@ -1,7 +1,8 @@
 import LoadingLayout from "@/components/loading-layout";
 import Navbar from "@/components/navbar";
 import Sidebar from "@/components/sidebar";
-import CreateWorkspaceModal from "@/features/workspace/components/create-workspace-modal";
+import CreateProjectModal from "@/features/projects/components/project-modal";
+import WorkspaceModal from "@/features/workspace/components/workspace-modal";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -9,7 +10,8 @@ interface DashboardLayoutProps {
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="h-full w-full px-0">
-      <CreateWorkspaceModal />
+      <WorkspaceModal />
+      <CreateProjectModal />
       <div className="flex w-full h-full gap-x-2 relative">
         <div className="fixed left-0 top-0 hidden lg:block lg:w-[264px] h-full overflow-y-auto">
           <Sidebar />

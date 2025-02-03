@@ -1,7 +1,6 @@
+import { client } from "@/lib/rpc";
 import { QueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
-
-import { client } from "@/lib/rpc";
 
 type ZodErrorDetail = {
   name: string;
@@ -11,22 +10,20 @@ type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
 };
-
+type RequestType = InferRequestType<(typeof client.api.projects)["$post"]>;
 type ResponseType = InferResponseType<
-  (typeof client.api.workspace)["$post"],
+  (typeof client.api.projects)["$post"],
   200
 >;
-type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
 
 const queryClient = new QueryClient();
-
-export const useUpdateWorkspace = () => {
+export const useCreateProject = () => {
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form }): Promise<ResponseType> => {
-      const response = await client.api.workspace["$patch"]({ form });
+    mutationFn: async ({ form }) => {
+      const response = await client.api.projects["$post"]({ form });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE UPDATING WORKSPACES", errorData);
+        console.log("ERROR WHILE CREATING PROJECT", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&
@@ -37,13 +34,13 @@ export const useUpdateWorkspace = () => {
           throw new Error(errorDataDetail);
         }
         throw new Error(
-          errorData.message || "An error occurred while updating workspace"
+          errorData.message || "An error occurred while creating project"
         );
       }
       return (await response.json()) as ResponseType;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
   return mutation;

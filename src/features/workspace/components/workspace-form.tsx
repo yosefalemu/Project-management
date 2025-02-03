@@ -23,14 +23,14 @@ import InviteCode from "./invite-code";
 import { toast } from "sonner";
 import BackButton from "@/components/back-button";
 
-interface CreateWorkSpaceFormProps {
+interface WorkSpaceFormProps {
   workspace?: insertWorkspaceType;
   onModal?: boolean;
 }
-export default function CreateWorkSpaceForm({
+export default function WorkSpaceForm({
   workspace,
   onModal = false,
-}: CreateWorkSpaceFormProps) {
+}: WorkSpaceFormProps) {
   const router = useRouter();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
@@ -114,7 +114,7 @@ export default function CreateWorkSpaceForm({
         <CardHeader className="flex flex-row items-center gap-x-4 p-7">
           {!onModal && <BackButton />}
           <CardTitle className="text-xl font-bold">
-            {workspace ? "Edit a new workspace" : "Create a new workspace"}
+            {workspace ? "Edit workspace" : "Create a new workspace"}
           </CardTitle>
         </CardHeader>
         <div className="px-7">

@@ -1,18 +1,18 @@
 import { client } from "@/lib/rpc";
 import { useQuery } from "@tanstack/react-query";
 
-interface UseGetProjectsProps {
-  workspaceId: string | undefined;
+interface UseGetProjectProps {
+  projectId: string | undefined;
 }
-export const useGetProjects = ({ workspaceId }: UseGetProjectsProps) => {
+export const useGetProject = ({ projectId }: UseGetProjectProps) => {
   const query = useQuery({
-    queryKey: ["projects", workspaceId],
+    queryKey: ["project", projectId],
     queryFn: async () => {
-      if (!workspaceId) {
+      if (!projectId) {
         throw new Error("Workspace ID is required");
       }
-      const response = await client.api.projects[":workspaceId"].$get({
-        param: { workspaceId },
+      const response = await client.api.projects.single[":projectId"].$get({
+        param: { projectId },
       });
       if (!response.ok) {
         throw new Error("An error occurred while fetching projects data");
