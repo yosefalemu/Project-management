@@ -49,7 +49,7 @@ const app = new Hono()
             { error: "ProjectNotFound", message: "Project not found" },
             404
           );
-        };
+        }
         return c.json({ data: projectFound[0] });
       } catch (error) {
         console.error("Error while fetching project", error);
@@ -134,7 +134,28 @@ const app = new Hono()
     zValidator("form", createProjectSchema),
     (c) => {
       const { name, description, workspaceId, image } = c.req.valid("form");
-      return c.json({ name, description, workspaceId, image });
+      return c.json({ name, description, workspaceId, image }, 200);
+    }
+  )
+  .delete(
+    "/:projectId",
+    sessionMiddleware,
+    zValidator("param", z.object({ projectId: z.string() })),
+    async (c) => {
+      const projectId = c.req.param("projectId");
+      try {
+        await db.delete(project).where(eq(project.id, projectId));
+        return c.json({ data: "Project deleted successfully" }, 200);
+      } catch (error) {
+        console.error("Error while deleting project", error);
+        return c.json(
+          {
+            error: "FailedToDeleteProject",
+            message: "Failed to delete project",
+          },
+          500
+        );
+      }
     }
   );
 

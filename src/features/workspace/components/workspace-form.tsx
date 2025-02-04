@@ -111,8 +111,8 @@ export default function WorkSpaceForm({
           onModal ? "" : "bg-neutral-50"
         }`}
       >
-        <CardHeader className="flex flex-row items-center gap-x-4 p-7">
-          {!onModal && <BackButton />}
+        <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
+          {!onModal && <BackButton backTo="/" />}
           <CardTitle className="text-xl font-bold">
             {workspace ? "Edit workspace" : "Create a new workspace"}
           </CardTitle>

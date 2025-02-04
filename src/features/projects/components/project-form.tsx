@@ -20,16 +20,18 @@ import { toast } from "sonner";
 import { useUpdateProject } from "../api/update-project-api";
 import { Loader } from "lucide-react";
 import { useProjectModalHook } from "../hooks/use-project-modal";
+import DangerZone from "./danger-zone";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ProjectFormProps {
   onModal?: boolean;
   project?: insertProjectType;
 }
-export default function ProjectForm({
-  onModal,
-  project,
-}: ProjectFormProps) {
+export default function ProjectForm({ onModal, project }: ProjectFormProps) {
   const params = useParams();
+  const router = useRouter();
+  const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const { close } = useProjectModalHook();
   const createProjectMutation = useCreateProject();
@@ -58,6 +60,11 @@ export default function ProjectForm({
         {
           onSuccess: () => {
             toast.success("Project updated successfully");
+            form.reset();
+            // TODO::ADD THE DATA WHEN THE SERVER CODE ENDS
+            // router.push(
+            //   `/workspaces/${params.workspaceId}/projects/${data.id}`
+            // );
             close();
           },
           onError: () => {
@@ -79,10 +86,21 @@ export default function ProjectForm({
       createProjectMutation.mutate(
         { form: finalValues },
         {
-          onSuccess: () => {
+          onSuccess: ({ data }) => {
+            if (!data?.id) {
+              toast.error("Project created but no ID returned");
+              return;
+            }
             toast.success("Project created successfully");
+            form.reset();
+            setTimeout(() => {
+              router.push(
+                `/workspaces/${params.workspaceId}/projects/${data.id}`
+              );
+            }, 100);
             close();
           },
+
           onError: () => {
             toast.error(
               createProjectMutation.error
@@ -101,8 +119,12 @@ export default function ProjectForm({
           onModal ? "" : "bg-neutral-50"
         }`}
       >
-        <CardHeader className="flex flex-row items-center gap-x-4 p-7">
-          {!onModal && <BackButton />}
+        <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
+          {!onModal && (
+            <BackButton
+              backTo={`/workspaces/${params.workspaceId}/projects/${params.projectId}`}
+            />
+          )}
           <CardTitle className="text-xl font-bold">
             {project ? "Edit project" : "Create a new project"}
           </CardTitle>
@@ -137,7 +159,10 @@ export default function ProjectForm({
                   type="button"
                   size={isDesktop ? "lg" : "sm"}
                   variant="secondary"
-                  onClick={() => form.reset()}
+                  onClick={() => {
+                    form.reset();
+                    close();
+                  }}
                   disabled={
                     createProjectMutation.isPending ||
                     updateProjectMutation.isPending
@@ -169,6 +194,18 @@ export default function ProjectForm({
           </Form>
         </CardContent>
       </Card>
+      {project && (
+        <DangerZone
+          projectId={project.id!}
+          workspaceId={params.workspaceId as string}
+          loadingState={
+            createProjectMutation.isPending ||
+            updateProjectMutation.isPending ||
+            isDeleteLoading
+          }
+          setIsDeleteLoading={setIsDeleteLoading}
+        />
+      )}
     </div>
   );
 }

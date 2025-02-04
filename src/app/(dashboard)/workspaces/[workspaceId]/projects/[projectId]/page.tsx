@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useGetProject } from "@/features/projects/api/get-project-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
+import TaskViewSwitcher from "@/features/tasks/components/task-view-switcher";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -32,6 +33,7 @@ export default function ProjectPage() {
           </Button>
         </div>
       </div>
+      <TaskViewSwitcher />
     </div>
   );
 }

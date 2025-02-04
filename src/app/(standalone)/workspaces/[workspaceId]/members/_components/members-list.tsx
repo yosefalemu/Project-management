@@ -86,7 +86,7 @@ export default function MembersList() {
           <Card className="w-full h-full flex flex-col border-none shadow-none">
             <ConfirmDialog />
             <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0 w-full">
-              <BackButton />
+              <BackButton backTo={`/workspaces/${params.workspaceId}`} />
               <CardTitle className="text-xl font-bold">Members List</CardTitle>
             </CardHeader>
             <DootedSeparator className="px-7" />

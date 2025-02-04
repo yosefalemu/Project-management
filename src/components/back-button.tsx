@@ -1,16 +1,18 @@
 "use client";
 import { FaArrowLeft } from "react-icons/fa";
 import { Button } from "./ui/button";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-export default function BackButton() {
-  const params = useParams();
+interface BackButtonProps {
+  backTo: string;
+}
+export default function BackButton({ backTo }: BackButtonProps) {
   const router = useRouter();
   return (
     <Button
-      variant="ghost"
-      className="flex items-center gap-x-2 text-neutral-500 cursor-pointer hover:text-neutral-800"
-      onClick={() => router.push(`/workspaces/${params.workspaceId}`)}
+      variant="outline"
+      className="flex items-center gap-x-2 text-neutral-500 cursor-pointer hover:text-neutral-800 border-neutral-50/50"
+      onClick={() => router.push(`${backTo}`)}
     >
       <FaArrowLeft size={28} className="" />
       Back
