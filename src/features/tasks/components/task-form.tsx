@@ -1,9 +1,144 @@
-import CreateProjectFormWrapper from "./create-task-form-wrapper";
+"use client";
+import DootedSeparator from "@/components/dooted-separator";
+import CustomInputLabel from "@/components/inputs/custom-input-label";
+import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form } from "@/components/ui/form";
 
-export default function TaskForm() {
+import {
+  insertTaskSchema,
+  insertTaskSchemaType,
+} from "@/zod-schemas/task-schema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { useTaskModalHook } from "../hooks/use-task-modal";
+import { CustomDatePicker } from "@/components/inputs/custom-date-picker";
+import CustomSelectInput from "@/components/inputs/custom-select-input";
+import { useParams } from "next/navigation";
+import { useCreateTask } from "../api/create-task-api";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
+
+interface TaskFormProps {
+  projectOptions: { id: string; name: string; image: string }[];
+  membersOptions: { id: string; name: string }[];
+}
+export default function TaskForm({
+  membersOptions,
+  projectOptions,
+}: TaskFormProps) {
+  const params = useParams();
+  const { mutate, isPending } = useCreateTask();
+  const { close } = useTaskModalHook();
+  const TaskStatus = [
+    { id: "BACKLOG", name: "Backlog" },
+    { id: "TODO", name: "Todo" },
+    { id: "IN_PROGRESS", name: "In Progress" },
+    { id: "IN_REVIEW", name: "In Review" },
+    { id: "DONE", name: "Done" },
+  ];
+  const form = useForm<insertTaskSchemaType>({
+    resolver: zodResolver(insertTaskSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+      assignedId: "",
+      projectId: params.projectId as string,
+      status: "BACKLOG",
+      dueDate: new Date(),
+      position: "",
+      workspaceId: params.workspaceId as string,
+    },
+  });
+
+  const handleCreateTask = (values: insertTaskSchemaType) => {
+    mutate(
+      { json: values },
+      {
+        onSuccess: () => {
+          toast.success("Task created successfully");
+          close();
+          form.reset();
+        },
+        onError: (error) =>
+          toast.error(error ? error.message : "An error occurred"),
+      }
+    );
+  };
+  console.log("CURRENT ERRORS", form.formState.errors);
+
   return (
-    <div>
-      <CreateProjectFormWrapper />
-    </div>
+    <Card className="shadow-none border-none">
+      <CardHeader className="p-7">
+        <CardTitle>Create Task</CardTitle>
+      </CardHeader>
+      <DootedSeparator className="px-7 mb-4" />
+      <CardContent>
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleCreateTask)}
+            className="space-y-4"
+          >
+            <CustomInputLabel
+              fieldTitle="Task name"
+              nameInSchema="name"
+              placeHolder="Enter task name"
+              maxCharLength={15}
+            />
+            <CustomTextareaLabel
+              fieldTitle="Task Description"
+              nameInSchema="description"
+              placeHolder="Enter task description"
+              maxCharLength={500}
+              rows={5}
+            />
+            <CustomDatePicker fieldTitle="Due Date" nameInSchema="dueDate" />
+            <CustomSelectInput
+              fieldTitle="Project"
+              nameInSchema="projectId"
+              data={projectOptions}
+              placeHolder="Select project"
+            />
+            <CustomSelectInput
+              fieldTitle="Assiggned Member"
+              nameInSchema="assignedId"
+              data={membersOptions}
+              placeHolder="Select assignee"
+            />
+            <CustomSelectInput
+              fieldTitle="Status"
+              nameInSchema="status"
+              data={TaskStatus}
+              placeHolder="Select status"
+            />
+            <div className="flex items-center justify-between pt-10">
+              <Button
+                variant="destructive"
+                size="lg"
+                type="button"
+                onClick={() => {
+                  form.reset();
+                  close();
+                }}
+                disabled={isPending}
+              >
+                Cancel
+              </Button>
+              <Button size="lg" type="submit" disabled={isPending}>
+                {isPending ? (
+                  <span className="flex items-center justify-center">
+                    <Loader className="mr-2 animate-spin" />
+                    <p>Creating</p>
+                  </span>
+                ) : (
+                  <p>Create Workspace</p>
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

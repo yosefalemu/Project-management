@@ -4,7 +4,7 @@ import { task } from "@/db/schema/task";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertTaskSchema } from "@/zod-schemas/task-schema";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, asc } from "drizzle-orm";
+import { and, eq, asc, desc } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -17,7 +17,7 @@ const app = new Hono()
       z.object({
         workspaceId: z.string(),
         projectId: z.string().nullish(),
-        assigneedId: z.string().nullish(), // Note: Potential typo, should be 'assignedId'
+        assigneedId: z.string().nullish(),
         status: z
           .enum(["BACKLOG", "TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"])
           .nullish(),
@@ -109,15 +109,17 @@ const app = new Hono()
         name,
         dueDate,
         status,
-        position,
       } = c.req.valid("json");
+
       try {
+        // Check if the user is a member of the workspace
         const foundMember = await db
           .select()
           .from(member)
           .where(
             and(eq(member.userId, userId), eq(member.workspaceId, workspaceId))
           );
+
         if (foundMember.length === 0) {
           return c.json(
             {
@@ -127,6 +129,33 @@ const app = new Hono()
             401
           );
         }
+
+        // Get the maximum position for the given status in the workspace
+        const lastTask = await db
+          .select({ maxPosition: task.position })
+          .from(task)
+          .where(
+            and(
+              eq(task.workspaceId, workspaceId),
+              eq(task.projectId, projectId),
+              eq(
+                task.status,
+                status as
+                  | "BACKLOG"
+                  | "TODO"
+                  | "IN_PROGRESS"
+                  | "IN_REVIEW"
+                  | "DONE"
+              )
+            )
+          )
+          .orderBy(desc(task.position))
+          .limit(1);
+
+        const newPosition =
+          lastTask.length > 0 ? Number(lastTask[0].maxPosition) + 1 : 0;
+
+        // Insert the new task with the calculated position
         const [newTask] = await db
           .insert(task)
           .values({
@@ -137,9 +166,10 @@ const app = new Hono()
             assignedId,
             dueDate,
             status: status || "BACKLOG",
-            position,
+            position: newPosition.toString(),
           })
           .returning();
+
         return c.json({ data: newTask }, 200);
       } catch (error) {
         console.log(error);

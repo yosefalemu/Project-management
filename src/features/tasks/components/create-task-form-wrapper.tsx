@@ -4,6 +4,7 @@ import { useGetMembers } from "@/features/members/api/get-members-api";
 import { useGetProjects } from "@/features/projects/api/get-projects-api";
 import { Loader } from "lucide-react";
 import { useParams } from "next/navigation";
+import TaskForm from "./task-form";
 
 export default function CreateTaskFormWrapper() {
   const params = useParams();
@@ -19,8 +20,8 @@ export default function CreateTaskFormWrapper() {
     image: project.image,
   }));
   const memberOptions = membersFound?.map((member) => ({
-    id: member.id,
-    name: member.name,
+    id: member.id || "",
+    name: member.name || "",
   }));
   console.log("projectOptions", projectOptions);
   console.log("memberOptions", memberOptions);
@@ -37,8 +38,10 @@ export default function CreateTaskFormWrapper() {
   }
   return (
     <div>
-      <div>{JSON.stringify(membersFound)}</div>
-      <div>{JSON.stringify(projectsFound)}</div>
+      <TaskForm
+        membersOptions={memberOptions || []}
+        projectOptions={projectOptions || []}
+      />
     </div>
   );
 }

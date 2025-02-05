@@ -34,8 +34,10 @@ export default function MemberAvatar({
       key={name}
     >
       <AvatarFallback
-        className="text-neutral-500 bg-neutral-200 font-semibold text-lg uppercase rounded-full flex items-center justify-center
-      "
+        className={cn(
+          "text-neutral-500 bg-neutral-200 font-semibold text-lg uppercase rounded-full flex items-center justify-center",
+          className
+        )}
       >
         {name[0]}
       </AvatarFallback>

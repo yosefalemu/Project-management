@@ -27,3 +27,5 @@ export const insertTaskSchema = createInsertSchema(task, {
   status: () => statusEnum.optional(),
   dueDate: () => z.coerce.date(),
 });
+
+export type insertTaskSchemaType = typeof insertTaskSchema._type;
