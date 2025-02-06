@@ -18,6 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useState } from "react";
 
 interface CustomDatePickerProps {
   fieldTitle: string;
@@ -31,7 +32,7 @@ export function CustomDatePicker({
   className,
 }: CustomDatePickerProps) {
   const form = useFormContext();
-
+  const [open, setOpen] = useState(false);
   return (
     <FormField
       control={form.control}
@@ -39,7 +40,7 @@ export function CustomDatePicker({
       render={({ field }) => (
         <FormItem className={cn("flex flex-col", className)}>
           <FormLabel>{fieldTitle}</FormLabel>
-          <Popover>
+          <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <FormControl>
                 <Button
@@ -62,7 +63,10 @@ export function CustomDatePicker({
               <Calendar
                 mode="single"
                 selected={field.value}
-                onSelect={field.onChange}
+                onSelect={(date) => {
+                  field.onChange(date);
+                  setOpen(false);
+                }}
                 initialFocus
               />
             </PopoverContent>

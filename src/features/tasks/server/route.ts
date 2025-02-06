@@ -1,10 +1,11 @@
 import { db } from "@/db";
 import { member } from "@/db/schema/member";
 import { task } from "@/db/schema/task";
+import { users } from "@/db/schema/user";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertTaskSchema } from "@/zod-schemas/task-schema";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, asc, desc } from "drizzle-orm";
+import { and, eq, asc, desc, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -48,7 +49,6 @@ const app = new Hono()
             401
           );
         }
-
         // Build query conditions
         const conditions = [eq(task.workspaceId, workspaceId)];
 
@@ -85,7 +85,31 @@ const app = new Hono()
           .where(and(...conditions))
           .orderBy(asc(task.position));
 
-        return c.json({ data: tasks }, 200);
+        // Extract unique assigned user IDs
+        const assignedUserIds = tasks
+          .map((t) => t.assignedId)
+          .filter((id) => id !== null) as string[];
+
+        // Fetch users for the assigned IDs
+        const assignedUsers = assignedUserIds.length
+          ? await db
+              .select()
+              .from(users)
+              .where(inArray(users.id, assignedUserIds))
+          : [];
+
+        // Create a lookup object for quick access
+        const userMap = Object.fromEntries(assignedUsers.map((u) => [u.id, u]));
+
+        // Map assigned users to their respective tasks
+        const tasksWithAssignedUsers = tasks.map((t) => ({
+          ...t,
+          assignedUser: t.assignedId ? userMap[t.assignedId] || null : null,
+        }));
+
+        return c.json({ data: tasksWithAssignedUsers }, 200);
+
+        // return c.json({ data: tasks }, 200);
       } catch (error) {
         console.log(error);
         return c.json(

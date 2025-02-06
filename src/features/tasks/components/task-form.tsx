@@ -19,6 +19,7 @@ import { useParams } from "next/navigation";
 import { useCreateTask } from "../api/create-task-api";
 import { toast } from "sonner";
 import { Loader } from "lucide-react";
+import { TaskStatus } from "../constant/types";
 
 interface TaskFormProps {
   projectOptions: { id: string; name: string; image: string }[];
@@ -31,12 +32,12 @@ export default function TaskForm({
   const params = useParams();
   const { mutate, isPending } = useCreateTask();
   const { close } = useTaskModalHook();
-  const TaskStatus = [
-    { id: "BACKLOG", name: "Backlog" },
-    { id: "TODO", name: "Todo" },
-    { id: "IN_PROGRESS", name: "In Progress" },
-    { id: "IN_REVIEW", name: "In Review" },
-    { id: "DONE", name: "Done" },
+  const TaskStatusFound = [
+    { id: TaskStatus.BACKLOG, name: "Backlog" },
+    { id: TaskStatus.TODO, name: "Todo" },
+    { id: TaskStatus.IN_PROGRESS, name: "In Progress" },
+    { id: TaskStatus.IN_REVIEW, name: "In Review" },
+    { id: TaskStatus.DONE, name: "Done" },
   ];
   const form = useForm<insertTaskSchemaType>({
     resolver: zodResolver(insertTaskSchema),
@@ -109,7 +110,7 @@ export default function TaskForm({
             <CustomSelectInput
               fieldTitle="Status"
               nameInSchema="status"
-              data={TaskStatus}
+              data={TaskStatusFound}
               placeHolder="Select status"
             />
             <div className="flex items-center justify-between pt-10">

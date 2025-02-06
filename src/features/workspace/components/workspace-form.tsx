@@ -22,6 +22,7 @@ import { useState } from "react";
 import InviteCode from "./invite-code";
 import { toast } from "sonner";
 import BackButton from "@/components/back-button";
+import { useWorkspaceModalHook } from "../hooks/use-workspace-modal";
 
 interface WorkSpaceFormProps {
   workspace?: insertWorkspaceType;
@@ -32,6 +33,7 @@ export default function WorkSpaceForm({
   onModal = false,
 }: WorkSpaceFormProps) {
   const router = useRouter();
+  const { close } = useWorkspaceModalHook();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspace();
@@ -164,7 +166,10 @@ export default function WorkSpaceForm({
                   type="button"
                   size={isDesktop ? "lg" : "sm"}
                   variant="secondary"
-                  onClick={() => form.reset()}
+                  onClick={() => {
+                    form.reset();
+                    if (onModal) close();
+                  }}
                   disabled={
                     createWorkspaceMutation.isPending ||
                     updateWorkspaceMutation.isPending ||
