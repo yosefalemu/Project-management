@@ -2,9 +2,11 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { Task, TaskStatus } from "@/features/tasks/constant/types";
-import { ArrowUpDown } from "lucide-react";
+import { ArrowUpDown, MoreVertical } from "lucide-react";
 import TaskDate from "./task-date";
 import { Badge } from "@/components/ui/badge";
+import TaskActions from "./task-actions";
+import { Button } from "@/components/ui/button";
 
 export const columns: ColumnDef<Task>[] = [
   {
@@ -80,6 +82,19 @@ export const columns: ColumnDef<Task>[] = [
         <Badge variant={TaskStatus[status]} className="text-white text-xs">
           {status}
         </Badge>
+      );
+    },
+  },
+  {
+    id: "actions",
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <TaskActions id={id}>
+          <Button variant="ghost" className="size-8 p-0">
+            <MoreVertical className="size-4" />
+          </Button>
+        </TaskActions>
       );
     },
   },

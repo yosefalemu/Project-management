@@ -11,9 +11,18 @@ import DataFilters from "./data-filters";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { DataTable } from "./data-table";
 import { columns } from "./colums";
+import { Task, TaskStatus } from "../constant/types";
+import DataKanban from "./data-kanban";
+import { useCallback } from "react";
+import { useUpdateBulkTask } from "../api/update-bulk-task";
+import { useDispatch } from "react-redux";
+import { setLoading } from "@/store/loading-slice";
+import { toast } from "sonner";
+import DataCalendar from "./data-calendar";
 
 export default function TaskViewSwitcher() {
   const params = useParams();
+  const dispatch = useDispatch();
   const [view, setView] = useQueryState("task-view", { defaultValue: "table" });
   const { open } = useTaskModalHook();
   const [{ status, search, assigneedId, dueDate }] = useTaskFilters();
@@ -25,6 +34,27 @@ export default function TaskViewSwitcher() {
     assigneedId,
     dueDate,
   });
+  const { mutate: updateBulkTask } = useUpdateBulkTask();
+
+  const onKanbanChange = useCallback(
+    (tasks: { id: string; position: number; status: TaskStatus }[]) => {
+      dispatch(setLoading(true));
+      updateBulkTask(
+        { json: { tasks } },
+        {
+          onSuccess: () => {
+            dispatch(setLoading(false));
+            toast.success("Tasks updated successfully");
+          },
+          onError: () => {
+            dispatch(setLoading(false));
+            toast.error("Failed to update tasks");
+          },
+        }
+      );
+    },
+    [updateBulkTask, dispatch]
+  );
 
   return (
     <Tabs
@@ -61,10 +91,14 @@ export default function TaskViewSwitcher() {
           ) : (
             <>
               <TabsContent value="table" className="lg:w-auto">
-                <DataTable data={data ?? []} columns={columns}/>
+                <DataTable data={data as Task[]} columns={columns} />
               </TabsContent>
-              <TabsContent value="kanban">{JSON.stringify(data)}</TabsContent>
-              <TabsContent value="calendar">{JSON.stringify(data)}</TabsContent>
+              <TabsContent value="kanban">
+                <DataKanban data={data as Task[]} onChange={onKanbanChange} />
+              </TabsContent>
+              <TabsContent value="calendar">
+                <DataCalendar data={data as Task[]} />
+              </TabsContent>
             </>
           )}
         </>

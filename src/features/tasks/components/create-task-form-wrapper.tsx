@@ -23,8 +23,6 @@ export default function CreateTaskFormWrapper() {
     id: member.id || "",
     name: member.name || "",
   }));
-  console.log("projectOptions", projectOptions);
-  console.log("memberOptions", memberOptions);
 
   const isLoading = isLoadingMembers || isLoadingProjects;
   if (isLoading) {

@@ -46,7 +46,6 @@ export default function MembersList() {
     memberId: string,
     role: "member" | "admin" | "viewer"
   ) => {
-    console.log("Updating role", memberId, role);
     dispatch(setLoading(true));
     updateMemberMutate(
       {
@@ -67,9 +66,9 @@ export default function MembersList() {
     );
   };
   const handleRemoveMember = async (memberId: string) => {
+    console.log("remove member", memberId);
     const ok = await confirm();
     if (!ok) return;
-    console.log("Removing member", memberId);
     //TODO EMPLEMENT REMOVE MEMBER
   };
 

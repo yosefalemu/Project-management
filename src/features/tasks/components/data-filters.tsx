@@ -31,7 +31,7 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
 
   const [{ status, search, assigneedId, dueDate }, setFilters] =
     useTaskFilters();
-
+  console.log(hideProjectFilter, search);
   const onStatusChange = (value: string) => {
     setFilters({ status: value === "all" ? null : (value as TaskStatusType) });
   };
@@ -47,10 +47,6 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
     { id: TaskStatus.IN_REVIEW, name: "In Review" },
     { id: TaskStatus.DONE, name: "Done" },
   ];
-
-  console.log("TaskStatusFound", TaskStatusFound);
-  console.log(search);
-  console.log(hideProjectFilter);
 
   if (isLoadingMembers) return null;
   return (

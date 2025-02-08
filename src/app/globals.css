@@ -89,6 +89,7 @@ body {
 
 ::-webkit-scrollbar {
   width: 5px; /* Adjust scrollbar width */
+  height: 3px;
 }
 
 ::-webkit-scrollbar-track {
@@ -115,4 +116,30 @@ body {
 }
 .hide-scrollbar::--webkit-scrollbar {
   display: none;
+}
+.rbc-month-row {
+  @apply min-h-[180px];
+}
+.rbc-header {
+  @apply text-sm;
+  @apply font-normal;
+  @apply pb-4;
+  @apply text-muted-foreground;
+  @apply border-b-0;
+}
+.rbc-header + .rbc-header {
+  @apply border-l-0;
+}
+.rbc-button-link {
+  @apply text-sm;
+  @apply font-normal;
+  @apply text-muted-foreground;
+}
+.rbc-month-row {
+  @apply min-h-[180px];
+  @apply border-t;
+  @apply border-x;
+}
+.rbc-month-view {
+  @apply border-none;
 }

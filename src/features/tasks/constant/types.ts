@@ -18,5 +18,13 @@ export type Task = {
   createdAt: string;
   updatedAt: string;
   position: string;
-  assignedUser: { name: string };
+  assignedUser: {
+    id: string;
+    name: string | null;
+    email: string;
+    password: string;
+    confirm_password: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
 };

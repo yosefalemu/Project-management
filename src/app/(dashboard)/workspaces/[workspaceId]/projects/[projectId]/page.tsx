@@ -10,7 +10,6 @@ export default function ProjectPage() {
   const params = useParams();
   const projectId = params.projectId as string;
   const { data } = useGetProject({ projectId });
-  console.log("data", data);
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex items-center justify-between">

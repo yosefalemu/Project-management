@@ -33,19 +33,19 @@ export const useGetTasks = ({
         throw new Error("Workspace ID is required");
       }
       const response = await client.api.tasks.$get({
-        query: { 
-          workspaceId, 
-          projectId, 
-          assigneedId: assigneedId ?? undefined, 
-          status: status ?? undefined, 
-          search: search ?? undefined, 
-          dueDate: dueDate ?? undefined 
+        query: {
+          workspaceId,
+          projectId,
+          assigneedId: assigneedId ?? undefined,
+          status: status ?? undefined,
+          search: search ?? undefined,
+          dueDate: dueDate ?? undefined,
         },
       });
       if (!response.ok) {
         throw new Error("An error occurred while fetching task data");
       }
-      const { data } = await response.json();
+      const data = (await response.json()).data as Task[];
       return data;
     },
   });

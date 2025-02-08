@@ -8,6 +8,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, asc, desc, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
+import { TaskStatus } from "../constant/types";
 
 const app = new Hono()
   .get(
@@ -199,6 +200,103 @@ const app = new Hono()
         console.log(error);
         return c.json(
           { error: "Internal Server Error", message: "Failed to create task" },
+          500
+        );
+      }
+    }
+  )
+  .delete("/:taskId", sessionMiddleware, async (c) => {
+    const taskId = c.req.param("taskId") as string;
+    try {
+      await db.delete(task).where(eq(task.id, taskId));
+      return c.json({ message: "Task deleted successfully" }, 200);
+    } catch (error) {
+      console.log("ERROR OCCURED WHILE DELETING TASK", error);
+      return c.json(
+        {
+          error: "FailedToDeleteTask",
+          message: "Failed to delete task",
+        },
+        500
+      );
+    }
+  })
+  .post(
+    "/bulk-update",
+    sessionMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        tasks: z.array(
+          z.object({
+            id: z.string(),
+            status: z.nativeEnum(TaskStatus),
+            position: z.number().int().min(0),
+          })
+        ),
+      })
+    ),
+    async (c) => {
+      try {
+        const { tasks } = c.req.valid("json");
+        const tasksToUpdate = await db
+          .select()
+          .from(task)
+          .where(
+            inArray(
+              task.id,
+              tasks.map((t) => t.id)
+            )
+          );
+        const workspaceIds = new Set(tasksToUpdate.map((t) => t.workspaceId));
+        if (workspaceIds.size !== 1) {
+          return c.json(
+            {
+              error: "InvalidRequest",
+              message: "Tasks must belong to the same workspace",
+            },
+            400
+          );
+        }
+        const workspaceId = workspaceIds.values().next().value as string;
+        const memberFound = await db
+          .select()
+          .from(member)
+          .where(
+            and(
+              eq(member.userId, c.get("userId") as string),
+              eq(member.workspaceId, workspaceId)
+            )
+          );
+        if (memberFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "You are not a member of this workspace",
+            },
+            401
+          );
+        }
+        const updatedTasks = await Promise.all(
+          tasks.map(async (t) => {
+            const { id, position, status } = t;
+            await db
+              .update(task)
+              .set({
+                position: position.toString(),
+                status,
+              })
+              .where(eq(task.id, id));
+          })
+        );
+        return c.json({ data: updatedTasks }, 200);
+      } catch (error) {
+        console.log("ERROR WHILE UPDATING BULK TASK", error);
+        return c.json(
+          {
+            error: "Internal Server Error",
+            message: "Failed to update tasks",
+          },
           500
         );
       }
