@@ -63,11 +63,11 @@ export default function WorkSpaceForm({
         { form: finalValues },
         {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onSuccess: (data: any) => {
+          onSuccess: () => {
             toast.success("Workspace updated successfully");
-            if (data) {
-              router.push(`/workspaces/${data.data.id}`);
-            }
+            // if (data) {
+            //   router.push(`/workspaces/${data.data.id}`);
+            // }
           },
           onError: () => {
             toast.error(

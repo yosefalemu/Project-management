@@ -1,4 +1,4 @@
-import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
@@ -20,9 +20,8 @@ type RequestType = InferRequestType<
   (typeof client.api.workspace)[":workspaceId"]["$delete"]
 >;
 
-const queryClient = new QueryClient();
-
 export const useDeleteWorkspace = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ param }): Promise<ResponseType> => {
       const response = await client.api.workspace[":workspaceId"]["$delete"]({

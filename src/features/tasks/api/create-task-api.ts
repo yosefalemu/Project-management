@@ -37,8 +37,8 @@ export const useCreateTask = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getTasks"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["getTasks"] });
     },
   });
   return mutation;

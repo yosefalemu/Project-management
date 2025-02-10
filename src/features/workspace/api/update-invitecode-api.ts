@@ -1,4 +1,4 @@
-import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
@@ -20,9 +20,8 @@ type RequestType = InferRequestType<
   (typeof client.api.workspace)[":workspaceId"]["invite-code"]["$patch"]
 >;
 
-const queryClient = new QueryClient();
-
 export const useUpdateInviteCodeWorkspace = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ param }): Promise<ResponseType> => {
       const response = await client.api.workspace[":workspaceId"][
@@ -48,8 +47,14 @@ export const useUpdateInviteCodeWorkspace = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+    onSettled: async (_, error, variables) => {
+      if (error) {
+        return;
+      }
+      await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      await queryClient.invalidateQueries({
+        queryKey: ["workspace", { workspaceId: variables.param.workspaceId }],
+      });
     },
   });
   return mutation;

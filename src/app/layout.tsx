@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import QueryProviders from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import StoreProvider from "@/store/store-provider";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -22,7 +23,13 @@ export default function RootLayout({
       <body className={cn(inter.className, "antialiased min-h-screen")}>
         <Toaster position="top-right" richColors />
         <StoreProvider>
-          <QueryProviders>{children}</QueryProviders>
+          <QueryProviders>
+            {children}
+            <ReactQueryDevtools
+              initialIsOpen={false}
+              buttonPosition="bottom-right"
+            />
+          </QueryProviders>
         </StoreProvider>
       </body>
     </html>

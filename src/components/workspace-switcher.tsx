@@ -16,12 +16,14 @@ import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-
 export default function WorkspaceSwitcher() {
   const router = useRouter();
   const params = useParams();
-  const { data } = useGetWorkspaces();
+  const { data, isLoading, isError } = useGetWorkspaces();
   const { open } = useWorkspaceModalHook();
 
   const handleWorkspaceChange = (value: string) => {
     router.push(`/workspaces/${value}`);
   };
+  if(isLoading) return <div>Loading...</div>
+  if(isError) return <div>Error...</div>
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">

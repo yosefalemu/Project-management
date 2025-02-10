@@ -6,6 +6,7 @@ import { useDeleteWorkspace } from "../api/delete-workspace-api";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
 import DootedSeparator from "@/components/dooted-separator";
+import { useRouter } from "next/navigation";
 
 interface DangerZoneProps {
   workspaceId: string;
@@ -17,6 +18,7 @@ export default function DangerZone({
   loadingState,
   setIsDeleteLoading,
 }: DangerZoneProps) {
+  const router = useRouter();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete workspace",
@@ -36,7 +38,8 @@ export default function DangerZone({
         onSuccess: () => {
           setIsDeleteLoading(false);
           toast.success("Workspace deleted successfully");
-          window.location.href = "/";
+          // window.location.href = "/";
+          router.push("/");
         },
         onError: () => {
           setIsDeleteLoading(false);

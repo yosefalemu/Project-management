@@ -39,8 +39,8 @@ export const useUpdateProject = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
   return mutation;
