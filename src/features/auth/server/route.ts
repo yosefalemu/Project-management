@@ -23,8 +23,10 @@ const app = new Hono()
   })
   .post("/login", zValidator("json", selectUserSchema), async (c) => {
     const { email, password } = c.req.valid("json");
+    console.log("email", email, "password", password);
     try {
       const user = await db.select().from(users).where(eq(users.email, email));
+      console.log("user", user);
       if (user.length === 0) {
         return c.json(
           { error: "Unauthorized", message: "User not found" },

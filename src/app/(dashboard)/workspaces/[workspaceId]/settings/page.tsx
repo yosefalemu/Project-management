@@ -1,4 +1,4 @@
-import SettingComponent from "./_components/workspace-setting";
+import SettingComponent from "@/features/settings/components/workspace-setting";
 
 export default async function SettingPage() {
   return (

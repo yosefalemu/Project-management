@@ -13,7 +13,7 @@ export default function LoadingLayout() {
           : "hidden"
       }`}
     >
-      <Loader className="animate-spin text-neutral-400" size={42} />
+      <Loader className="animate-spin text-neutral-400" size={24} />
     </div>
   );
 }

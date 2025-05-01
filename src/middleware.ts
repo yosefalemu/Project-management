@@ -34,11 +34,12 @@ export async function middleware(req: NextRequest) {
   }
 
   if (isProtectedRoute(pathname)) {
+    const redirectUrl = req.url.split(`${process.env.NEXT_PUBLIC_APP_URL}`)[1];
     try {
       const token = req.cookies.get("JIRA_CLONE_AUTH_COOKIE")?.value;
       await verifyToken(token);
     } catch {
-      return redirectTo("/sign-in", req);
+      return redirectTo(`/sign-in?redirectTo=${redirectUrl}`, req);
     }
   }
 

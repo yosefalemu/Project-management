@@ -21,17 +21,12 @@ import { useMedia } from "react-use";
 import { useState } from "react";
 import InviteCode from "./invite-code";
 import { toast } from "sonner";
-import BackButton from "@/components/back-button";
 import { useWorkspaceModalHook } from "../hooks/use-workspace-modal";
 
 interface WorkSpaceFormProps {
   workspace?: insertWorkspaceType;
-  onModal?: boolean;
 }
-export default function WorkSpaceForm({
-  workspace,
-  onModal = false,
-}: WorkSpaceFormProps) {
+export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   const router = useRouter();
   const { close } = useWorkspaceModalHook();
   const isDesktop = useMedia("(min-width: 1024px)", true);
@@ -62,7 +57,6 @@ export default function WorkSpaceForm({
       updateWorkspaceMutation.mutate(
         { form: finalValues },
         {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           onSuccess: () => {
             toast.success("Workspace updated successfully");
             // if (data) {
@@ -108,13 +102,8 @@ export default function WorkSpaceForm({
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4">
-      <Card
-        className={`shadow-none border-none w-full ${
-          onModal ? "" : "bg-neutral-50"
-        }`}
-      >
+      <Card className="shadow-none border-none w-full">
         <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
-          {!onModal && <BackButton backTo="/" />}
           <CardTitle className="text-xl font-bold">
             {workspace ? "Edit workspace" : "Create a new workspace"}
           </CardTitle>
@@ -125,11 +114,7 @@ export default function WorkSpaceForm({
         <CardContent className="p-7">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-              <div
-                className={`flex flex-col items-start gap-4 ${
-                  onModal ? "" : "xl:flex-row"
-                }`}
-              >
+              <div className="flex flex-col items-start gap-4">
                 <div className="flex flex-col gap-y-4 w-full">
                   <CustomInputLabel
                     fieldTitle="Workspace Name"
@@ -168,7 +153,7 @@ export default function WorkSpaceForm({
                   variant="secondary"
                   onClick={() => {
                     form.reset();
-                    if (onModal) close();
+                    close();
                   }}
                   disabled={
                     createWorkspaceMutation.isPending ||

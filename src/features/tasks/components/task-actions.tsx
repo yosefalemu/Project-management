@@ -20,7 +20,11 @@ export default function TaskActions({ id, children }: TaskActionsProps) {
   const [ConfirmDialog, confirm] = useConfirm(
     "Delete task",
     "This task will be removed from the project",
-    "destructive"
+    {
+      variant: "destructive",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    }
   );
   const handleDeleteTask = async () => {
     const ok = await confirm();

@@ -23,7 +23,11 @@ export default function DangerZone({
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete project",
     "This action cannot be undo",
-    "destructive"
+    {
+      variant: "destructive",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    }
   );
   const { mutate, isPending } = useDeleteProject();
   const handleDeleteProject = async () => {

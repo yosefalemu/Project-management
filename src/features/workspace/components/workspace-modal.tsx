@@ -7,7 +7,7 @@ export default function WorkspaceModal() {
   const { isOpen, setIsOpen } = useWorkspaceModalHook();
   return (
     <ResponsiveModal open={isOpen} onOpenChange={setIsOpen}>
-      <WorkSpaceForm onModal={true} />
+      <WorkSpaceForm />
     </ResponsiveModal>
   );
 }

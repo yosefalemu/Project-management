@@ -1,5 +1,4 @@
 "use client";
-import BackButton from "@/components/back-button";
 import DootedSeparator from "@/components/dooted-separator";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGetMembers } from "@/features/members/api/get-members-api";
@@ -24,7 +23,6 @@ import { useConfirm } from "@/hooks/use-confirm";
 import { useUpdateMember } from "@/features/members/api/update-member-api";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import LoadingComponent from "./loading-component";
 import { useDispatch } from "react-redux";
 import { setLoading } from "@/store/loading-slice";
 
@@ -36,7 +34,11 @@ export default function MembersList() {
   const [ConfirmDialog, confirm] = useConfirm(
     "Remove member",
     "This member will be removed from the workspace",
-    "destructive"
+    {
+      variant: "destructive",
+      confirmLabel: "Remove",
+      cancelLabel: "Cancel",
+    }
   );
   const { data, isPending, isError } = useGetMembers(
     params.workspaceId as string
@@ -76,7 +78,7 @@ export default function MembersList() {
     <div className="w-full h-full flex flex-col">
       {isPending ? (
         <div className="relative">
-          <LoadingComponent />
+          <div>Loading...</div>
         </div>
       ) : isError ? (
         <div>Error...</div>
@@ -84,8 +86,7 @@ export default function MembersList() {
         <div className="w-full h-full relative">
           <Card className="w-full h-full flex flex-col border-none shadow-none">
             <ConfirmDialog />
-            <CardHeader className="flex flex-row items-center gap-x-4 p-7 space-y-0 w-full">
-              <BackButton backTo={`/workspaces/${params.workspaceId}`} />
+            <CardHeader>
               <CardTitle className="text-xl font-bold">Members List</CardTitle>
             </CardHeader>
             <DootedSeparator className="px-7" />

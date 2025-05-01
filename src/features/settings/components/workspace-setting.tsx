@@ -2,7 +2,6 @@
 import { useGetWorkspace } from "@/features/workspace/api/get-workspace-api";
 import WorkSpaceForm from "@/features/workspace/components/workspace-form";
 import { useParams } from "next/navigation";
-import LoadingComponent from "./loading-component";
 
 export default function SettingComponent() {
   const params = useParams();
@@ -23,7 +22,7 @@ export default function SettingComponent() {
       <div className="h-full w-full">
         {isLoading ? (
           <div className="relative">
-            <LoadingComponent />
+            <div>Loading...</div>
           </div>
         ) : isError ? (
           <div>Error</div>

@@ -13,16 +13,22 @@ import {
 export const useConfirm = (
   title: string,
   message: string,
-  variant: ButtonProps["variant"] = "default"
+  options: {
+    variant?: ButtonProps["variant"];
+    confirmLabel?: string;
+    cancelLabel?: string;
+  }
 ): [() => JSX.Element, () => Promise<unknown>] => {
   const [promise, setPromise] = useState<{
     resolve: (value: boolean) => void;
   } | null>(null);
+
   const confirm = () => {
     return new Promise((resolve) => {
       setPromise({ resolve });
     });
   };
+
   const handleClose = () => {
     setPromise(null);
   };
@@ -32,6 +38,7 @@ export const useConfirm = (
       handleClose();
     }
   };
+
   const handleCancel = () => {
     if (promise) {
       promise.resolve(false);
@@ -54,14 +61,14 @@ export const useConfirm = (
                 variant="outline"
                 className="w-full lg:w-auto"
               >
-                Cancel
+                {options.cancelLabel ?? "Cancel"}
               </Button>
               <Button
                 onClick={handleConfirm}
-                variant={variant}
+                variant={options.variant ?? "default"}
                 className="w-full lg:w-auto"
               >
-                Confirm
+                {options.confirmLabel ?? "Confirm"}
               </Button>
             </div>
           </CardContent>

@@ -1,4 +1,4 @@
-import MembersList from "./_components/members-list";
+import MembersList from "@/features/members/components/member-list";
 
 export default function MemberPage() {
   return (

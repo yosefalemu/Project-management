@@ -21,12 +21,16 @@ export default function InviteCode({
   setIsResetInviteCodeLoading,
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
-  const fullInviteCode = `${window.location.origin}/workspaces/${workspaceId}/join/${inviteCode}`;
+  const fullInviteCode = `${window.location.origin}/join/workspaces/${workspaceId}/${inviteCode}`;
   const { mutate, isPending } = useUpdateInviteCodeWorkspace();
   const [ResetInviteCode, confirmReset] = useConfirm(
     "Reset invite code",
     "This will invalidate the current invite link, you will have to share the new invite link with your team members",
-    "destructive"
+    {
+      variant: "destructive",
+      confirmLabel: "Reset",
+      cancelLabel: "Cancel",
+    }
   );
   const handleDeleteWorkspace = async () => {
     const ok = await confirmReset();

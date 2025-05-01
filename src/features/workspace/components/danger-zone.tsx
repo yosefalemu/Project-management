@@ -23,7 +23,11 @@ export default function DangerZone({
   const [DeleteDialog, confirmDelete] = useConfirm(
     "Delete workspace",
     "This action cannot be undo",
-    "destructive"
+    {
+      variant: "destructive",
+      confirmLabel: "Delete",
+      cancelLabel: "Cancel",
+    }
   );
   const { mutate, isPending } = useDeleteWorkspace();
   const handleDeleteWorkspace = async () => {

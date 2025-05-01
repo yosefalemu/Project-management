@@ -1,4 +1,4 @@
-import TaskComponent from "./_components/main";
+import TaskComponent from "@/features/tasks/components/task-component";
 
 export default async function TaskPage({
   params,

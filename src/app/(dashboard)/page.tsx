@@ -4,10 +4,12 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import { setLoading } from "@/store/loading-slice";
+import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
 
 export default function Dashboard() {
   const router = useRouter();
   const dispatch = useDispatch();
+  const { open } = useWorkspaceModalHook();
 
   const { data, isLoading, isError, isRefetching, refetch } =
     useGetWorkspaces();
@@ -20,12 +22,12 @@ export default function Dashboard() {
   useEffect(() => {
     if (!loading && !isError && data) {
       if (data.length === 0) {
-        router.push("/workspaces/createworkspace");
+        open();
       } else {
         router.push(`/workspaces/${data[0].id}`);
       }
     }
-  }, [loading, isError, data, router, refetch]);
+  }, [loading, isError, data, router, refetch, open]);
 
   return (
     <div className="h-full">

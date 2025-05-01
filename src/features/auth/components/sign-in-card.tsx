@@ -22,7 +22,10 @@ import { Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
-export default function SignInCard() {
+interface SignInCardProps {
+  redirectTo?: string;
+}
+export default function SignInCard({ redirectTo }: SignInCardProps) {
   const router = useRouter();
   const loginMutation = useLogin();
   const form = useForm<selectUserType>({
@@ -34,12 +37,13 @@ export default function SignInCard() {
   });
 
   const handleLogin = (data: selectUserType) => {
+    console.log("data", data);
     loginMutation.mutate(
       { json: data },
       {
         onSuccess: () => {
           toast.success("Logged in successfully");
-          router.push("/");
+          router.push(redirectTo || "/");
         },
         onError: () => {
           toast.error(
@@ -112,7 +116,11 @@ export default function SignInCard() {
           </Button>
           <div className="w-full text-sm flex items-center justify-center">
             Don&rsquo;t have an account
-            <Link href="/sign-up">
+            <Link
+              href={
+                redirectTo ? `sign-up?redirectTo=${redirectTo}` : "/sign-up"
+              }
+            >
               <span className="ml-2 text-blue-700 underline">Sign Up</span>
             </Link>
           </div>

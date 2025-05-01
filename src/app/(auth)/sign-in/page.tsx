@@ -1,10 +1,20 @@
 "use client";
+import { Suspense } from "react";
 import SignInCard from "@/features/auth/components/sign-in-card";
+import SignInCardWrapper from "@/features/auth/components/signin-wrapper";
 
-export default function SignInPage() {
+const SignInCardFallback = () => (
+  <div className="h-full">
+    <SignInCard />
+  </div>
+);
+
+export default function SignUpPage() {
   return (
     <div className="h-full">
-      <SignInCard />
+      <Suspense fallback={<SignInCardFallback />}>
+        <SignInCardWrapper />
+      </Suspense>
     </div>
   );
 }

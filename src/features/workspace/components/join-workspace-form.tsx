@@ -16,18 +16,18 @@ import { toast } from "sonner";
 interface JoinWorkspaceFormProps {
   workspaceFound: { name: string; image?: string };
   workspaceId: string;
-  invitecode: string;
+  inviteCode: string;
 }
 export default function JoinWorkspaceForm({
   workspaceFound,
   workspaceId,
-  invitecode,
+  inviteCode,
 }: JoinWorkspaceFormProps) {
   const router = useRouter();
   const { mutate, isPending, error } = useJoinWorkspace();
   const handleJoinWorkspace = () => {
     mutate(
-      { json: { inviteCode: invitecode }, param: { workspaceId } },
+      { json: { inviteCode }, param: { workspaceId } },
       {
         onSuccess: () => {
           router.push(`/workspaces/${workspaceId}`);
