@@ -18,19 +18,19 @@ import {
 const routes = [
   { label: "Home", href: "", icon: GoHome, activeIcon: GoHomeFill },
   {
-    label: "Tasks",
+    label: "Task",
     href: "/tasks",
     icon: GoCheckCircle,
     activeIcon: GoCheckCircleFill,
   },
   {
-    label: "Settings",
+    label: "Setting",
     href: "/settings",
     icon: IoSettingsOutline,
     activeIcon: IoSettingsSharp,
   },
   {
-    label: "Members",
+    label: "Member",
     href: "/members",
     icon: IoPersonOutline,
     activeIcon: IoPersonSharp,

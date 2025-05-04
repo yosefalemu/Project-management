@@ -8,7 +8,7 @@ import {
   varchar,
 } from "drizzle-orm/pg-core";
 
-export const statusEnum = pgEnum("role_enum", [
+export const statusEnum = pgEnum("status_enum", [
   "BACKLOG",
   "TODO",
   "IN_PROGRESS",

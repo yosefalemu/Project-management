@@ -26,6 +26,8 @@ export const sessionMiddleware = createMiddleware<CustomEnv>(
     try {
       // Validate the token and extract the userId
       const userId = await verifyToken(token, process.env.JWT_SECRET!);
+      console.log("USER ID FOUND", userId);
+      console.log("TOKEN FOUND", token);
 
       // Attach the userId to the context
       c.set("userId", userId);
