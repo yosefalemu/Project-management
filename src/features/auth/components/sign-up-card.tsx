@@ -36,7 +36,6 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
       name: "",
       email: "",
       password: "",
-      confirm_password: "",
     },
   });
 

@@ -34,8 +34,10 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
   const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const { close } = useProjectModalHook();
+
   const createProjectMutation = useCreateProject();
   const updateProjectMutation = useUpdateProject();
+
   const form = useForm<insertProjectType>({
     resolver: zodResolver(createProjectSchema),
     defaultValues: {
@@ -44,8 +46,11 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
       description: project?.description ?? "",
       workspaceId: params.workspaceId as string,
       image: project?.image ?? "",
+      creatorId: project?.creatorId ?? undefined,
+      inviteCode: project?.inviteCode ?? undefined,
     },
   });
+
   const handleFormSubmit = (values: insertProjectType) => {
     if (project) {
       const finalValues = {
@@ -54,6 +59,8 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
         description: values.description,
         image: values.image instanceof File ? values.image : "",
         workspaceId: values.workspaceId,
+        creatorId: values.creatorId,
+        inviteCode: values.inviteCode,
       };
       updateProjectMutation.mutate(
         { form: finalValues },

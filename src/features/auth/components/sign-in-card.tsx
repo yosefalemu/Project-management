@@ -37,7 +37,6 @@ export default function SignInCard({ redirectTo }: SignInCardProps) {
   });
 
   const handleLogin = (data: selectUserType) => {
-    console.log("data", data);
     loginMutation.mutate(
       { json: data },
       {

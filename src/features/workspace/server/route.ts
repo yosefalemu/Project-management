@@ -1,6 +1,5 @@
 import { db } from "@/db";
-import { workSpaces } from "@/db/schema/workspace";
-import { member } from "@/db/schema/member";
+import { workspaceMember, workspace } from "@/db/schema/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createWorkspaceSchema } from "@/zod-schemas/workspace-schema";
 import { zValidator } from "@hono/zod-validator";
@@ -18,25 +17,25 @@ const app = new Hono()
     const userId = c.get("userId") as string;
     const members = await db
       .select()
-      .from(member)
-      .where(eq(member.userId, userId));
+      .from(workspaceMember)
+      .where(eq(workspaceMember.userId, userId));
     if (members.length === 0) {
       return c.json({ data: [] });
     }
     const workspacesIds = members.map((member) => member.workspaceId);
-    const workspaces = await db
+    const workspacesFound = await db
       .select()
-      .from(workSpaces)
-      .where(inArray(workSpaces.id, workspacesIds));
-    return c.json({ data: workspaces });
+      .from(workspace)
+      .where(inArray(workspace.id, workspacesIds));
+    return c.json({ data: workspacesFound });
   })
   .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
     const userId = c.get("userId") as string;
     const workspaceId = c.req.param("workspaceId") as string;
     const members = await db
       .select()
-      .from(member)
-      .where(eq(member.userId, userId));
+      .from(workspaceMember)
+      .where(eq(workspaceMember.userId, userId));
     if (members.length === 0) {
       return c.json(
         {
@@ -47,13 +46,13 @@ const app = new Hono()
       );
     }
     const workspacesIds = members.map((member) => member.workspaceId);
-    const workspace = await db
+    const workspaceFound = await db
       .select()
-      .from(workSpaces)
+      .from(workspace)
       .where(
-        inArray(workSpaces.id, workspacesIds) && eq(workSpaces.id, workspaceId)
+        inArray(workspace.id, workspacesIds) && eq(workspace.id, workspaceId)
       );
-    if (workspace.length === 0) {
+    if (workspaceFound.length === 0) {
       return c.json(
         {
           error: "NotFound",
@@ -62,16 +61,16 @@ const app = new Hono()
         404
       );
     }
-    return c.json({ data: workspace[0] });
+    return c.json({ data: workspaceFound[0] });
   })
   .get("/get-workspace-info/:workspaceId", sessionMiddleware, async (c) => {
     const workspaceId = c.req.param("workspaceId");
     try {
-      const workspace = await db
+      const workspaceFound = await db
         .select()
-        .from(workSpaces)
-        .where(eq(workSpaces.id, workspaceId));
-      if (workspace.length === 0) {
+        .from(workspace)
+        .where(eq(workspace.id, workspaceId));
+      if (workspaceFound.length === 0) {
         return c.json(
           {
             error: "NotFound",
@@ -81,7 +80,7 @@ const app = new Hono()
         );
       }
       return c.json({
-        data: { name: workspace[0].name, image: workspace[0].image },
+        data: { name: workspaceFound[0].name, image: workspaceFound[0].image },
       });
     } catch (error) {
       console.log("Error while fetching workspace information", error);
@@ -127,19 +126,19 @@ const app = new Hono()
       try {
         // Create the workspace
         [newWorkspace] = await db
-          .insert(workSpaces)
+          .insert(workspace)
           .values({
             name,
             description: description.trim(),
             image: uploadedImage,
-            createdBy: userId,
+            creatorId: userId,
             inviteCode: generateInviteCode(10),
           })
           .returning();
 
         try {
           // Create the member
-          await db.insert(member).values({
+          await db.insert(workspaceMember).values({
             workspaceId: newWorkspace.id,
             userId: userId,
             role: MemberRole.Admin,
@@ -148,7 +147,7 @@ const app = new Hono()
           console.error("Error while creating member", err);
 
           // Rollback: Delete the created workspace
-          await db.delete(workSpaces).where(eq(workSpaces.id, newWorkspace.id));
+          await db.delete(workspace).where(eq(workspace.id, newWorkspace.id));
 
           return c.json(
             {
@@ -210,10 +209,10 @@ const app = new Hono()
         uploadedImage = image || "";
       }
       try {
-        const workspace = await db
+        const workspaceFound = await db
           .select()
-          .from(workSpaces)
-          .where(eq(workSpaces.id, id!))
+          .from(workspace)
+          .where(eq(workspace.id, id!))
           .then((results) => results[0]);
 
         if (!workspace) {
@@ -226,7 +225,7 @@ const app = new Hono()
           );
         }
 
-        if (workspace.createdBy !== userId) {
+        if (workspaceFound.creatorId !== userId) {
           return c.json(
             {
               error: "Forbidden",
@@ -238,13 +237,13 @@ const app = new Hono()
 
         // Update the workspace
         const updatedWorkspace = await db
-          .update(workSpaces)
+          .update(workspace)
           .set({
             name: name.trim(),
             description: description.trim(),
             image: uploadedImage,
           })
-          .where(eq(workSpaces.id, id!))
+          .where(eq(workspace.id, id!))
           .returning()
           .then((results) => results[0]);
 
@@ -279,8 +278,8 @@ const app = new Hono()
     try {
       const members = await db
         .select()
-        .from(member)
-        .where(eq(member.workspaceId, workSpaceId));
+        .from(workspaceMember)
+        .where(eq(workspaceMember.workspaceId, workSpaceId));
       if (members.length === 0) {
         return c.json(
           {
@@ -303,11 +302,11 @@ const app = new Hono()
     }
     //select the workspace
     try {
-      const workspaces = await db
+      const workspaceFound = await db
         .select()
-        .from(workSpaces)
-        .where(eq(workSpaces.id, workSpaceId));
-      if (workspaces.length === 0) {
+        .from(workspace)
+        .where(eq(workspace.id, workSpaceId));
+      if (workspaceFound.length === 0) {
         return c.json(
           {
             error: "NotFound",
@@ -320,7 +319,7 @@ const app = new Hono()
         (member) => member.workspaceId === workSpaceId
       );
       if (
-        workspaces[0].createdBy !== userId ||
+        workspaceFound[0].creatorId !== userId ||
         currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
       ) {
         return c.json(
@@ -343,7 +342,7 @@ const app = new Hono()
     }
     //delete workspace
     try {
-      await db.delete(workSpaces).where(eq(workSpaces.id, workSpaceId));
+      await db.delete(workspace).where(eq(workspace.id, workSpaceId));
     } catch (error) {
       console.log(error);
       return c.json(
@@ -356,7 +355,9 @@ const app = new Hono()
     }
     //delete all members
     try {
-      await db.delete(member).where(eq(member.workspaceId, workSpaceId));
+      await db
+        .delete(workspaceMember)
+        .where(eq(workspaceMember.workspaceId, workSpaceId));
     } catch (error) {
       console.log(error);
       return c.json(
@@ -377,8 +378,8 @@ const app = new Hono()
     try {
       const members = await db
         .select()
-        .from(member)
-        .where(eq(member.workspaceId, workSpaceId));
+        .from(workspaceMember)
+        .where(eq(workspaceMember.workspaceId, workSpaceId));
       if (members.length === 0) {
         return c.json(
           {
@@ -401,11 +402,11 @@ const app = new Hono()
     }
     //select the workspace
     try {
-      const workspaces = await db
+      const workspaceFound = await db
         .select()
-        .from(workSpaces)
-        .where(eq(workSpaces.id, workSpaceId));
-      if (workspaces.length === 0) {
+        .from(workspace)
+        .where(eq(workspace.id, workSpaceId));
+      if (workspaceFound.length === 0) {
         return c.json(
           {
             error: "NotFound",
@@ -418,7 +419,7 @@ const app = new Hono()
         (member) => member.workspaceId === workSpaceId
       );
       if (
-        workspaces[0].createdBy !== userId ||
+        workspaceFound[0].creatorId !== userId ||
         currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
       ) {
         return c.json(
@@ -444,12 +445,12 @@ const app = new Hono()
     try {
       inviteCode = generateInviteCode(10);
       await db
-        .update(workSpaces)
+        .update(workspace)
         .set({
           inviteCode,
           inviteCodeExpire: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         })
-        .where(eq(workSpaces.id, workSpaceId));
+        .where(eq(workspace.id, workSpaceId));
     } catch (error) {
       console.log(error);
       return c.json(
@@ -476,16 +477,16 @@ const app = new Hono()
       console.log("inviteCode", inviteCode);
       console.log("userId", userId);
       //check the invite code is correct
-      let workspace;
+      let workspaceFound;
       try {
-        workspace = await db
+        workspaceFound = await db
           .select()
-          .from(workSpaces)
+          .from(workspace)
           .where(
-            eq(workSpaces.id, workspaceId) &&
-              eq(workSpaces.inviteCode, inviteCode)
+            eq(workspace.id, workspaceId) &&
+              eq(workspace.inviteCode, inviteCode)
           );
-        if (workspace.length === 0) {
+        if (workspaceFound.length === 0) {
           return c.json(
             {
               error: "NotFound",
@@ -494,7 +495,7 @@ const app = new Hono()
             404
           );
         }
-        const { inviteCodeExpire } = workspace[0];
+        const { inviteCodeExpire } = workspaceFound[0];
         if (
           inviteCodeExpire &&
           isBefore(new Date(inviteCodeExpire), new Date())
@@ -507,9 +508,10 @@ const app = new Hono()
         //check if the user is already a member else add the user
         const membersFound = await db
           .select()
-          .from(member)
+          .from(workspaceMember)
           .where(
-            eq(member.workspaceId, workspaceId) && eq(member.userId, userId)
+            eq(workspaceMember.workspaceId, workspaceId) &&
+              eq(workspaceMember.userId, userId)
           );
         if (membersFound.length > 0) {
           return c.json(
@@ -521,7 +523,7 @@ const app = new Hono()
           );
         }
         try {
-          await db.insert(member).values({
+          await db.insert(workspaceMember).values({
             workspaceId,
             userId,
             role: MemberRole.Member,

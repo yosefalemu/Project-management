@@ -1,6 +1,5 @@
 import { db } from "@/db";
-import { member } from "@/db/schema/member";
-import { project } from "@/db/schema/project";
+import { project, projectMember, workspaceMember } from "@/db/schema/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema } from "@/zod-schemas/project-schema";
 import { zValidator } from "@hono/zod-validator";
@@ -90,13 +89,17 @@ const app = new Hono()
       } else {
         uploadedImage = image || "";
       }
-      const membersFound = await db
+      const workspaceMembersFound = await db
         .select()
-        .from(member)
+        .from(workspaceMember)
         .where(
-          and(eq(member.workspaceId, workspaceId), eq(member.userId, userId))
+          and(
+            eq(workspaceMember.workspaceId, workspaceId),
+            eq(workspaceMember.role, "admin")
+          )
         );
-      if (membersFound.length === 0) {
+      console.log("workspaceMembersFound", workspaceMembersFound);
+      if (workspaceMembersFound.length === 0) {
         return c.json(
           {
             error: "Unauthorized",
@@ -113,8 +116,36 @@ const app = new Hono()
             description,
             workspaceId,
             image: uploadedImage,
+            creatorId: userId,
+            inviteCode: Math.random().toString(36).substring(2, 8),
           })
           .returning();
+        if (!newProject) {
+          return c.json(
+            {
+              error: "FailedToCreateProject",
+              message: "Failed to create project",
+            },
+            400
+          );
+        }
+        try {
+          await db.insert(projectMember).values({
+            projectId: newProject.id,
+            role: "admin",
+            userId: userId,
+          });
+        } catch (error) {
+          console.error("Error while adding project member", error);
+          await db.delete(project).where(eq(project.id, newProject.id));
+          return c.json(
+            {
+              error: "FailedToAddProjectMember",
+              message: "Failed to add project member",
+            },
+            500
+          );
+        }
         return c.json({ data: newProject }, 200);
       } catch (error) {
         console.log("Error while creating project", error);

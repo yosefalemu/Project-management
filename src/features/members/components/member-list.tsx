@@ -108,7 +108,7 @@ export default function MembersList() {
                           variant="secondary"
                           className="ml-auto"
                         >
-                          <MoreVerticalIcon className="size-4 text-muted-foreground" />
+                          <MoreVerticalIcon className="size-4 text-muted-foreground cursor-pointer" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent
