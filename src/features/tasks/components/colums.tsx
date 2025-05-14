@@ -28,7 +28,7 @@ export const columns: ColumnDef<Task>[] = [
     },
   },
   {
-    accessorKey: "assignedId",
+    accessorKey: "assignedTo",
     header: ({ column }) => {
       return (
         <div className="flex items-center gap-x-3">

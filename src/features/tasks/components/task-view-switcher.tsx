@@ -34,6 +34,8 @@ export default function TaskViewSwitcher() {
     assigneedId,
     dueDate,
   });
+
+  console.log("FETCHED DATA", data);
   const { mutate: updateBulkTask } = useUpdateBulkTask();
 
   const onKanbanChange = useCallback(

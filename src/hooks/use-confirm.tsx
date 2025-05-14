@@ -48,7 +48,11 @@ export const useConfirm = (
 
   const ConfirmationDialog = () => {
     return (
-      <ResponsiveModal open={promise !== null} onOpenChange={handleClose}>
+      <ResponsiveModal
+        open={promise !== null}
+        onOpenChange={handleClose}
+        className="sm:max-w-lg lg:max-w-xl p-0"
+      >
         <Card className="w-full h-full shadow-none border-none">
           <CardContent className="pt-8">
             <CardHeader className="p-0">

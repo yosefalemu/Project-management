@@ -1,9 +1,14 @@
 import { db } from "@/db";
-import { project, projectMember, workspaceMember } from "@/db/schema/schema";
+import {
+  project,
+  projectMember,
+  user,
+  workspaceMember,
+} from "@/db/schema/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema } from "@/zod-schemas/project-schema";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, not, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -186,6 +191,66 @@ const app = new Hono()
           },
           500
         );
+      }
+    }
+  )
+  .get(
+    "/invite-project-member/:projectId/:workspaceId",
+    sessionMiddleware,
+    zValidator(
+      "param",
+      z.object({ projectId: z.string(), workspaceId: z.string() })
+    ),
+    async (c) => {
+      const { projectId, workspaceId } = c.req.valid("param");
+      const userId = c.get("userId") as string;
+      console.log("projectId", projectId);
+      console.log("workspaceId", workspaceId);
+      try {
+        const workspaceMembersFound = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, workspaceId),
+              eq(workspaceMember.userId, userId)
+            )
+          );
+
+        if (workspaceMembersFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message:
+                "Unauthorized, you can't invite project member in this workspace",
+            },
+            401
+          );
+        }
+        const userIds = workspaceMembersFound.map(
+          (workspaceMember) => workspaceMember.userId
+        );
+        const validUserIds = await db
+          .select()
+          .from(projectMember)
+          .where(
+            and(
+              eq(projectMember.projectId, projectId),
+              notInArray(projectMember.userId, userIds)
+            )
+          );
+        const userFound = await db
+          .select()
+          .from(user)
+          .where(
+            inArray(
+              user.id,
+              validUserIds.map((user) => user.userId)
+            )
+          );
+        return c.json({ data: userFound }, 200);
+      } catch (error) {
+        console.error("Error while fetching project members", error);
       }
     }
   );

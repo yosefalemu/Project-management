@@ -36,7 +36,7 @@ export const useGetTasks = ({
         query: {
           workspaceId,
           projectId,
-          assigneedId: assigneedId ?? undefined,
+          assigneedTo: assigneedId ?? undefined,
           status: status ?? undefined,
           search: search ?? undefined,
           dueDate: dueDate ?? undefined,
@@ -45,8 +45,12 @@ export const useGetTasks = ({
       if (!response.ok) {
         throw new Error("An error occurred while fetching task data");
       }
-      const data = (await response.json()).data as Task[];
-      return data;
+      console.log("RESPONSE FOUND", response);
+      const { data } = await response.json();
+      if (!data) {
+        throw new Error("No data found");
+      }
+      return data as unknown as Task[];
     },
   });
   return query;

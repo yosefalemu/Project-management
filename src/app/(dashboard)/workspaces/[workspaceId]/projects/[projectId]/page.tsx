@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useGetProject } from "@/features/projects/api/get-project-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
+import ProjectMembers from "@/features/projects/components/project-members";
 import TaskViewSwitcher from "@/features/tasks/components/task-view-switcher";
 import { PencilIcon } from "lucide-react";
 import Link from "next/link";
@@ -16,7 +17,7 @@ export default function ProjectPage() {
         <div className="flex items-center gap-x-2">
           <ProjectAvatar
             name={data?.name || ""}
-            image={data?.image}
+            image={data?.image ?? undefined}
             className="size-8"
           />
           <p className="text-lg font-semibold">{data?.name}</p>
@@ -31,6 +32,9 @@ export default function ProjectPage() {
             </Link>
           </Button>
         </div>
+      </div>
+      <div>
+        <ProjectMembers />
       </div>
       <TaskViewSwitcher />
     </div>

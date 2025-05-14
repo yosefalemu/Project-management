@@ -44,12 +44,10 @@ export default function TaskForm({
     defaultValues: {
       name: "",
       description: "",
-      assignedId: "",
+      assignedTo: "",
       projectId: params.projectId as string,
       status: "BACKLOG",
       dueDate: new Date(),
-      position: "",
-      workspaceId: params.workspaceId as string,
     },
   });
 
@@ -67,7 +65,8 @@ export default function TaskForm({
       }
     );
   };
-  console.log("CURRENT ERRORS", form.formState.errors);
+  console.log("TASK FORM VALUES", form.getValues());
+  console.log("TASK FORM ERROS", form.formState.errors);
 
   return (
     <Card className="shadow-none border-none">
@@ -103,7 +102,7 @@ export default function TaskForm({
             />
             <CustomSelectInput
               fieldTitle="Assiggned Member"
-              nameInSchema="assignedId"
+              nameInSchema="assignedTo"
               data={membersOptions}
               placeHolder="Select assignee"
             />

@@ -22,8 +22,8 @@ export default function WorkspaceSwitcher() {
   const handleWorkspaceChange = (value: string) => {
     router.push(`/workspaces/${value}`);
   };
-  if(isLoading) return <div>Loading...</div>
-  if(isError) return <div>Error...</div>
+  if (isLoading) return <div>Loading...</div>;
+  if (isError) return <div>Error...</div>;
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
@@ -48,7 +48,7 @@ export default function WorkspaceSwitcher() {
               <div className="flex items-center justify-start font-medium gap-2">
                 <WorkspaceAvatar
                   name={workspace.name}
-                  image={workspace.image}
+                  image={workspace.image ?? undefined}
                 />
                 <span className="truncate">
                   {workspace.name.length > 15

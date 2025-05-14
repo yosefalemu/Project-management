@@ -50,6 +50,7 @@ export default function DataCalendar({ data }: DataCalendarProps) {
       setValue(new Date());
     }
   };
+
   return (
     <Calendar
       localizer={localizer}

@@ -8,12 +8,13 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useGetMembers } from "@/features/members/api/get-members-api";
-import { ListChecksIcon, UserIcon } from "lucide-react";
+import { ListChecksIcon, UserIcon, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTaskFilters } from "../hooks/use-task-filters";
 import { TaskStatusType } from "@/features/workspace/constants/type";
 import { DatePicker } from "@/components/DatePicker";
 import { TaskStatus } from "../constant/types";
+import { Button } from "@/components/ui/button";
 
 interface DataFiltersProps {
   hideProjectFilter?: boolean;
@@ -38,6 +39,10 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
 
   const onAssigneeChange = (value: string) => {
     setFilters({ assigneedId: value === "all" ? null : (value as string) });
+  };
+
+  const onClearDueDate = () => {
+    setFilters({ dueDate: null });
   };
 
   const TaskStatusFound = [
@@ -91,14 +96,27 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
           ))}
         </SelectContent>
       </Select>
-      <DatePicker
-        placeHolder="Due Date"
-        className="h-8 w-full lg:w-auto"
-        value={dueDate ? new Date(dueDate) : null}
-        onChange={(date) =>
-          setFilters({ dueDate: date ? date.toISOString() : null })
-        }
-      />
+      <div className="flex items-center gap-2 w-full lg:w-auto">
+        <DatePicker
+          placeHolder="Due Date"
+          className="h-8 w-full lg:w-auto"
+          value={dueDate ? new Date(dueDate) : null}
+          onChange={(date) =>
+            setFilters({ dueDate: date ? date.toISOString() : null })
+          }
+        />
+        {dueDate && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onClearDueDate}
+            className="h-8 w-8 p-0"
+            title="Clear due date filter"
+          >
+            <X className="size-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

@@ -25,6 +25,7 @@ export const insertTaskSchema = createInsertSchema(task, {
   assignedTo: (schema) => schema.uuid("Invalid uuid format"),
   status: () => statusEnum.optional(),
   dueDate: () => z.coerce.date(),
+  position: (schema) => schema.optional(),
 });
 
 export type insertTaskSchemaType = typeof insertTaskSchema._type;

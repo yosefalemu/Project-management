@@ -6,7 +6,7 @@ import { and, eq, asc, desc, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { TaskStatus } from "../constant/types";
-import { task, user, projectMember } from "@/db/schema/schema";
+import { task, user, projectMember, workspaceMember } from "@/db/schema/schema";
 
 const app = new Hono()
   .get(
@@ -17,7 +17,7 @@ const app = new Hono()
       z.object({
         workspaceId: z.string(),
         projectId: z.string().nullish(),
-        assigneedId: z.string().nullish(),
+        assigneedTo: z.string().nullish(),
         status: z
           .enum(["BACKLOG", "TODO", "IN_PROGRESS", "IN_REVIEW", "DONE"])
           .nullish(),
@@ -28,20 +28,42 @@ const app = new Hono()
     async (c) => {
       try {
         const userId = c.get("userId") as string;
-        const { workspaceId, assigneedId, projectId, status, search, dueDate } =
+        const { workspaceId, assigneedTo, projectId, status, search, dueDate } =
           c.req.valid("query");
+        // Check if the user is a member of the workspace
+        const workspaceMemberFound = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.userId, userId),
+              eq(workspaceMember.workspaceId, workspaceId)
+            )
+          );
 
-        // Verify workspace projectMembership
+        if (workspaceMemberFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "You are not a member of this workspace",
+            },
+            401
+          );
+        }
+
+        console.log("WORKSPACE MEMBER FOUND", workspaceMemberFound);
+        // Check if the user is a member of the project
         const projectMemberFound = await db
           .select()
           .from(projectMember)
           .where(
             and(
               eq(projectMember.userId, userId),
-              eq(projectMember.projectId, workspaceId)
+              eq(projectMember.projectId, projectId as string)
             )
           );
 
+        console.log("PROJECT MEMBER FOUND", projectMemberFound);
         if (projectMemberFound.length === 0) {
           return c.json(
             {
@@ -52,14 +74,14 @@ const app = new Hono()
           );
         }
         // Build query conditions
-        const conditions = [eq(task.projectId, workspaceId)];
+        const conditions = [eq(task.projectId, projectId as string)];
 
         if (projectId) {
           conditions.push(eq(task.projectId, projectId));
         }
 
-        if (assigneedId) {
-          conditions.push(eq(task.assignedTo, assigneedId));
+        if (assigneedTo) {
+          conditions.push(eq(task.assignedTo, assigneedTo));
         }
 
         if (status) {
@@ -86,6 +108,7 @@ const app = new Hono()
           .from(task)
           .where(and(...conditions))
           .orderBy(asc(task.position));
+        console.log("TASKS FOUND", tasks);
 
         // Extract unique assigned user IDs
         const assignedUserIds = tasks
@@ -102,16 +125,16 @@ const app = new Hono()
 
         // Create a lookup object for quick access
         const userMap = Object.fromEntries(assignedUsers.map((u) => [u.id, u]));
+        console.log("USER MAP", userMap);
 
         // Map assigned users to their respective tasks
         const tasksWithAssignedUsers = tasks.map((t) => ({
           ...t,
           assignedUser: t.assignedTo ? userMap[t.assignedTo] || null : null,
         }));
+        console.log("TASKS WITH ASSIGNED USERS", tasksWithAssignedUsers);
 
         return c.json({ data: tasksWithAssignedUsers }, 200);
-
-        // return c.json({ data: tasks }, 200);
       } catch (error) {
         console.log(error);
         return c.json(

@@ -13,7 +13,7 @@ export type Task = {
   status: "BACKLOG" | "TODO" | "IN_PROGRESS" | "IN_REVIEW" | "DONE";
   workspaceId: string;
   projectId: string;
-  assignedId: string;
+  assignedTo: string;
   dueDate: string;
   createdAt: string;
   updatedAt: string;
