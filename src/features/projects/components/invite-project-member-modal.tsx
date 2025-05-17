@@ -9,7 +9,7 @@ export default function InviteProjectMemberModal() {
     <ResponsiveModal
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="sm:max-w-lg xl:max-w-xl"
+      className="sm:max-w-lg xl:max-w-xl p-8 pt-12 overflow-hidden"
     >
       <InviteMemberForm />
     </ResponsiveModal>

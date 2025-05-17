@@ -14,12 +14,21 @@ import { user } from "@/db/schema/schema";
 
 const app = new Hono()
   .get("/current", sessionMiddleware, async (c) => {
-    const userId = c.get("userId") as string;
-    const userFound = await db.select().from(user).where(eq(user.id, userId));
-    if (userFound.length === 0) {
-      return c.json({ data: [] });
+    try {
+      const userId = c.get("userId") as string;
+      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      console.log("userFound", userFound);
+      if (userFound.length === 0) {
+        return c.json({ data: [] });
+      }
+      return c.json({ data: userFound[0] });
+    } catch (error) {
+      console.log("Error while getting current user", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
     }
-    return c.json({ data: user });
   })
   .post("/login", zValidator("json", selectUserSchema), async (c) => {
     const { email, password } = c.req.valid("json");

@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "../ui/select";
 import MemberAvatar from "@/features/members/components/member-avatar";
+import { Skeleton } from "../ui/skeleton";
 
 interface CustomSelectInputProps {
   fieldTitle: string;
@@ -22,6 +23,7 @@ interface CustomSelectInputProps {
   placeHolder: string;
   className?: string;
   data?: { id: string; name: string; image?: string }[];
+  isFetchingData?: boolean;
 }
 export default function CustomSelectInput({
   fieldTitle,
@@ -29,6 +31,7 @@ export default function CustomSelectInput({
   placeHolder,
   className,
   data,
+  isFetchingData,
 }: CustomSelectInputProps) {
   const form = useFormContext();
   return (
@@ -46,18 +49,32 @@ export default function CustomSelectInput({
                 </SelectTrigger>
               </FormControl>
               <SelectContent className="flex">
-                {data?.map((item) => (
-                  <SelectItem value={item.id} key={item.id} className="">
-                    <div className="flex items-center gap-x-2">
-                      <MemberAvatar
-                        image={item.image}
-                        name={item.name}
-                        className="size-6 text-xs"
-                      />
-                      {item.name}
-                    </div>
-                  </SelectItem>
-                ))}
+                {isFetchingData ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 3 }).map((_, index) => (
+                      <Skeleton
+                        key={index}
+                        className="h-8 w-full flex items-center gap-x-8 pl-4 pr-2"
+                      >
+                        <Skeleton className="h-6 w-6 rounded-full" />
+                        <Skeleton className="h-6 flex-1" />
+                      </Skeleton>
+                    ))}
+                  </div>
+                ) : (
+                  data?.map((item) => (
+                    <SelectItem value={item.id} key={item.id} className="">
+                      <div className="flex items-center gap-x-2">
+                        <MemberAvatar
+                          image={item.image}
+                          name={item.name}
+                          className="size-6 text-xs"
+                        />
+                        {item.name}
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
             <FormMessage />

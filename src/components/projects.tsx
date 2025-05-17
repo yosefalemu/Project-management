@@ -35,7 +35,10 @@ export default function Projects() {
               )}
             >
               <div className="flex items-center justify-start font-medium gap-2">
-                <ProjectAvatar name={project.name} image={project.image} />
+                <ProjectAvatar
+                  name={project.name}
+                  image={project.image ?? undefined}
+                />
                 <span className="truncate">
                   {project.name.length > 15
                     ? `${project.name.slice(0, 15)}...`
