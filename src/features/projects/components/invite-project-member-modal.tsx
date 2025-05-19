@@ -1,7 +1,7 @@
 "use client";
 import ResponsiveModal from "@/components/responsive-modal";
 import { useInviteMemberModalHook } from "../hooks/use-invite-member-modal";
-import InviteMemberForm from "@/features/projects/components/invite-member-form";
+import InviteMemberForm from "@/features/projects/components/add-member-form";
 
 export default function InviteProjectMemberModal() {
   const { isOpen, setIsOpen } = useInviteMemberModalHook();

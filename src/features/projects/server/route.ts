@@ -8,7 +8,7 @@ import {
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema } from "@/zod-schemas/project-schema";
 import { zValidator } from "@hono/zod-validator";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 
@@ -223,7 +223,7 @@ const app = new Hono()
     }
   )
   .get(
-    "/invite-project-member/:projectId/:workspaceId",
+    "/add-project-member/:projectId/:workspaceId",
     sessionMiddleware,
     zValidator(
       "param",
@@ -232,8 +232,6 @@ const app = new Hono()
     async (c) => {
       const { projectId, workspaceId } = c.req.valid("param");
       const userId = c.get("userId") as string;
-      console.log("projectId", projectId);
-      console.log("workspaceId", workspaceId);
       try {
         const workspaceMembersFound = await db
           .select()
@@ -250,7 +248,7 @@ const app = new Hono()
             {
               error: "Unauthorized",
               message:
-                "Unauthorized, you should be a member of this workspace to invite project member",
+                "Unauthorized, you should be a member of this workspace to add project member",
             },
             401
           );
@@ -269,34 +267,47 @@ const app = new Hono()
           return c.json(
             {
               error: "Unauthorized",
-              message: "Unauthorized, you can't invite project member",
+              message: "Unauthorized, you can't add project member",
             },
             401
           );
         }
-        const allWorkspaceMembers = await db
+
+        //Get all project members for the project
+        const projectMembers = await db
+          .select({ userId: projectMember.userId })
+          .from(projectMember)
+          .where(eq(projectMember.projectId, projectId));
+
+        const projectMembersIds = projectMembers.map((member) => member.userId);
+        //Get workspace members which are not in the project members
+        const validWorkspaceMembersToBeInvited = await db
           .select()
           .from(workspaceMember)
-          .where(eq(workspaceMember.workspaceId, workspaceId));
-        const canBeInviteMembers = allWorkspaceMembers.filter(
-          (member) =>
-            !projectMembersFound.some(
-              (projectMember) => projectMember.userId === member.userId
-            ) && member.userId !== userId
-        );
-        const canBeInviteMembersIds = canBeInviteMembers.map(
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, workspaceId),
+              projectMembersIds.length > 0
+                ? notInArray(workspaceMember.userId, projectMembersIds)
+                : undefined
+            )
+          );
+
+        const validWorkspaceMembersIds = validWorkspaceMembersToBeInvited.map(
           (member) => member.userId
         );
-        const usersFound = await db
-          .select()
+
+        const validUsersFound = await db
+          .select({ id: user.id, name: user.name, email: user.email })
           .from(user)
-          .where(inArray(user.id, canBeInviteMembersIds));
-        const users = usersFound.map((user) => ({
+          .where(inArray(user.id, validWorkspaceMembersIds));
+        const validUsers = validUsersFound.map((user) => ({
           id: user.id,
           name: user.name,
           email: user.email,
         }));
-        return c.json({ data: users }, 200);
+
+        return c.json({ data: validUsers }, 200);
       } catch (error) {
         console.error("Error while fetching project members", error);
         return c.json(
@@ -310,14 +321,14 @@ const app = new Hono()
     }
   )
   .post(
-    "/invite-project-member",
+    "/add-project-member",
     sessionMiddleware,
     zValidator(
       "json",
       z.object({
         projectId: z.string(),
         workspaceId: z.string(),
-        invitedUser: z
+        addMembers: z
           .array(
             z.object({
               userId: z.string(),
@@ -328,17 +339,18 @@ const app = new Hono()
       })
     ),
     async (c) => {
-      const { projectId, workspaceId, invitedUser } = c.req.valid("json");
+      const { projectId, workspaceId, addMembers } = c.req.valid("json");
       const userId = c.get("userId") as string;
-      console.log("Invited user ids", invitedUser);
-      console.log("Project id found", projectId);
-      console.log("Workspace id found", workspaceId);
-      console.log("User id found", userId);
       // Check if the current user is a workspace member
       const workspaceMemberFound = await db
         .select()
         .from(workspaceMember)
-        .where(and(eq(workspaceMember.workspaceId, workspaceMember.userId)));
+        .where(
+          and(
+            eq(workspaceMember.workspaceId, workspaceId),
+            eq(workspaceMember.userId, userId)
+          )
+        );
       if (workspaceMemberFound.length === 0) {
         return c.json(
           {
@@ -369,7 +381,7 @@ const app = new Hono()
         );
       }
       // Extract user IDS for validations
-      const invitedUserIds = invitedUser.map((user) => user.userId);
+      const addUserIds = addMembers.map((user) => user.userId);
       // Verify all invited users are workspace members
       const workspaceMembers = await db
         .select({ userId: workspaceMember.userId })
@@ -377,11 +389,11 @@ const app = new Hono()
         .where(
           and(
             eq(workspaceMember.workspaceId, workspaceId),
-            inArray(workspaceMember.userId, invitedUserIds)
+            inArray(workspaceMember.userId, addUserIds)
           )
         );
       const validWorkspaceMemberIds = workspaceMembers.map((m) => m.userId);
-      if (validWorkspaceMemberIds.length !== invitedUserIds.length) {
+      if (validWorkspaceMemberIds.length !== addUserIds.length) {
         return c.json({
           error: "BadRequest",
           message: "Some invited users are not workspace members",
@@ -394,14 +406,14 @@ const app = new Hono()
         .where(
           and(
             eq(projectMember.projectId, projectId),
-            inArray(projectMember.userId, invitedUserIds)
+            inArray(projectMember.userId, addUserIds)
           )
         );
       const existingUserIds = existingProjectMembers.map((m) => m.userId);
-      const validInvitedUserIds = invitedUserIds.filter(
+      const validAddUserIds = addUserIds.filter(
         (id) => !existingUserIds.includes(id)
       );
-      if (validInvitedUserIds.length === 0) {
+      if (validAddUserIds.length === 0) {
         return c.json(
           {
             error: "BadRequest",
@@ -410,7 +422,7 @@ const app = new Hono()
           400
         );
       }
-      const newProjectMembers = invitedUser.map((user) => ({
+      const newProjectMembers = addMembers.map((user) => ({
         projectId,
         userId: user.userId,
         role: user.userRole,
@@ -419,6 +431,84 @@ const app = new Hono()
         .insert(projectMember)
         .values(newProjectMembers);
       return c.json({ data: insertMembers }, 200);
+    }
+  )
+  .get(
+    "/get-project-member/:projectId/:workspaceId",
+    sessionMiddleware,
+    async (c) => {
+      const userId = c.get("userId") as string;
+      const projectId = c.req.param("projectId");
+      const workspaceId = c.req.param("workspaceId");
+      try {
+        const projectMembersFound = await db
+          .select()
+          .from(projectMember)
+          .where(
+            and(
+              eq(projectMember.projectId, projectId),
+              eq(projectMember.userId, userId)
+            )
+          );
+        const workspaceMembersFound = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, workspaceId),
+              eq(workspaceMember.userId, userId),
+              eq(workspaceMember.role, "admin")
+            )
+          );
+        if (
+          projectMembersFound.length === 0 &&
+          workspaceMembersFound.length === 0
+        ) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "Unauthorized, you can't access this project",
+            },
+            401
+          );
+        }
+
+        const projectMembers = await db
+          .select()
+          .from(projectMember)
+          .where(eq(projectMember.projectId, projectId));
+        const projectMembersUserIds = projectMembers.map(
+          (member) => member.userId
+        );
+        const userFound = await db
+          .select({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          })
+          .from(user)
+          .where(inArray(user.id, projectMembersUserIds));
+        if (userFound.length === 0) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "No project members found",
+            },
+            400
+          );
+        }
+        return c.json({ data: userFound }, 200);
+      } catch (error) {
+        console.error("Error while fetching project members", error);
+        return c.json(
+          {
+            error: "FailedToFetchProjectMembers",
+            message: "Failed to fetch project members",
+          },
+          500
+        );
+      }
     }
   );
 

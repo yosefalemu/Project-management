@@ -1,88 +1,142 @@
 import { useInviteMemberModalHook } from "@/features/projects/hooks/use-invite-member-modal";
 import Image from "next/image";
 import { IoAddSharp } from "react-icons/io5";
+import { useGetProjectMembers } from "../api/get-project-member-api";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
 
-export default function ProjectMembers() {
-  const MembersFound = [
-    {
-      id: "1",
-      image:
-        "https://plus.unsplash.com/premium_photo-1689568126014-06fea9d5d341?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8cHJvZmlsZXxlbnwwfHwwfHx8MA%3D%3D",
-      name: "John Doe",
-    },
-    {
-      id: "2",
-      image:
-        "https://i.pinimg.com/736x/37/b0/8e/37b08e188a88303da193785f5ab47c74.jpg",
-      name: "John Doe2",
-    },
-    {
-      id: "3",
-      image:
-        "https://i.pinimg.com/736x/4a/8b/39/4a8b39545731f7fe0817d3d01fe68d97.jpg",
-      name: "John Doe3",
-    },
-    {
-      id: "4",
-      image:
-        "https://i.pinimg.com/736x/92/e5/61/92e561ab8c0fc5497d1151d2d13cf47b.jpg",
-      name: "John Doe4",
-    },
-    {
-      id: "5",
-      image:
-        "https://i.pinimg.com/736x/d6/26/65/d62665e29d99e6a036216f9dbf7643c8.jpg",
-      name: "John Doe5",
-    },
-  ];
+interface ProjectMembersProps {
+  projectId: string;
+  workspaceId: string | undefined;
+}
+
+export default function ProjectMembers({
+  projectId,
+  workspaceId,
+}: ProjectMembersProps) {
   const { open } = useInviteMemberModalHook();
+  const { data, isLoading } = useGetProjectMembers({
+    projectId,
+    workspaceId: workspaceId ?? "",
+  });
+
+  const getBackgroundClass = (index: number) => {
+    const bgClasses = [
+      "bg-gray-900/90",
+      "bg-gray-900/70",
+      "bg-gray-900/50",
+      "bg-gray-900/30",
+    ];
+    return bgClasses[index % bgClasses.length];
+  };
+
+  console.log("PROJECT MEMBERS", data);
+  if (isLoading || !data) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="flex items-center">
+          {/* Three overlapping avatar skeletons */}
+          <Skeleton
+            className="h-8 w-8 rounded-full animate-none bg-gray-900/90"
+            style={{ zIndex: 3 }}
+          />
+          <Skeleton
+            className="h-8 w-8 rounded-full animate-none bg-gray-900/70"
+            style={{ marginLeft: "-16px", zIndex: 2 }}
+          />
+          <Skeleton
+            className="h-8 w-8 rounded-full animate-none bg-gray-900/50"
+            style={{ marginLeft: "-16px", zIndex: 1 }}
+          />
+          {/* Count badge skeleton */}
+          <Skeleton className="h-8 w-8 rounded-md" />
+        </div>
+        {/* Add button skeleton */}
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center space-x-2">
-      {MembersFound.length > 3 ? (
+      {data.length > 3 ? (
         <div className="flex items-center">
-          {MembersFound.slice(0, 3).map((member, index) => (
-            <div
-              className="relative h-8 w-8 rounded-full overflow-hidden"
-              style={{
-                marginLeft: index === 0 ? "0" : "-16px",
-                zIndex: MembersFound.length - index,
-              }}
-              key={member.id}
-            >
-              <Image
-                src={member.image}
-                alt={member.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ))}
+          {data.slice(0, 3).map((member, index) =>
+            member.image ? (
+              <div
+                className="relative h-8 w-8 rounded-full overflow-hidden"
+                style={{
+                  marginLeft: index === 0 ? "0" : "-16px",
+                  zIndex: data.length - index,
+                }}
+                key={member.id}
+              >
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
+                  getBackgroundClass(index)
+                )}
+                style={{
+                  marginLeft: index === 0 ? "0" : "-16px",
+                  zIndex: data.length - index,
+                }}
+                key={member.id}
+              >
+                <div className="text-sm text-white">
+                  {member.name.charAt(0)}
+                </div>
+              </div>
+            )
+          )}
           <div className="flex items-center justify-center h-8 w-8 rounded-md bg-gray-200 cursor-pointer">
-            <p className="text-muted-foreground text-sm">
-              {MembersFound.length - 3}
-            </p>
+            <p className="text-muted-foreground text-sm">{data.length - 3}</p>
           </div>
         </div>
       ) : (
         <div className="flex">
-          {MembersFound.map((member, index) => (
-            <div
-              className="relative h-8 w-8 rounded-full overflow-hidden"
-              style={{
-                marginLeft: index === 0 ? "0" : "-16px",
-                zIndex: MembersFound.length - index,
-              }}
-              key={member.id}
-            >
-              <Image
-                src={member.image}
-                alt={member.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-          ))}
+          {data.map((member, index) =>
+            member.image ? (
+              <div
+                className="relative h-8 w-8 rounded-full overflow-hidden"
+                style={{
+                  marginLeft: index === 0 ? "0" : "-16px",
+                  zIndex: data.length - index,
+                }}
+                key={member.id}
+              >
+                <Image
+                  src={member.image}
+                  alt={member.name}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
+                  getBackgroundClass(index)
+                )}
+                style={{
+                  marginLeft: index === 0 ? "0" : "-16px",
+                  zIndex: data.length - index,
+                }}
+                key={member.id}
+              >
+                <div className="text-sm text-white">
+                  {member.name.charAt(0)}
+                </div>
+              </div>
+            )
+          )}
         </div>
       )}
       <div

@@ -11,12 +11,12 @@ export const useGetInviteMember = ({
   workspaceId,
 }: UseGetInviteMember) => {
   const query = useQuery({
-    queryKey: ["invite-project-member", projectId, workspaceId],
+    queryKey: ["get-add-project-member", projectId, workspaceId],
     queryFn: async () => {
       if (!projectId || !workspaceId) {
         throw new Error("Project ID and Workspace ID are required");
       }
-      const response = await client.api.projects["invite-project-member"][
+      const response = await client.api.projects["add-project-member"][
         ":projectId"
       ][":workspaceId"].$get({ param: { projectId, workspaceId } });
       if (!response.ok) {
