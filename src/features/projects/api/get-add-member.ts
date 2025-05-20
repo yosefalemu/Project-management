@@ -6,7 +6,7 @@ interface UseGetInviteMember {
   workspaceId: string | undefined;
 }
 
-export const useGetInviteMember = ({
+export const useGetAddMember = ({
   projectId,
   workspaceId,
 }: UseGetInviteMember) => {

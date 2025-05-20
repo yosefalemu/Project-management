@@ -5,7 +5,7 @@ import { useGetProject } from "@/features/projects/api/get-project-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
 import ProjectMembers from "@/features/projects/components/project-members";
 import TaskViewSwitcher from "@/features/tasks/components/task-view-switcher";
-import { PencilIcon } from "lucide-react";
+import { Settings } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 export default function ProjectPage() {
@@ -74,21 +74,21 @@ export default function ProjectPage() {
   return (
     <div className="flex flex-col gap-y-4">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-2">
+        <div className="flex items-center gap-x-4">
           <ProjectAvatar
             name={data?.name || ""}
             image={data?.image ?? undefined}
             className="size-8"
           />
-          <p className="text-lg font-semibold">{data?.name}</p>
+          <p className="text-sm font-semibold uppercase">{data?.name}</p>
         </div>
         <div>
           <Button variant="secondary" size="sm" asChild>
             <Link
-              href={`/workspaces/${data?.workspaceId}/projects/${data?.id}/settings`}
+              href={`/settings/project?projectId=${projectId}&workspaceId=${data?.workspaceId}`}
             >
-              <PencilIcon className="size-4 mr-2" />
-              Edit Project
+              <Settings className="size-4 mr-2" />
+              <p className="text-sm uppercase"> Project Settings</p>
             </Link>
           </Button>
         </div>

@@ -131,7 +131,6 @@ const app = new Hono()
             eq(workspaceMember.role, "admin")
           )
         );
-      console.log("workspaceMembersFound", workspaceMembersFound);
       if (workspaceMembersFound.length === 0) {
         return c.json(
           {
@@ -498,7 +497,18 @@ const app = new Hono()
             400
           );
         }
-        return c.json({ data: userFound }, 200);
+        const userWithProjectRole = userFound.map((user) => {
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            userRole: projectMembers.find(
+              (projectMember) => projectMember.userId === user.id
+            )?.role,
+          };
+        });
+        return c.json({ data: userWithProjectRole }, 200);
       } catch (error) {
         console.error("Error while fetching project members", error);
         return c.json(

@@ -131,15 +131,12 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
             position: index,
           });
         });
-
-        console.log("Updates Payloads:", updatesPayloads);
         return newTasks;
       });
       onChange(updatesPayloads);
     },
     [onChange]
   );
-  console.log("TASKS STATE", tasks);
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>

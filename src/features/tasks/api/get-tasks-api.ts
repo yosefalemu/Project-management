@@ -45,7 +45,7 @@ export const useGetTasks = ({
       if (!response.ok) {
         throw new Error("An error occurred while fetching task data");
       }
-      console.log("RESPONSE FOUND", response);
+
       const { data } = await response.json();
       if (!data) {
         throw new Error("No data found");

@@ -1,7 +1,7 @@
 import { client } from "@/lib/rpc";
 import { useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
-import { QueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query";
 
 type ZodErrorDetail = {
   name: string;
@@ -11,11 +11,11 @@ type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
 };
-const queryClient = new QueryClient();
 type ResponseType = InferResponseType<(typeof client.api.tasks)["$post"], 200>;
 type RequestType = InferRequestType<(typeof client.api.tasks)["$post"]>;
 
 export const useCreateTask = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }): Promise<ResponseType> => {
       const response = await client.api.tasks["$post"]({ json });

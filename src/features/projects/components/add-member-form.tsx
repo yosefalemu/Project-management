@@ -4,7 +4,7 @@ import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { useMedia } from "react-use";
 import { useInviteMemberModalHook } from "@/features/projects/hooks/use-invite-member-modal";
-import { useGetInviteMember } from "../api/get-add-member";
+import { useGetAddMember } from "@/features/projects/api/get-add-member";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -15,7 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
 import { addMemberType, addMemberValidator } from "../validators/add-member";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAddProjectMemeber } from "../api/add-member-api";
+import { useAddProjectMember } from "../api/add-member-api";
 import { toast } from "sonner";
 
 export default function InviteMemberForm() {
@@ -35,7 +35,7 @@ export default function InviteMemberForm() {
     ? workspaceId[0]
     : workspaceId;
 
-  const { data, error, isFetching } = useGetInviteMember({
+  const { data, error, isLoading } = useGetAddMember({
     projectId: resolvedProjectId,
     workspaceId: resolvedWorkspaceId,
   });
@@ -82,10 +82,9 @@ export default function InviteMemberForm() {
     },
   });
 
-  const { mutate, isPending } = useAddProjectMemeber();
+  const { mutate, isPending } = useAddProjectMember();
 
   const handleInviteMember = (formData: addMemberType) => {
-    console.log("FORM DATA", formData);
     mutate(
       {
         json: {
@@ -115,9 +114,6 @@ export default function InviteMemberForm() {
     form.setValue("addMembers", selectedMembers, { shouldValidate: true });
   }, [form, selectedMembers]);
 
-  console.log("FORM ERROR", form.formState.errors);
-  console.log("FORM VALUES", form.getValues());
-
   return (
     <div>
       <Input
@@ -129,7 +125,7 @@ export default function InviteMemberForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(handleInviteMember)}>
           <DootedSeparator className="py-4" />
-          {isFetching ? (
+          {isLoading ? (
             <div className="space-y-2 h-52">
               {Array.from({ length: 3 }).map((_, index) => (
                 <Skeleton key={index}>

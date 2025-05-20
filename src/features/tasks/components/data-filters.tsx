@@ -7,7 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { useGetMembers } from "@/features/members/api/get-members-api";
+import { useGetProjectMembers } from "@/features/projects/api/get-project-member-api";
 import { ListChecksIcon, UserIcon, X } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useTaskFilters } from "../hooks/use-task-filters";
@@ -21,9 +21,10 @@ interface DataFiltersProps {
 }
 export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
   const params = useParams();
-  const { data: members, isLoading: isLoadingMembers } = useGetMembers(
-    params.workspaceId as string
-  );
+  const { data: members, isLoading: isLoadingMembers } = useGetProjectMembers({
+    workspaceId: params.workspaceId as string,
+    projectId: params.projectId as string,
+  });
 
   const memberOptions = members?.map((member) => ({
     value: member.id,

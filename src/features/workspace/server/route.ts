@@ -474,8 +474,6 @@ const app = new Hono()
       const userId = c.get("userId") as string;
       const { inviteCode } = c.req.valid("json");
       const workspaceId = c.req.param("workspaceId") as string;
-      console.log("inviteCode", inviteCode);
-      console.log("userId", userId);
       //check the invite code is correct
       let workspaceFound;
       try {

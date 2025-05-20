@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import { setLoading } from "@/store/loading-slice";
 import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
+import LoadingLayout from "@/components/loading-layout";
 
 export default function Dashboard() {
   const router = useRouter();
@@ -31,7 +32,11 @@ export default function Dashboard() {
 
   return (
     <div className="h-full">
-      {!loading && isError ? <div>Error</div> : null}
+      {!loading && isError ? (
+        <div>Error</div>
+      ) : loading && !isError ? (
+        <LoadingLayout />
+      ) : null}
     </div>
   );
 }

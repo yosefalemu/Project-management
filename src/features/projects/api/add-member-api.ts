@@ -1,5 +1,5 @@
 import { client } from "@/lib/rpc";
-import { useMutation, QueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
 type RequestType = InferRequestType<
@@ -10,8 +10,8 @@ type ResponseType = InferResponseType<
   (typeof client.api.projects)["add-project-member"]["$post"]
 >;
 
-const queryClient = new QueryClient();
-export const useAddProjectMemeber = () => {
+export const useAddProjectMember = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }) => {
       const response = await client.api.projects["add-project-member"]["$post"](
@@ -23,14 +23,12 @@ export const useAddProjectMemeber = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: (_data, variables) => {
+    onSuccess: async (_data, variables) => {
       const { projectId, workspaceId } = variables.json;
-      console.log("PROJECTID TO INVALIDATE", projectId);
-      console.log("WORKSPACEID TO INVALIDATE", workspaceId);
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["get-add-project-member", projectId, workspaceId],
       });
-      queryClient.invalidateQueries({
+      await queryClient.invalidateQueries({
         queryKey: ["project-member", projectId, workspaceId],
       });
     },

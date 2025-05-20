@@ -21,7 +21,6 @@ export default function InviteMemberAction({
   children,
   handleChangeRole,
 }: MemberActionProps) {
-  console.log("ROLE FOUND", role);
   return (
     <div>
       <DropdownMenu modal={false}>

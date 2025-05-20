@@ -17,7 +17,6 @@ const app = new Hono()
     try {
       const userId = c.get("userId") as string;
       const userFound = await db.select().from(user).where(eq(user.id, userId));
-      console.log("userFound", userFound);
       if (userFound.length === 0) {
         return c.json({ data: [] });
       }
@@ -32,13 +31,11 @@ const app = new Hono()
   })
   .post("/login", zValidator("json", selectUserSchema), async (c) => {
     const { email, password } = c.req.valid("json");
-    console.log("email", email, "password", password);
     try {
       const userFound = await db
         .select()
         .from(user)
         .where(eq(user.email, email));
-      console.log("user", user);
       if (userFound.length === 0) {
         return c.json(
           { error: "Unauthorized", message: "User not found" },

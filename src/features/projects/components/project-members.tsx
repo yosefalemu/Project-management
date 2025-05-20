@@ -96,8 +96,8 @@ export default function ProjectMembers({
               </div>
             )
           )}
-          <div className="flex items-center justify-center h-8 w-8 rounded-md bg-gray-200 cursor-pointer">
-            <p className="text-muted-foreground text-sm">{data.length - 3}</p>
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 cursor-pointer">
+            <p className="text-muted-foreground text-xs">{data.length - 3}</p>
           </div>
         </div>
       ) : (

@@ -22,13 +22,9 @@ import { Loader } from "lucide-react";
 import { TaskStatus } from "../constant/types";
 
 interface TaskFormProps {
-  projectOptions: { id: string; name: string; image: string }[];
   membersOptions: { id: string; name: string }[];
 }
-export default function TaskForm({
-  membersOptions,
-  projectOptions,
-}: TaskFormProps) {
+export default function TaskForm({ membersOptions }: TaskFormProps) {
   const params = useParams();
   const { mutate, isPending } = useCreateTask();
   const { close } = useTaskModalHook();
@@ -65,8 +61,6 @@ export default function TaskForm({
       }
     );
   };
-  console.log("TASK FORM VALUES", form.getValues());
-  console.log("TASK FORM ERROS", form.formState.errors);
 
   return (
     <Card className="shadow-none border-none">
@@ -78,63 +72,61 @@ export default function TaskForm({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleCreateTask)}
-            className="space-y-4"
+            className="grid md:grid-cols-2 gap-4 items-start"
           >
-            <CustomInputLabel
-              fieldTitle="Task name"
-              nameInSchema="name"
-              placeHolder="Enter task name"
-              maxCharLength={15}
-            />
-            <CustomTextareaLabel
-              fieldTitle="Task Description"
-              nameInSchema="description"
-              placeHolder="Enter task description"
-              maxCharLength={500}
-              rows={5}
-            />
-            <CustomDatePicker fieldTitle="Due Date" nameInSchema="dueDate" />
-            <CustomSelectInput
-              fieldTitle="Project"
-              nameInSchema="projectId"
-              data={projectOptions}
-              placeHolder="Select project"
-            />
-            <CustomSelectInput
-              fieldTitle="Assiggned Member"
-              nameInSchema="assignedTo"
-              data={membersOptions}
-              placeHolder="Select assignee"
-            />
-            <CustomSelectInput
-              fieldTitle="Status"
-              nameInSchema="status"
-              data={TaskStatusFound}
-              placeHolder="Select status"
-            />
-            <div className="flex items-center justify-between pt-10">
-              <Button
-                variant="destructive"
-                size="lg"
-                type="button"
-                onClick={() => {
-                  form.reset();
-                  close();
-                }}
-                disabled={isPending}
-              >
-                Cancel
-              </Button>
-              <Button size="lg" type="submit" disabled={isPending}>
-                {isPending ? (
-                  <span className="flex items-center justify-center">
-                    <Loader className="mr-2 animate-spin" />
-                    <p>Creating</p>
-                  </span>
-                ) : (
-                  <p>Create Workspace</p>
-                )}
-              </Button>
+            <div className="col-span-1 space-y-2">
+              <CustomInputLabel
+                fieldTitle="Task name"
+                nameInSchema="name"
+                placeHolder="Enter task name"
+                maxCharLength={15}
+              />
+              <CustomTextareaLabel
+                fieldTitle="Task Description"
+                nameInSchema="description"
+                placeHolder="Enter task description"
+                maxCharLength={500}
+                rows={5}
+              />
+              <CustomDatePicker fieldTitle="Due Date" nameInSchema="dueDate" />
+            </div>
+            <div className="col-span-1 space-y-2 flex flex-col h-full">
+              <CustomSelectInput
+                fieldTitle="Assiggned Member"
+                nameInSchema="assignedTo"
+                data={membersOptions}
+                placeHolder="Select assignee"
+              />
+              <CustomSelectInput
+                fieldTitle="Status"
+                nameInSchema="status"
+                data={TaskStatusFound}
+                placeHolder="Select status"
+              />
+              <div className="flex items-end justify-end gap-x-6 flex-1">
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  type="button"
+                  onClick={() => {
+                    form.reset();
+                    close();
+                  }}
+                  disabled={isPending}
+                >
+                  Cancel
+                </Button>
+                <Button size="lg" type="submit" disabled={isPending}>
+                  {isPending ? (
+                    <span className="flex items-center justify-center">
+                      <Loader className="mr-2 animate-spin" />
+                      <p>Creating</p>
+                    </span>
+                  ) : (
+                    <p>Create Workspace</p>
+                  )}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

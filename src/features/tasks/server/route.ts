@@ -51,7 +51,6 @@ const app = new Hono()
           );
         }
 
-        console.log("WORKSPACE MEMBER FOUND", workspaceMemberFound);
         // Check if the user is a member of the project
         const projectMemberFound = await db
           .select()
@@ -63,7 +62,6 @@ const app = new Hono()
             )
           );
 
-        console.log("PROJECT MEMBER FOUND", projectMemberFound);
         if (projectMemberFound.length === 0) {
           return c.json(
             {
@@ -108,7 +106,6 @@ const app = new Hono()
           .from(task)
           .where(and(...conditions))
           .orderBy(asc(task.position));
-        console.log("TASKS FOUND", tasks);
 
         // Extract unique assigned user IDs
         const assignedUserIds = tasks
@@ -125,15 +122,12 @@ const app = new Hono()
 
         // Create a lookup object for quick access
         const userMap = Object.fromEntries(assignedUsers.map((u) => [u.id, u]));
-        console.log("USER MAP", userMap);
 
         // Map assigned users to their respective tasks
         const tasksWithAssignedUsers = tasks.map((t) => ({
           ...t,
           assignedUser: t.assignedTo ? userMap[t.assignedTo] || null : null,
         }));
-        console.log("TASKS WITH ASSIGNED USERS", tasksWithAssignedUsers);
-
         return c.json({ data: tasksWithAssignedUsers }, 200);
       } catch (error) {
         console.log(error);
