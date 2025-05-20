@@ -8,9 +8,30 @@ const publicRoutes = [
   "/blogs",
   "/terms",
   "/privacy-policy",
+  "/:path*/opengraph-image",
+  "/:path*/twitter-image",
 ];
 
-const isProtectedRoute = (pathname: string) => !publicRoutes.includes(pathname);
+const isSocialMediaCrawler = (req: NextRequest) => {
+  const userAgent = req.headers.get("user-agent") || "";
+  return /facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|WhatsApp|Pinterest/.test(
+    userAgent
+  );
+};
+
+const isProtectedRoute = (pathname: string) => {
+  const isProtected = !publicRoutes.some((route) => {
+    if (route.includes(":path*")) {
+      const regexPattern = `^/[^/]+/opengraph-image(?:-[a-z0-9]+)?\\.(?:png|jpg|jpeg|gif)(?:\\?.*)?$`;
+      const matches = pathname.match(new RegExp(regexPattern));
+      console.log(`Testing ${pathname} against ${regexPattern}: ${!!matches}`);
+      return matches;
+    }
+    return pathname === route;
+  });
+  console.log(`Pathname: ${pathname}, isProtected: ${isProtected}`);
+  return isProtected;
+};
 
 const redirectTo = (url: string, req: NextRequest) =>
   NextResponse.redirect(new URL(url, req.url));
@@ -23,6 +44,10 @@ const verifyToken = async (token: string | undefined) => {
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  if (isSocialMediaCrawler(req)) {
+    return NextResponse.next();
+  }
 
   if (pathname === "/") {
     try {
