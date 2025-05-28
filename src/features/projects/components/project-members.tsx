@@ -22,10 +22,10 @@ export default function ProjectMembers({
 
   const getBackgroundClass = (index: number) => {
     const bgClasses = [
-      "bg-gray-900/90",
-      "bg-gray-900/70",
-      "bg-gray-900/50",
-      "bg-gray-900/30",
+      "bg-gray-900 shadow-md border border-gray-600",
+      "bg-gray-900 shadow-md border border-gray-600",
+      "bg-gray-900 shadow-sm border border-gray-600",
+      "bg-gray-900 shadow-sm border border-gray-600",
     ];
     return bgClasses[index % bgClasses.length];
   };
@@ -58,7 +58,10 @@ export default function ProjectMembers({
   }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div
+      className="flex items-center space-x-2 rounded-lg my-2 cursor-pointer bg-gray-800/70 p-[1.5px]"
+      onClick={open}
+    >
       {data.length > 3 ? (
         <div className="flex items-center">
           {data.slice(0, 3).map((member, index) =>
@@ -67,7 +70,7 @@ export default function ProjectMembers({
                 className="relative h-8 w-8 rounded-full overflow-hidden"
                 style={{
                   marginLeft: index === 0 ? "0" : "-16px",
-                  zIndex: data.length - index,
+                  zIndex: data.length * 10 - index * 10,
                 }}
                 key={member.id}
               >
@@ -122,7 +125,7 @@ export default function ProjectMembers({
             ) : (
               <div
                 className={cn(
-                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
+                  "relative h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center",
                   getBackgroundClass(index)
                 )}
                 style={{
@@ -139,10 +142,7 @@ export default function ProjectMembers({
           )}
         </div>
       )}
-      <div
-        className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 cursor-pointer"
-        onClick={open}
-      >
+      <div className="flex items-center justify-center h-8 w-8 rounded-tr-lg rounded-br-lg rounded-bl-md rounded-tl-md bg-gray-200">
         <IoAddSharp className="h-4 w-4 text-gray-600" />
       </div>
     </div>

@@ -3,11 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetProject } from "@/features/projects/api/get-project-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
+import ProjectHuddle from "@/features/projects/components/project-huddle";
 import ProjectMembers from "@/features/projects/components/project-members";
 import TaskViewSwitcher from "@/features/tasks/components/task-view-switcher";
 import { Settings } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+
 export default function ProjectPage() {
   const params = useParams();
   const projectId = params.projectId as string;
@@ -24,30 +26,9 @@ export default function ProjectPage() {
           </div>
           <Skeleton className="h-8 w-28" /> {/* Edit button */}
         </div>
-        {/* Project members section skeleton */}
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center">
-            {/* Three overlapping avatar skeletons */}
-            <Skeleton
-              className="h-8 w-8 rounded-full animate-none bg-gray-900/90"
-              style={{ zIndex: 3 }}
-            />
-            <Skeleton
-              className="h-8 w-8 rounded-full animate-none bg-gray-900/70"
-              style={{ marginLeft: "-16px", zIndex: 2 }}
-            />
-            <Skeleton
-              className="h-8 w-8 rounded-full animate-none bg-gray-900/50"
-              style={{ marginLeft: "-16px", zIndex: 1 }}
-            />
-            {/* Count badge skeleton */}
-            <Skeleton className="h-8 w-8 rounded-md" />
-          </div>
-          {/* Add button skeleton */}
-          <Skeleton className="h-8 w-8 rounded-full" />
-        </div>
         {/* Task view switcher skeleton */}
         <div className="flex gap-x-2">
+          <Skeleton className="h-8 w-20" />
           <Skeleton className="h-8 w-20" />
           <Skeleton className="h-8 w-20" />
         </div>
@@ -82,19 +63,20 @@ export default function ProjectPage() {
           />
           <p className="text-sm font-semibold uppercase">{data?.name}</p>
         </div>
-        <div>
-          <Button variant="secondary" size="sm" asChild>
+        <div className="flex items-center gap-x-2">
+          <ProjectMembers
+            projectId={projectId}
+            workspaceId={data?.workspaceId}
+          />
+          <ProjectHuddle />
+          <Button variant="secondary" size="sm" asChild className="h-9">
             <Link
               href={`/settings/project?projectId=${projectId}&workspaceId=${data?.workspaceId}`}
             >
-              <Settings className="size-4 mr-2" />
-              <p className="text-sm uppercase"> Project Settings</p>
+              <Settings className="size-4" />
             </Link>
           </Button>
         </div>
-      </div>
-      <div>
-        <ProjectMembers projectId={projectId} workspaceId={data?.workspaceId} />
       </div>
       <TaskViewSwitcher />
     </div>

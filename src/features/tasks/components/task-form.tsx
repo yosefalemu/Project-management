@@ -5,7 +5,6 @@ import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-
 import {
   insertTaskSchema,
   insertTaskSchemaType,
@@ -24,10 +23,12 @@ import { TaskStatus } from "../constant/types";
 interface TaskFormProps {
   membersOptions: { id: string; name: string }[];
 }
+
 export default function TaskForm({ membersOptions }: TaskFormProps) {
   const params = useParams();
+  const { taskStatus, close } = useTaskModalHook();
   const { mutate, isPending } = useCreateTask();
-  const { close } = useTaskModalHook();
+
   const TaskStatusFound = [
     { id: TaskStatus.BACKLOG, name: "Backlog" },
     { id: TaskStatus.TODO, name: "Todo" },
@@ -35,6 +36,7 @@ export default function TaskForm({ membersOptions }: TaskFormProps) {
     { id: TaskStatus.IN_REVIEW, name: "In Review" },
     { id: TaskStatus.DONE, name: "Done" },
   ];
+
   const form = useForm<insertTaskSchemaType>({
     resolver: zodResolver(insertTaskSchema),
     defaultValues: {
@@ -42,7 +44,7 @@ export default function TaskForm({ membersOptions }: TaskFormProps) {
       description: "",
       assignedTo: "",
       projectId: params.projectId as string,
-      status: "BACKLOG",
+      status: taskStatus || TaskStatus.BACKLOG,
       dueDate: new Date(),
     },
   });
@@ -56,8 +58,9 @@ export default function TaskForm({ membersOptions }: TaskFormProps) {
           close();
           form.reset();
         },
-        onError: (error) =>
-          toast.error(error ? error.message : "An error occurred"),
+        onError: (error) => {
+          toast.error(error?.message || "An error occurred");
+        },
       }
     );
   };
@@ -79,29 +82,32 @@ export default function TaskForm({ membersOptions }: TaskFormProps) {
                 fieldTitle="Task name"
                 nameInSchema="name"
                 placeHolder="Enter task name"
-                maxCharLength={15}
+                maxCharLength={15} // Pass control explicitly
               />
               <CustomTextareaLabel
                 fieldTitle="Task Description"
                 nameInSchema="description"
                 placeHolder="Enter task description"
                 maxCharLength={500}
-                rows={5}
+                rows={5} // Pass control explicitly
               />
-              <CustomDatePicker fieldTitle="Due Date" nameInSchema="dueDate" />
+              <CustomDatePicker
+                fieldTitle="Due Date"
+                nameInSchema="dueDate" // Pass control explicitly
+              />
             </div>
             <div className="col-span-1 space-y-2 flex flex-col h-full">
               <CustomSelectInput
-                fieldTitle="Assiggned Member"
+                fieldTitle="Assigned Member"
                 nameInSchema="assignedTo"
                 data={membersOptions}
-                placeHolder="Select assignee"
+                placeHolder="Select assignee" // Pass control explicitly
               />
               <CustomSelectInput
                 fieldTitle="Status"
                 nameInSchema="status"
                 data={TaskStatusFound}
-                placeHolder="Select status"
+                placeHolder="Select status" // Pass control explicitly
               />
               <div className="flex items-end justify-end gap-x-6 flex-1">
                 <Button
@@ -123,7 +129,7 @@ export default function TaskForm({ membersOptions }: TaskFormProps) {
                       <p>Creating</p>
                     </span>
                   ) : (
-                    <p>Create Workspace</p>
+                    <p>Create Task</p> // Fixed typo
                   )}
                 </Button>
               </div>

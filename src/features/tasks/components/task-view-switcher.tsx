@@ -76,7 +76,11 @@ export default function TaskViewSwitcher() {
               Calendar
             </TabsTrigger>
           </TabsList>
-          <Button size="sm" className="w-full lg:w-auto" onClick={open}>
+          <Button
+            size="sm"
+            className="w-full lg:w-auto"
+            onClick={() => open(TaskStatus.BACKLOG)}
+          >
             <PlusIcon className="mr-1 size-4" />
             New
           </Button>

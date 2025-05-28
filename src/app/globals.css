@@ -143,3 +143,24 @@ body {
 .rbc-month-view {
   @apply border-none;
 }
+.tooltip-content {
+  position: relative;
+  background: #1f2937; /* bg-gray-900 */
+  color: white;
+  border: 1px solid #374151; /* border-gray-700 */
+  border-radius: 4px;
+  padding: 8px;
+}
+
+/* Arrow for bottom-aligned tooltip */
+.tooltip-content[data-side="bottom"]::after {
+  content: "";
+  position: absolute;
+  top: -6px; /* Adjust based on arrow size */
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 6px solid #1f2937; /* Matches bg-gray-900 */
+  border-bottom-color: #374151; /* Matches border-gray-700 */
+}

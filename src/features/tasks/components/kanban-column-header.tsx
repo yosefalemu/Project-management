@@ -45,7 +45,12 @@ export default function KanbanColumnHeader({
           {taskCount}
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="size-5" onClick={open}>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="size-5"
+        onClick={() => open(board)}
+      >
         <PlusIcon className="size-4 text-neutral-700" />
       </Button>
     </div>
