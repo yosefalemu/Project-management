@@ -29,7 +29,6 @@ const isProtectedRoute = (pathname: string) => {
     }
     return pathname === route;
   });
-  console.log(`Pathname: ${pathname}, isProtected: ${isProtected}`);
   return isProtected;
 };
 

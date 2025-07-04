@@ -17,7 +17,6 @@ type ErrorResponse = {
     name: string;
     email: string;
     password: string;
-    confirm_password: string | null;
     createdAt: string;
     updatedAt: string;
   };

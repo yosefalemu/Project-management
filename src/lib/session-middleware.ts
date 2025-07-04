@@ -16,6 +16,7 @@ interface CustomEnv extends Env {
 export const sessionMiddleware = createMiddleware<CustomEnv>(
   async (c, next) => {
     const token = getCookie(c, AUTH_COOKIE);
+    console.log("Token from cookie:", token);
     if (!token) {
       return c.json(
         { error: "Unauthorized", message: "No token provided" },
@@ -24,6 +25,7 @@ export const sessionMiddleware = createMiddleware<CustomEnv>(
     }
 
     try {
+      console.log("Validating token:", token);
       // Validate the token and extract the userId
       const userId = await verifyToken(token, process.env.JWT_SECRET!);
 

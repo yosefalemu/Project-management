@@ -6,6 +6,11 @@ import QueryProviders from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import StoreProvider from "@/store/store-provider";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
+import WorkspaceModal from "@/features/workspace/components/workspace-modal";
+import InviteProjectMemberModal from "@/features/projects/components/invite-project-member-modal";
+import TaskModal from "@/features/tasks/components/task-modal";
+import CreateProjectModal from "@/features/projects/components/project-modal";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -20,16 +25,25 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn(inter.className, "antialiased min-h-screen")}>
+      <body
+        className={cn(inter.className, "antialiased min-h-screen")}
+      >
         <Toaster />
+
         <StoreProvider>
-          <QueryProviders>
-            {children}
-            <ReactQueryDevtools
-              initialIsOpen={false}
-              buttonPosition="bottom-right"
-            />
-          </QueryProviders>
+          <NuqsAdapter>
+            <QueryProviders>
+              <WorkspaceModal />
+              <CreateProjectModal />
+              <InviteProjectMemberModal />
+              <TaskModal />
+              {children}
+              <ReactQueryDevtools
+                initialIsOpen={false}
+                buttonPosition="bottom-right"
+              />
+            </QueryProviders>
+          </NuqsAdapter>
         </StoreProvider>
       </body>
     </html>
