@@ -11,14 +11,25 @@ import { generateInviteCode } from "@/lib/utils";
 import { insertMemberSchemaType } from "@/zod-schemas/member-schema";
 import { z } from "zod";
 import { isBefore } from "date-fns";
+import { auth } from "@/lib/auth";
 
 const app = new Hono()
   .get("/", sessionMiddleware, async (c) => {
-    const userId = c.get("userId") as string;
+    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+    const session = c.get("session") as
+      | typeof auth.$Infer.Session.session
+      | null;
+    if (!user || !session) {
+      return c.json(
+        { error: "Unauthorized", message: "User not authenticated" },
+        401
+      );
+    }
+    console.log("Fetching workspaces for user:", user, session);
     const members = await db
       .select()
       .from(workspaceMember)
-      .where(eq(workspaceMember.userId, userId));
+      .where(eq(workspaceMember.userId, user.id));
     if (members.length === 0) {
       return c.json({ data: [] });
     }

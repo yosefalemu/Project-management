@@ -17,10 +17,11 @@ import { Form } from "@/components/ui/form";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
 import { useLogin } from "../api/login-api";
-import { selectUserSchema, selectUserType } from "@/zod-schemas/users-schema";
+import { loginUserSchema, loginUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useBetterAuthSignIn } from "../api/better-signin";
 
 interface SignInCardProps {
   redirectTo?: string;
@@ -28,23 +29,27 @@ interface SignInCardProps {
 export default function SignInCard({ redirectTo }: SignInCardProps) {
   const router = useRouter();
   const loginMutation = useLogin();
-  const form = useForm<selectUserType>({
-    resolver: zodResolver(selectUserSchema),
+  const betterAuthSignInMutation = useBetterAuthSignIn();
+  const form = useForm<loginUserType>({
+    resolver: zodResolver(loginUserSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
-
-  const handleLogin = (data: selectUserType) => {
-    loginMutation.mutate(
+  console.log("form errors:", form.formState.errors);
+  const handleLogin = (data: loginUserType) => {
+    betterAuthSignInMutation.mutate(
       { json: data },
       {
-        onSuccess: () => {
+        onSuccess: (data) => {
+          console.log("Login successful:", data);
           toast.success("Logged in successfully");
+
           router.push(redirectTo || "/");
         },
         onError: () => {
+          console.error("Login failed:", loginMutation.error);
           toast.error(
             loginMutation.error
               ? loginMutation.error.message
@@ -78,9 +83,9 @@ export default function SignInCard({ redirectTo }: SignInCardProps) {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={loginMutation.isPending}
+              disabled={betterAuthSignInMutation.isPending}
             >
-              {loginMutation.isPending ? (
+              {betterAuthSignInMutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <Loader className="mr-2 animate-spin" />
                   <p>Logging</p>

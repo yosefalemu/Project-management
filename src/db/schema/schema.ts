@@ -8,6 +8,7 @@ import {
   unique,
   uuid,
   varchar,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -23,27 +24,76 @@ export const statusEnum = pgEnum("status", [
 export const roleEnum = pgEnum("role", ["admin", "member", "viewer"]);
 
 // Users table
-export const user = pgTable("users", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  name: varchar("name", { length: 50 }).notNull(),
-  email: varchar("email").notNull().unique(),
-  image: text("image").default(""),
-  password: varchar("password").notNull(),
-  createdAt: timestamp("created_at", { withTimezone: true })
+export const user = pgTable("user", {
+  id: text("id").primaryKey(),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  password: text("password")
     .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .$defaultFn(() => "")
+    .notNull(),
+  emailVerified: boolean("email_verified")
+    .$defaultFn(() => false)
+    .notNull(),
+  image: text("image"),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const session = pgTable("session", {
+  id: text("id").primaryKey(),
+  expiresAt: timestamp("expires_at").notNull(),
+  token: text("token").notNull().unique(),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  userId: text("user_id")
     .notNull()
-    .defaultNow()
-    .$onUpdate(() => new Date()),
+    .references(() => user.id, { onDelete: "cascade" }),
+});
+
+export const account = pgTable("account", {
+  id: text("id").primaryKey(),
+  accountId: text("account_id").notNull(),
+  providerId: text("provider_id").notNull(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  accessToken: text("access_token"),
+  refreshToken: text("refresh_token"),
+  idToken: uuid("id_token"),
+  accessTokenExpiresAt: timestamp("access_token_expires_at"),
+  refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+  scope: text("scope"),
+  password: text("password"),
+  createdAt: timestamp("created_at").notNull(),
+  updatedAt: timestamp("updated_at").notNull(),
+});
+
+export const verification = pgTable("verification", {
+  id: text("id").primaryKey(),
+  identifier: text("identifier").notNull(),
+  value: text("value").notNull(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
+  updatedAt: timestamp("updated_at").$defaultFn(
+    () => /* @__PURE__ */ new Date()
+  ),
 });
 
 // Workspaces table
 export const workspace = pgTable("work_spaces", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey(),
   name: varchar("name").notNull().unique(),
   description: text("description").notNull(),
-  creatorId: uuid("creator_id")
+  creatorId: text("creator_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   image: text("image").default(""),
@@ -62,13 +112,13 @@ export const workspace = pgTable("work_spaces", {
 
 // Projects table
 export const project = pgTable("project", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey(),
   name: varchar("name").notNull(),
   description: varchar("description").notNull(),
-  workspaceId: uuid("workspace_id")
+  workspaceId: text("workspace_id")
     .notNull()
     .references(() => workspace.id, { onDelete: "cascade" }),
-  creatorId: uuid("creator_id")
+  creatorId: text("creator_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   inviteCode: varchar("invite_code").notNull().unique(),
@@ -84,13 +134,13 @@ export const project = pgTable("project", {
 
 // Tasks table
 export const task = pgTable("task", {
-  id: uuid("id").primaryKey().defaultRandom(),
+  id: text("id").primaryKey(),
   name: varchar("name").notNull(),
   description: text("description").notNull(),
-  projectId: uuid("project_id")
+  projectId: text("project_id")
     .notNull()
     .references(() => project.id, { onDelete: "cascade" }),
-  assignedTo: uuid("assigned_id").references(() => user.id, {
+  assignedTo: text("assigned_id").references(() => user.id, {
     onDelete: "set null",
   }),
   dueDate: timestamp("due_date", { withTimezone: true }),
@@ -109,11 +159,11 @@ export const task = pgTable("task", {
 export const workspaceMember = pgTable(
   "workspace_members",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    workspaceId: uuid("workspace_id")
+    id: text("id").primaryKey(),
+    workspaceId: text("workspace_id")
       .notNull()
       .references(() => workspace.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: roleEnum("role").notNull(),
@@ -139,11 +189,11 @@ export const workspaceMember = pgTable(
 export const projectMember = pgTable(
   "project_members",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
-    projectId: uuid("project_id")
+    id: text("id").primaryKey(),
+    projectId: text("project_id")
       .notNull()
       .references(() => project.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => user.id, { onDelete: "cascade" }),
     role: roleEnum("role").notNull(),

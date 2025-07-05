@@ -7,11 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:generate": "npmx drizzle-kit generate",
-    "db:migrate": "npmx tsx ./src/db/migrate.ts"
+    "db:generate": "bunx drizzle-kit generate",
+    "db:migrate": "bunx tsx ./src/db/migrate.ts"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
+    "@hono/node-server": "^1.15.0",
     "@hono/zod-validator": "^0.4.2",
     "@hookform/resolvers": "^3.9.1",
     "@neondatabase/serverless": "^0.10.4",
@@ -33,6 +34,7 @@
     "@types/bcrypt": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.7",
     "bcrypt": "^5.1.1",
+    "better-auth": "^1.2.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
