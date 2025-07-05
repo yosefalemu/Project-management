@@ -21,39 +21,49 @@ import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { useRegister } from "../api/register-user-api";
 import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
+import { useBetterAuthRegister } from "../api/better-signup";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 
 interface SignUpCardProps {
   redirectTo?: string;
 }
 export default function SignUpCard({ redirectTo }: SignUpCardProps) {
-  const router = useRouter();
   const registerMutation = useRegister();
+  const betterAuthRegisterMutation = useBetterAuthRegister();
   const form = useForm<insertUserType>({
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
       name: "",
       email: "",
       password: "",
+      confirmPassword: "",
     },
   });
 
-  const handleSignUp = (data: insertUserType) => {
-    registerMutation.mutate(
-      { json: data },
+  const handleSignUp = async (user: insertUserType) => {
+    console.log("User data for signup:", user);
+    betterAuthRegisterMutation.mutate(
       {
-        onSuccess: () => {
-          toast.success("User registered successfully");
-          router.push(
-            redirectTo ? `/sign-in?redirectTo=${redirectTo}` : "/sign-in"
-          );
+        json: {
+          name: user.name,
+          email: user.email,
+          password: user.password,
+          confirmPassword: user.confirmPassword,
         },
-        onError: () => {
-          toast.error(
-            registerMutation.error
-              ? registerMutation.error.message
-              : "An error occured while registering"
+      },
+      {
+        onSuccess: (data) => {
+          toast.success("Successfully signed up!");
+          console.log("Sign up successful:", data);
+        },
+        onError: (error) => {
+          toast.error(error.message || "Sign up failed");
+          console.error(
+            "Sign up error:",
+            error.cause,
+            error.message,
+            error.stack,
+            error.name
           );
         },
       }
@@ -107,7 +117,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
             />
             <CustomPasswordInput
               fieldTitle="Confirm Password"
-              nameInSchema="confirm_password"
+              nameInSchema="confirmPassword"
               className="h-12"
               placeHolder="Enter confirm password"
             />

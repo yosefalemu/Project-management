@@ -1,15 +1,16 @@
 import "server-only";
 import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
-import { verifyToken } from "@/lib/verify-token";
 import { AUTH_COOKIE } from "@/features/auth/constants/constant";
 
 import type { Env } from "hono";
+import { auth } from "./auth";
 
 // Extend the Env type to include userId in the context
 interface CustomEnv extends Env {
   Variables: {
-    userId?: string;
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null;
   };
 }
 
@@ -25,12 +26,17 @@ export const sessionMiddleware = createMiddleware<CustomEnv>(
     }
 
     try {
-      console.log("Validating token:", token);
-      // Validate the token and extract the userId
-      const userId = await verifyToken(token, process.env.JWT_SECRET!);
+      const session = await auth.api.getSession({ headers: c.req.raw.headers });
+      if (!session) {
+        c.set("user", null);
+        c.set("session", null);
+        return next();
+      }
 
       // Attach the userId to the context
-      c.set("userId", userId);
+      c.set("user", session.user);
+      c.set("session", session.session);
+      return next();
 
       // Proceed to the next middleware or handler
       await next();
