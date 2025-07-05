@@ -131,7 +131,13 @@ const app = new Hono()
       } else {
         uploadedImage = image || "";
       }
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json({
+          error: "Unauthorized",
+          message: "User not authenticated",
+        });
+      }
       let newWorkspace;
 
       try {
@@ -139,10 +145,11 @@ const app = new Hono()
         [newWorkspace] = await db
           .insert(workspace)
           .values({
+            id: crypto.randomUUID(),
             name,
             description: description.trim(),
             image: uploadedImage,
-            creatorId: userId,
+            creatorId: user.id,
             inviteCode: generateInviteCode(10),
           })
           .returning();
@@ -150,8 +157,9 @@ const app = new Hono()
         try {
           // Create the member
           await db.insert(workspaceMember).values({
+            id: crypto.randomUUID(),
             workspaceId: newWorkspace.id,
-            userId: userId,
+            userId: user.id,
             role: MemberRole.Admin,
           });
         } catch (err) {
@@ -196,7 +204,13 @@ const app = new Hono()
     sessionMiddleware,
     async (c) => {
       const { name, image, description, id } = c.req.valid("form");
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json({
+          error: "Unauthorized",
+          message: "User not authenticated",
+        });
+      }
 
       // Process the image
       let uploadedImage: string | "";
@@ -236,7 +250,7 @@ const app = new Hono()
           );
         }
 
-        if (workspaceFound.creatorId !== userId) {
+        if (workspaceFound.creatorId !== user.id) {
           return c.json(
             {
               error: "Forbidden",
@@ -282,7 +296,13 @@ const app = new Hono()
     }
   )
   .delete("/:workspaceId", sessionMiddleware, async (c) => {
-    const userId = c.get("userId") as string;
+    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+    if (!user) {
+      return c.json(
+        { error: "Unauthorized", message: "User not authenticated" },
+        401
+      );
+    }
     const workSpaceId = c.req.param("workspaceId") as string;
     // Fetch the members
     let membersFound: insertMemberSchemaType[] = [];
@@ -330,7 +350,7 @@ const app = new Hono()
         (member) => member.workspaceId === workSpaceId
       );
       if (
-        workspaceFound[0].creatorId !== userId ||
+        workspaceFound[0].creatorId !== user.id ||
         currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
       ) {
         return c.json(
@@ -382,7 +402,13 @@ const app = new Hono()
     return c.json({ data: "Workspace deleted" });
   })
   .patch("/:workspaceId/invite-code", sessionMiddleware, async (c) => {
-    const userId = c.get("userId") as string;
+    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+    if (!user) {
+      return c.json(
+        { error: "Unauthorized", message: "User not authenticated" },
+        401
+      );
+    }
     const workSpaceId = c.req.param("workspaceId") as string;
     // Fetch the members
     let membersFound: insertMemberSchemaType[] = [];
@@ -430,7 +456,7 @@ const app = new Hono()
         (member) => member.workspaceId === workSpaceId
       );
       if (
-        workspaceFound[0].creatorId !== userId ||
+        workspaceFound[0].creatorId !== user.id ||
         currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
       ) {
         return c.json(
@@ -482,7 +508,13 @@ const app = new Hono()
     ),
     sessionMiddleware,
     async (c) => {
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
       const { inviteCode } = c.req.valid("json");
       const workspaceId = c.req.param("workspaceId") as string;
       //check the invite code is correct
@@ -520,7 +552,7 @@ const app = new Hono()
           .from(workspaceMember)
           .where(
             eq(workspaceMember.workspaceId, workspaceId) &&
-              eq(workspaceMember.userId, userId)
+              eq(workspaceMember.userId, user.id)
           );
         if (membersFound.length > 0) {
           return c.json(
@@ -534,8 +566,9 @@ const app = new Hono()
         try {
           await db.insert(workspaceMember).values({
             workspaceId,
-            userId,
+            userId: user.id,
             role: MemberRole.Member,
+            id: crypto.randomUUID(),
           });
         } catch (error) {
           console.log("Error while adding member", error);

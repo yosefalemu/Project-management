@@ -1,5 +1,6 @@
 import { db } from "@/db";
 import { user, workspaceMember } from "@/db/schema/schema";
+import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertMemberSchema } from "@/zod-schemas/member-schema";
 import { zValidator } from "@hono/zod-validator";
@@ -95,7 +96,7 @@ const app = new Hono()
           );
         }
         const { role, workspaceId } = c.req.valid("json");
-        const userId = c.get("userId") as string;
+        const user = c.get("user") as typeof auth.$Infer.Session.user;
         const membersFound = await db
           .select()
           .from(workspaceMember)
@@ -119,7 +120,7 @@ const app = new Hono()
           .from(workspaceMember)
           .where(
             and(
-              eq(workspaceMember.userId, userId),
+              eq(workspaceMember.userId, user.id),
               eq(workspaceMember.workspaceId, workspaceId)
             )
           );

@@ -5,6 +5,7 @@ import {
   user,
   workspaceMember,
 } from "@/db/schema/schema";
+import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createProjectSchema } from "@/zod-schemas/project-schema";
 import { zValidator } from "@hono/zod-validator";
@@ -20,14 +21,20 @@ const app = new Hono()
     async (c) => {
       try {
         const workspaceId = c.req.param("workspaceId");
-        const userId = c.get("userId") as string;
+        const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+        if (!user) {
+          return c.json(
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
         const workspaceMembersFound = await db
           .select()
           .from(workspaceMember)
           .where(
             and(
               eq(workspaceMember.workspaceId, workspaceId),
-              eq(workspaceMember.userId, userId)
+              eq(workspaceMember.userId, user.id)
             )
           );
         if (workspaceMembersFound.length === 0) {
@@ -39,7 +46,7 @@ const app = new Hono()
         const projectMemberFound = await db
           .select()
           .from(projectMember)
-          .where(eq(projectMember.userId, userId));
+          .where(eq(projectMember.userId, user.id));
         const projectMemberIds = projectMemberFound.map(
           (projectMember) => projectMember.projectId
         );
@@ -101,7 +108,13 @@ const app = new Hono()
     zValidator("form", createProjectSchema),
     async (c) => {
       const { name, description, workspaceId, image } = c.req.valid("form");
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
       let uploadedImage: string | undefined;
       if (image instanceof File) {
         try {
@@ -144,11 +157,12 @@ const app = new Hono()
         const [newProject] = await db
           .insert(project)
           .values({
+            id: crypto.randomUUID(),
             name,
             description,
             workspaceId,
             image: uploadedImage,
-            creatorId: userId,
+            creatorId: user.id,
             inviteCode: Math.random().toString(36).substring(2, 8),
           })
           .returning();
@@ -163,9 +177,10 @@ const app = new Hono()
         }
         try {
           await db.insert(projectMember).values({
+            id: crypto.randomUUID(),
             projectId: newProject.id,
             role: "admin",
-            userId: userId,
+            userId: user.id,
           });
         } catch (error) {
           console.error("Error while adding project member", error);
@@ -230,7 +245,14 @@ const app = new Hono()
     ),
     async (c) => {
       const { projectId, workspaceId } = c.req.valid("param");
-      const userId = c.get("userId") as string;
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFound) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+
       try {
         const workspaceMembersFound = await db
           .select()
@@ -238,7 +260,7 @@ const app = new Hono()
           .where(
             and(
               eq(workspaceMember.workspaceId, workspaceId),
-              eq(workspaceMember.userId, userId)
+              eq(workspaceMember.userId, userFound.id)
             )
           );
 
@@ -259,7 +281,7 @@ const app = new Hono()
             and(
               eq(projectMember.projectId, projectId),
               eq(projectMember.role, "admin"),
-              eq(projectMember.userId, userId)
+              eq(projectMember.userId, userFound.id)
             )
           );
         if (projectMembersFound.length === 0) {
@@ -339,7 +361,13 @@ const app = new Hono()
     ),
     async (c) => {
       const { projectId, workspaceId, addMembers } = c.req.valid("json");
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
       // Check if the current user is a workspace member
       const workspaceMemberFound = await db
         .select()
@@ -347,7 +375,7 @@ const app = new Hono()
         .where(
           and(
             eq(workspaceMember.workspaceId, workspaceId),
-            eq(workspaceMember.userId, userId)
+            eq(workspaceMember.userId, user.id)
           )
         );
       if (workspaceMemberFound.length === 0) {
@@ -366,7 +394,7 @@ const app = new Hono()
         .where(
           and(
             eq(projectMember.projectId, projectId),
-            eq(projectMember.userId, userId),
+            eq(projectMember.userId, user.id),
             eq(projectMember.role, "admin")
           )
         );
@@ -425,6 +453,7 @@ const app = new Hono()
         projectId,
         userId: user.userId,
         role: user.userRole,
+        id: crypto.randomUUID(),
       }));
       const insertMembers = await db
         .insert(projectMember)
@@ -436,7 +465,13 @@ const app = new Hono()
     "/get-project-member/:projectId/:workspaceId",
     sessionMiddleware,
     async (c) => {
-      const userId = c.get("userId") as string;
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFound) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
       const projectId = c.req.param("projectId");
       const workspaceId = c.req.param("workspaceId");
       try {
@@ -446,7 +481,7 @@ const app = new Hono()
           .where(
             and(
               eq(projectMember.projectId, projectId),
-              eq(projectMember.userId, userId)
+              eq(projectMember.userId, userFound.id)
             )
           );
         const workspaceMembersFound = await db
@@ -455,7 +490,7 @@ const app = new Hono()
           .where(
             and(
               eq(workspaceMember.workspaceId, workspaceId),
-              eq(workspaceMember.userId, userId),
+              eq(workspaceMember.userId, userFound.id),
               eq(workspaceMember.role, "admin")
             )
           );
@@ -479,7 +514,7 @@ const app = new Hono()
         const projectMembersUserIds = projectMembers.map(
           (member) => member.userId
         );
-        const userFound = await db
+        const userFetched = await db
           .select({
             id: user.id,
             name: user.name,
@@ -488,7 +523,7 @@ const app = new Hono()
           })
           .from(user)
           .where(inArray(user.id, projectMembersUserIds));
-        if (userFound.length === 0) {
+        if (userFetched.length === 0) {
           return c.json(
             {
               error: "BadRequest",
@@ -497,7 +532,7 @@ const app = new Hono()
             400
           );
         }
-        const userWithProjectRole = userFound.map((user) => {
+        const userWithProjectRole = userFetched.map((user) => {
           return {
             id: user.id,
             name: user.name,

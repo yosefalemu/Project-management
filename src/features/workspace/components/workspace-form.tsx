@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import {
   createWorkspaceSchema,
-  insertWorkspaceType,
+  createWorkspaceSchemaType,
 } from "@/zod-schemas/workspace-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -24,7 +24,7 @@ import { toast } from "sonner";
 import { useWorkspaceModalHook } from "../hooks/use-workspace-modal";
 
 interface WorkSpaceFormProps {
-  workspace?: insertWorkspaceType;
+  workspace?: createWorkspaceSchemaType;
 }
 export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   const router = useRouter();
@@ -36,7 +36,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   const [isResetInviteCodeLoading, setIsResetInviteCodeLoading] =
     useState<boolean>(false);
 
-  const form = useForm<insertWorkspaceType>({
+  const form = useForm<createWorkspaceSchemaType>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
       id: workspace?.id ?? undefined,
@@ -46,7 +46,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
     },
   });
 
-  const handleCreateWorkspace = (values: insertWorkspaceType) => {
+  const handleCreateWorkspace = (values: createWorkspaceSchemaType) => {
     if (workspace) {
       const finalValues = {
         id: workspace.id ?? undefined,
@@ -77,6 +77,8 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
         name: values.name,
         description: values.description,
         image: values.image instanceof File ? values.image : "",
+        creatorId: "hghgh",
+        id: "hghgh",
       };
       createWorkspaceMutation.mutate(
         { form: finalValues },

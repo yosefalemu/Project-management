@@ -7,6 +7,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { TaskStatus } from "../constant/types";
 import { task, user, projectMember, workspaceMember } from "@/db/schema/schema";
+import { auth } from "@/lib/auth";
 
 const app = new Hono()
   .get(
@@ -27,7 +28,15 @@ const app = new Hono()
     ),
     async (c) => {
       try {
-        const userId = c.get("userId") as string;
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        if (!userFound) {
+          return c.json(
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
         const { workspaceId, assigneedTo, projectId, status, search, dueDate } =
           c.req.valid("query");
         // Check if the user is a member of the workspace
@@ -36,7 +45,7 @@ const app = new Hono()
           .from(workspaceMember)
           .where(
             and(
-              eq(workspaceMember.userId, userId),
+              eq(workspaceMember.userId, userFound.id),
               eq(workspaceMember.workspaceId, workspaceId)
             )
           );
@@ -57,7 +66,7 @@ const app = new Hono()
           .from(projectMember)
           .where(
             and(
-              eq(projectMember.userId, userId),
+              eq(projectMember.userId, userFound.id),
               eq(projectMember.projectId, projectId as string)
             )
           );
@@ -143,7 +152,13 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("json", insertTaskSchema),
     async (c) => {
-      const userId = c.get("userId") as string;
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
       const { projectId, assignedTo, description, name, dueDate, status } =
         c.req.valid("json");
 
@@ -154,7 +169,7 @@ const app = new Hono()
           .from(projectMember)
           .where(
             and(
-              eq(projectMember.userId, userId),
+              eq(projectMember.userId, user.id),
               eq(projectMember.projectId, projectId)
             )
           );
@@ -205,6 +220,7 @@ const app = new Hono()
             dueDate,
             status: status || "BACKLOG",
             position: newPosition,
+            id: crypto.randomUUID(),
           })
           .returning();
 
@@ -252,6 +268,13 @@ const app = new Hono()
     async (c) => {
       try {
         const { tasks } = c.req.valid("json");
+        const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+        if (!user) {
+          return c.json(
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
         const tasksToUpdate = await db
           .select()
           .from(task)
@@ -277,7 +300,7 @@ const app = new Hono()
           .from(projectMember)
           .where(
             and(
-              eq(projectMember.userId, c.get("userId") as string),
+              eq(projectMember.userId, user.id),
               eq(projectMember.projectId, workspaceId)
             )
           );

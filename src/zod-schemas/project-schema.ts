@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const createProjectSchema = createInsertSchema(project, {
-  id: (schema) => schema.uuid("Invalid uuid format").optional(),
+  id: (schema) => schema.optional(),
   name: (schema) =>
     schema
       .nonempty("Name is required")
