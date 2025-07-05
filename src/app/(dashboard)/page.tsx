@@ -36,7 +36,9 @@ export default function Dashboard() {
         <div>Error</div>
       ) : loading && !isError ? (
         <LoadingLayout />
-      ) : null}
+      ) : (
+        <div className="h-screen w-screen bg-red-500/50" />
+      )}
     </div>
   );
 }

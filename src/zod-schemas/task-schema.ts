@@ -22,7 +22,7 @@ export const insertTaskSchema = createInsertSchema(task, {
       .min(20, "Please provide a detailed description of the workspace")
       .max(500, "Description must be at most 500 characters"),
   projectId: (schema) => schema.uuid("Invalid uuid format"),
-  assignedTo: (schema) => schema.uuid("Invalid uuid format"),
+  assignedTo: (schema) => schema.optional(),
   status: () => statusEnum.optional(),
   dueDate: () => z.coerce.date(),
   position: (schema) => schema.optional(),

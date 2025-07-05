@@ -3,7 +3,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 export const createWorkspaceSchema = createInsertSchema(workspace, {
-  id: (schema) => schema.uuid("Invalid uuid format").optional(),
+  id: (schema) => schema.optional(),
   name: (schema) =>
     schema
       .nonempty("Name is required")
@@ -14,7 +14,7 @@ export const createWorkspaceSchema = createInsertSchema(workspace, {
       .nonempty("Description is required")
       .min(20, "Please provide a detailed description of the workspace")
       .max(500, "Description must be at most 500 characters"),
-  creatorId: (schema) => schema.uuid("Invalid uuid format").optional(),
+  creatorId: (schema) => schema.optional(),
   inviteCode: (schema) => schema.optional(),
   image: (schema) =>
     schema
@@ -27,4 +27,4 @@ export const createWorkspaceSchema = createInsertSchema(workspace, {
   updatedAt: (schema) => schema.optional(),
 });
 
-export type insertWorkspaceType = typeof createWorkspaceSchema._type;
+export type createWorkspaceSchemaType = typeof createWorkspaceSchema._type;
