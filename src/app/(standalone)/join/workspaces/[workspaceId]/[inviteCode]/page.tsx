@@ -19,7 +19,14 @@ export default function JoinWorkspacePage() {
           <JoinWorkspaceForm
             workspaceId={params.workspaceId}
             inviteCode={params.inviteCode}
-            workspaceFound={data}
+            workspaceFound={
+              data
+                ? {
+                    ...data,
+                    image: data.image === null ? undefined : data.image,
+                  }
+                : data
+            }
           />
         </Card>
       )}

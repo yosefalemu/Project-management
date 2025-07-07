@@ -4,8 +4,9 @@ import { IoPersonOutline, IoPersonSharp } from "react-icons/io5";
 import { usePathname, useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { GoHome, GoHomeFill } from "react-icons/go";
+import { Suspense } from "react";
 
-export default function ProjectSettingNavigator() {
+const ProjectSettingNavigatorComponent = () => {
   const pathname = usePathname();
   const projectId = useSearchParams().get("projectId");
   const workspaceId = useSearchParams().get("workspaceId");
@@ -43,5 +44,12 @@ export default function ProjectSettingNavigator() {
         );
       })}
     </ul>
+  );
+};
+export default function ProjectSettingNavigator() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ProjectSettingNavigatorComponent />
+    </Suspense>
   );
 }

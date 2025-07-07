@@ -11,6 +11,7 @@ import WorkspaceModal from "@/features/workspace/components/workspace-modal";
 import InviteProjectMemberModal from "@/features/projects/components/invite-project-member-modal";
 import TaskModal from "@/features/tasks/components/task-modal";
 import CreateProjectModal from "@/features/projects/components/project-modal";
+import { Suspense } from "react";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -25,26 +26,31 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={cn(inter.className, "antialiased min-h-screen")}
-      >
+      <body className={cn(inter.className, "antialiased min-h-screen")}>
         <Toaster />
-
-        <StoreProvider>
-          <NuqsAdapter>
-            <QueryProviders>
-              <WorkspaceModal />
-              <CreateProjectModal />
-              <InviteProjectMemberModal />
-              <TaskModal />
-              {children}
-              <ReactQueryDevtools
-                initialIsOpen={false}
-                buttonPosition="bottom-right"
-              />
-            </QueryProviders>
-          </NuqsAdapter>
-        </StoreProvider>
+        <Suspense
+          fallback={
+            <div className="h-screen w-screen bg-white flex items-center justify-center">
+              Loading...
+            </div>
+          }
+        >
+          <StoreProvider>
+            <NuqsAdapter>
+              <QueryProviders>
+                <WorkspaceModal />
+                <CreateProjectModal />
+                <InviteProjectMemberModal />
+                <TaskModal />
+                {children}
+                <ReactQueryDevtools
+                  initialIsOpen={false}
+                  buttonPosition="bottom-right"
+                />
+              </QueryProviders>
+            </NuqsAdapter>
+          </StoreProvider>
+        </Suspense>
       </body>
     </html>
   );

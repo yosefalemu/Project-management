@@ -18,7 +18,6 @@ import CustomInputLabel from "@/components/inputs/custom-input-label";
 import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
-import { useRegister } from "../api/register-user-api";
 import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
 import { useBetterAuthRegister } from "../api/better-signup";
@@ -28,7 +27,6 @@ interface SignUpCardProps {
   redirectTo?: string;
 }
 export default function SignUpCard({ redirectTo }: SignUpCardProps) {
-  const registerMutation = useRegister();
   const betterAuthRegisterMutation = useBetterAuthRegister();
   const form = useForm<insertUserType>({
     resolver: zodResolver(insertUserSchema),
@@ -125,9 +123,9 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={registerMutation.isPending}
+              disabled={betterAuthRegisterMutation.isPending}
             >
-              {registerMutation.isPending ? (
+              {betterAuthRegisterMutation.isPending ? (
                 <span className="flex items-center justify-center">
                   <Loader className="mr-2 animate-spin" />
                   <p>Signing Up</p>

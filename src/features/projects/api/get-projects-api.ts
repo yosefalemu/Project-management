@@ -17,8 +17,12 @@ export const useGetProjects = ({ workspaceId }: UseGetProjectsProps) => {
       if (!response.ok) {
         throw new Error("An error occurred while fetching projects data");
       }
-      const { data } = await response.json();
-      return data;
+      const json = await response.json();
+      if ("data" in json) {
+        return json.data;
+      } else {
+        throw new Error(json.error || json.message || "Unknown error");
+      }
     },
   });
   return query;
