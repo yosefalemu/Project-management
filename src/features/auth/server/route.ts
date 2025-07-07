@@ -81,8 +81,14 @@ const app = new Hono()
   })
   .get("/current", sessionMiddleware, async (c) => {
     try {
-      const userId = c.get("userId") as string;
-      const userFound = await db.select().from(user).where(eq(user.id, userId));
+      const userFrom = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFrom?.id) {
+        return c.json({ data: [] });
+      }
+      const userFound = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, userFrom.id));
       if (userFound.length === 0) {
         return c.json({ data: [] });
       }

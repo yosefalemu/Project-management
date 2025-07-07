@@ -7,6 +7,11 @@ import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { RiAddCircleFill } from "react-icons/ri";
 
+interface Project {
+  id: string;
+  name: string;
+  image?: string | null;
+}
 export default function Projects() {
   const params = useParams();
   const pathname = usePathname();
@@ -23,7 +28,7 @@ export default function Projects() {
           onClick={open}
         />
       </div>
-      {data?.map((project) => {
+      {data?.map((project: Project) => {
         const href = `/workspaces/${params.workspaceId}/projects/${project.id}`;
         const isActive = pathname === href;
         return (
