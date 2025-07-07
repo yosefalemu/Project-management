@@ -24,6 +24,7 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  console.log("RootLayout rendered");
   return (
     <html lang="en">
       <body className={cn(inter.className, "antialiased min-h-screen")}>
