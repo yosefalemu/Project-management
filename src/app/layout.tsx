@@ -12,6 +12,7 @@ import InviteProjectMemberModal from "@/features/projects/components/invite-proj
 import TaskModal from "@/features/tasks/components/task-modal";
 import CreateProjectModal from "@/features/projects/components/project-modal";
 import { Suspense } from "react";
+import { ThemeProvider } from "@/components/theme-provider";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -25,32 +26,40 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={cn(inter.className, "antialiased min-h-screen")}>
-        <Toaster />
-        <Suspense
-          fallback={
-            <div className="h-screen w-screen bg-white flex items-center justify-center">
-              Loading...
-            </div>
-          }
+    <html lang="en" suppressHydrationWarning>
+      <body
+        className={cn(inter.className, "antialiased h-screen overflow-hidden")}
+      >
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          disableTransitionOnChange
         >
-          <StoreProvider>
-            <NuqsAdapter>
-              <QueryProviders>
-                <WorkspaceModal />
-                <CreateProjectModal />
-                <InviteProjectMemberModal />
-                <TaskModal />
-                {children}
-                <ReactQueryDevtools
-                  initialIsOpen={false}
-                  buttonPosition="bottom-right"
-                />
-              </QueryProviders>
-            </NuqsAdapter>
-          </StoreProvider>
-        </Suspense>
+          <Toaster />
+          <Suspense
+            fallback={
+              <div className="h-screen w-screen max-h-screen bg-white flex items-center justify-center overflow-hidden">
+                Loading...
+              </div>
+            }
+          >
+            <StoreProvider>
+              <NuqsAdapter>
+                <QueryProviders>
+                  <WorkspaceModal />
+                  <CreateProjectModal />
+                  <InviteProjectMemberModal />
+                  <TaskModal />
+                  <div className="bg-green-600">{children}</div>
+                  <ReactQueryDevtools
+                    initialIsOpen={false}
+                    buttonPosition="bottom-right"
+                  />
+                </QueryProviders>
+              </NuqsAdapter>
+            </StoreProvider>
+          </Suspense>
+        </ThemeProvider>
       </body>
     </html>
   );
