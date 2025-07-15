@@ -5,7 +5,7 @@ import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { RiAddCircleFill } from "react-icons/ri";
+import { RiAddBoxFill } from "react-icons/ri";
 
 interface Project {
   id: string;
@@ -22,9 +22,9 @@ export default function Projects() {
   return (
     <div className="flex flex-col gap-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-xs uppercase text-neutral-500">Projects</p>
-        <RiAddCircleFill
-          className="size-5 text-neutral-500 cursor-pointer hover:opacity-75"
+        <p className="text-xs uppercase">Projects</p>
+        <RiAddBoxFill
+          className="size-5 cursor-pointer hover:opacity-75 rounded-sm"
           onClick={open}
         />
       </div>
@@ -35,8 +35,8 @@ export default function Projects() {
           <Link href={href} key={project.id}>
             <div
               className={cn(
-                "flex items-center gap-2.5 p-2.5 rounded-md hover:text-primary transition cursor-pointer text-neutral-500",
-                isActive && "bg-white shadow-sm hover:opacity-100 text-primary"
+                "flex items-center gap-2.5 rounded-md hover:text-primary transition cursor-pointer text-muted-foreground",
+                isActive && "hover:opacity-100 text-primary"
               )}
             >
               <div className="flex items-center justify-start font-medium gap-2">
@@ -44,7 +44,7 @@ export default function Projects() {
                   name={project.name}
                   image={project.image ?? undefined}
                 />
-                <span className="truncate">
+                <span className="truncate lowercase">
                   {project.name.length > 15
                     ? `${project.name.slice(0, 15)}...`
                     : project.name}

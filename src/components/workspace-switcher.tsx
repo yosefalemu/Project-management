@@ -1,65 +1,87 @@
 "use client";
 
-import { RiAddCircleFill } from "react-icons/ri";
-import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-  SelectItem,
-} from "./ui/select";
 import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
-import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
 
-export default function WorkspaceSwitcher() {
+type WorkspaceSwitcherProps = {
+  workspaces?: Array<{
+    id: string;
+    name: string;
+    image: string | null;
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    creatorId: string;
+    inviteCode: string;
+    inviteCodeExpire: string | null;
+  }>;
+  closeWorkspaceSwitcher: (value: boolean) => void;
+};
+
+export default function WorkspaceSwitcher({
+  workspaces,
+  closeWorkspaceSwitcher,
+}: WorkspaceSwitcherProps) {
+  console.log("WorkspaceSwitcher rendered", workspaces);
   const router = useRouter();
-  const params = useParams();
-  const { data, isLoading, isError } = useGetWorkspaces();
   const { open } = useWorkspaceModalHook();
 
   const handleWorkspaceChange = (value: string) => {
     router.push(`/workspaces/${value}`);
   };
-  if (isLoading) return <div>Loading...</div>;
-  if (isError) return <div>Error...</div>;
+
   return (
     <div className="flex flex-col gap-y-2">
-      <div className="flex items-center justify-between">
-        <p className="text-xs uppercase text-neutral-500">
-          {(data?.length ?? 0) > 1 ? `${data?.length} Workspaces` : "Workspace"}
-        </p>
-        <RiAddCircleFill
-          className="size-5 text-neutral-500 cursor-pointer hover:opacity-75"
-          onClick={open}
-        />
-      </div>
-      <Select
-        onValueChange={handleWorkspaceChange}
-        value={params.workspaceId as string}
+      {workspaces?.map((workspace, index) => (
+        <div
+          className="flex items-center justify-between gap-6 cursor-pointer hover:bg-primary-foreground/15 p-2 rounded-md"
+          key={workspace.id}
+          onClick={() => handleWorkspaceChange(workspace.id)}
+        >
+          <div className="flex items-center gap-2">
+            <WorkspaceAvatar
+              name={workspace.name}
+              image={workspace.image ?? undefined}
+              className="size-10"
+            />
+            <div className="flex flex-col">
+              <h1 className="font-semibold text-sm">{workspace.name}</h1>
+              <p className="font-normal text-muted-foreground text-sm">{`${workspace.name}.jslack.com`}</p>
+            </div>
+          </div>
+          <div>
+            <h1>{`Ctrl ${index + 1}`}</h1>
+          </div>
+        </div>
+      ))}
+      <div
+        className="flex items-center gap-2 cursor-pointer hover:bg-primary-foreground/15 p-2 rounded-md"
+        onClick={() => {
+          open();
+          closeWorkspaceSwitcher(false);
+        }}
       >
-        <SelectTrigger className="w-full h-fit bg-neutral-200 font-medium p-1 border shadow-blue-700 shadow-sm px-4 py-2 text-sm focus:ring-transparent">
-          <SelectValue placeholder="No selected workspaces" />
-        </SelectTrigger>
-        <SelectContent className="py-4 px-0">
-          {data?.map((workspace) => (
-            <SelectItem key={workspace.id} value={workspace.id}>
-              <div className="flex items-center justify-start font-medium gap-2">
-                <WorkspaceAvatar
-                  name={workspace.name}
-                  image={workspace.image ?? undefined}
-                />
-                <span className="truncate">
-                  {workspace.name.length > 15
-                    ? `${workspace.name.slice(0, 15)}...`
-                    : workspace.name}
-                </span>
-              </div>
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+        <div className="size-10 flex items-center justify-center border-2 border-primary-foreground rounded-md">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className="text-primary-foreground"
+          >
+            <path
+              d="M12 4V20M4 12H20"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <h1 className="font-semibold text-sm">Add Workspace</h1>
+      </div>
     </div>
   );
 }

@@ -13,6 +13,7 @@ import TaskModal from "@/features/tasks/components/task-modal";
 import CreateProjectModal from "@/features/projects/components/project-modal";
 import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
   title: "Jira-clone",
@@ -28,7 +29,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={cn(inter.className, "antialiased h-screen overflow-hidden")}
+        className={cn(inter.className, "antialiased h-screen")}
       >
         <ThemeProvider
           attribute="class"
@@ -50,7 +51,11 @@ export default function RootLayout({
                   <CreateProjectModal />
                   <InviteProjectMemberModal />
                   <TaskModal />
-                  <div className="bg-green-600">{children}</div>
+                  <TooltipProvider>
+                    <div className="h-screen w-screen overflow-hidden">
+                      {children}
+                    </div>
+                  </TooltipProvider>
                   <ReactQueryDevtools
                     initialIsOpen={false}
                     buttonPosition="bottom-right"

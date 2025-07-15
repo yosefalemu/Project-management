@@ -1,0 +1,228 @@
+"use client";
+
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import WorkspaceSwitcher from "./workspace-switcher";
+import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
+import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
+import { Skeleton } from "./ui/skeleton";
+import { useParams } from "next/navigation";
+import DirectMessage from "./direct-message";
+import { useBetterAuthGetUser } from "@/features/auth/api/better-get-session";
+import MemberAvatar from "@/features/members/components/member-avatar";
+import UserProfile from "./user-profile";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import Preferences from "./preferences/preferences";
+import { usePreferenceModalStore } from "@/states/modals/user-preference";
+import { useState, useRef, useEffect } from "react";
+
+export default function RightSidebar() {
+  const params = useParams();
+  const workspaceRef = useRef<HTMLDivElement>(null);
+  const dmsRef = useRef<HTMLDivElement>(null);
+  const profileRef = useRef<HTMLDivElement>(null);
+  const [workspaceTooltipOpen, setWorkspaceTooltipOpen] = useState(false);
+  const [dmsTooltipOpen, setDmsTooltipOpen] = useState<boolean>(false);
+  const [userProfileTooltipOpen, setUserProfileTooltipOpen] =
+    useState<boolean>(false);
+  console.log("workspaceTooltipOpen", workspaceTooltipOpen);
+
+  const {
+    data: currentUser,
+    isLoading: isCurrentUserLoading,
+    isError: isCurrentUserError,
+  } = useBetterAuthGetUser();
+  const { data, isLoading, isError } = useGetWorkspaces();
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        (workspaceRef.current &&
+          !workspaceRef.current.contains(event.target as Node) &&
+          workspaceTooltipOpen) ||
+        (dmsRef &&
+          !dmsRef.current?.contains(event.target as Node) &&
+          dmsTooltipOpen) ||
+        (profileRef &&
+          !profileRef.current?.contains(event.target as Node) &&
+          userProfileTooltipOpen)
+      ) {
+        setWorkspaceTooltipOpen(false);
+        setDmsTooltipOpen(false);
+        setUserProfileTooltipOpen(false);
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, [workspaceTooltipOpen, dmsTooltipOpen, userProfileTooltipOpen]);
+
+  if (isLoading || isCurrentUserLoading) {
+    return <Skeleton className="h-14 w-14" />;
+  }
+
+  if (data?.length === 0) {
+    return <div>Add</div>;
+  }
+
+  if (isError || isCurrentUserError) {
+    return <div>Error...</div>;
+  }
+
+  const currentWorkspace = data?.find(
+    (workspace) => workspace.id === params.workspaceId
+  );
+
+  const currentUserData = {
+    name: currentUser?.[0]?.name ?? "",
+    image: currentUser?.[0]?.image ?? "",
+  };
+
+  return (
+    <div className="h-full min-w-12 flex flex-col justify-between items-center">
+      <PreferenceDialog />
+      <div className="flex gap-4 flex-col">
+        <Tooltip open={workspaceTooltipOpen}>
+          <TooltipTrigger asChild>
+            <div
+              onClick={() => setWorkspaceTooltipOpen((prev) => !prev)}
+              className="cursor-pointer"
+            >
+              <WorkspaceAvatar
+                name={currentWorkspace?.name ?? ""}
+                image={currentWorkspace?.image ?? ""}
+                className="size-10"
+              />
+            </div>
+          </TooltipTrigger>
+          <TooltipContent
+            className="rounded-sm"
+            side="bottom"
+            align="start"
+            ref={workspaceRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <WorkspaceSwitcher
+              workspaces={data}
+              closeWorkspaceSwitcher={setWorkspaceTooltipOpen}
+            />
+          </TooltipContent>
+        </Tooltip>
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <div className="hover:bg-primary-foreground/15 p-2 rounded-md cursor-pointer">
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="text-primary-foreground"
+            >
+              <path
+                d="M3 12L12 3L21 12V20C21 21.1 20.1 22 19 22H5C3.9 22 3 21.1 3 20V12Z"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </div>
+          <p className="text-xs">Home</p>
+        </div>
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <Tooltip open={dmsTooltipOpen}>
+            <TooltipTrigger className="cursor-pointer" asChild>
+              <div
+                className="hover:bg-primary-foreground/15 p-2 rounded-md"
+                onClick={() => setDmsTooltipOpen((prev) => !prev)}
+              >
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-primary-foreground"
+                >
+                  <path
+                    d="M4 4H20C21.1 4 22 4.9 22 6V18C22 19.1 21.1 20 20 20H4C2.9 20 2 19.1 2 18V6C2 4.9 2.9 4 4 4Z"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path
+                    d="M22 6L12 13L2 6"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent
+              className="rounded-sm"
+              side="right"
+              align="start"
+              ref={dmsRef}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DirectMessage />
+            </TooltipContent>
+          </Tooltip>
+          <p className="text-xs">DMs</p>
+        </div>
+      </div>
+      <Tooltip open={userProfileTooltipOpen}>
+        <TooltipTrigger
+          onClick={() => setUserProfileTooltipOpen((prev) => !prev)}
+        >
+          <MemberAvatar
+            name={currentUser?.[0]?.name ?? ""}
+            className="size-10 rounded-sm cursor-pointer"
+          />
+        </TooltipTrigger>
+        <TooltipContent
+          className="rounded-sm"
+          side="right"
+          align="start"
+          ref={profileRef}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <UserProfile
+            user={currentUserData}
+            setUserProfileTooltipOpen={setUserProfileTooltipOpen}
+          />
+        </TooltipContent>
+      </Tooltip>
+    </div>
+  );
+}
+
+const PreferenceDialog = () => {
+  const { isOpen, openModal, closeModal } = usePreferenceModalStore();
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          openModal();
+        } else {
+          closeModal();
+        }
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="hidden" />
+        </DialogHeader>
+        <Preferences />
+      </DialogContent>
+    </Dialog>
+  );
+};

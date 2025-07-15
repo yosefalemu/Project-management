@@ -59,20 +59,20 @@ export default function TaskViewSwitcher() {
 
   return (
     <Tabs
-      className="w-full border rounded-lg flex-1"
+      className="bg-pink-500 border rounded-lg flex-1"
       value={view}
       onValueChange={setView}
     >
       <div className="h-full flex flex-col overflow-auto p-4">
         <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
           <TabsList className="w-full lg:w-auto">
-            <TabsTrigger value="table" className="h-full w-full lg:w-auto">
+            <TabsTrigger value="table" className="w-full lg:w-auto">
               Table
             </TabsTrigger>
-            <TabsTrigger value="kanban" className="h-full w-full lg:w-auto">
+            <TabsTrigger value="kanban" className="w-full lg:w-auto">
               Kanban
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="h-full w-full lg:w-auto">
+            <TabsTrigger value="calendar" className="w-full lg:w-auto">
               Calendar
             </TabsTrigger>
           </TabsList>
@@ -95,7 +95,7 @@ export default function TaskViewSwitcher() {
             </div>
           ) : (
             <>
-              <TabsContent value="table" className="lg:w-auto">
+              <TabsContent value="table" className="bg-red-400 w-full">
                 <DataTable data={data as Task[]} columns={columns} />
               </TabsContent>
               <TabsContent value="kanban">
