@@ -79,6 +79,28 @@ const app = new Hono()
       );
     }
   })
+  .get("/get-user", sessionMiddleware, async (c) => {
+    try {
+      const currUser = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!currUser?.id) {
+        return c.json({ data: [] });
+      }
+      const userFound = await db
+        .select()
+        .from(user)
+        .where(eq(user.id, currUser.id));
+      if (userFound.length === 0) {
+        return c.json({ data: [] });
+      }
+      return c.json({ data: userFound });
+    } catch (error) {
+      console.log("Error while getting user", error);
+      return c.json(
+        { error: "InternalServerError", message: "Internal Server Error" },
+        500
+      );
+    }
+  })
   .get("/current", sessionMiddleware, async (c) => {
     try {
       const userFrom = c.get("user") as typeof auth.$Infer.Session.user | null;

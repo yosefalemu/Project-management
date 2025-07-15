@@ -53,7 +53,7 @@ export default function ProjectPage() {
     );
   }
   return (
-    <div className="flex flex-col gap-y-4">
+    <div className="flex flex-col gap-y-4 bg-white">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-4">
           <ProjectAvatar
@@ -78,7 +78,9 @@ export default function ProjectPage() {
           </Button>
         </div>
       </div>
-      <TaskViewSwitcher />
+      <div className="bg-gray-500">
+        <TaskViewSwitcher />
+      </div>
     </div>
   );
 }

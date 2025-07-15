@@ -140,7 +140,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex overflow-x-auto">
+      <div className="flex overflow-x-auto h-full">
         {boards.map((board) => (
           <div
             key={board}
@@ -152,7 +152,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="min-h-[550px] py-1.5 hide-scrollbar"
+                  className="h-[290px] py-1.5 hide-scrollbar overflow-auto"
                 >
                   {tasks[board].map((task, index) => (
                     <Draggable
