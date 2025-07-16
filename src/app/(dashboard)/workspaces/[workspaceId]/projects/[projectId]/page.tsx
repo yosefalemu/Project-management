@@ -53,13 +53,13 @@ export default function ProjectPage() {
     );
   }
   return (
-    <div className="flex flex-col gap-y-4 bg-white">
+    <div className="flex flex-col px-4 py-1 gap-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-x-4">
+        <div className="flex items-center gap-x-2">
           <ProjectAvatar
             name={data?.name || ""}
             image={data?.image ?? undefined}
-            className="size-8"
+            className="size-6 rounded-sm"
           />
           <p className="text-sm font-semibold uppercase">{data?.name}</p>
         </div>
@@ -69,7 +69,7 @@ export default function ProjectPage() {
             workspaceId={data?.workspaceId}
           />
           <ProjectHuddle />
-          <Button variant="secondary" size="sm" asChild className="h-9">
+          <Button variant="secondary" size="sm" asChild>
             <Link
               href={`/settings/project?projectId=${projectId}&workspaceId=${data?.workspaceId}`}
             >
@@ -78,7 +78,7 @@ export default function ProjectPage() {
           </Button>
         </div>
       </div>
-      <div className="bg-gray-500">
+      <div className="flex-1">
         <TaskViewSwitcher />
       </div>
     </div>

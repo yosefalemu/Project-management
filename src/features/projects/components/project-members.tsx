@@ -59,11 +59,11 @@ export default function ProjectMembers({
 
   return (
     <div
-      className="flex items-center space-x-2 rounded-lg my-2 cursor-pointer bg-gray-800/70 p-[1.5px]"
+      className="flex items-center space-x-2 rounded-lg cursor-pointer bg-gray-800/70"
       onClick={open}
     >
       {data.length > 3 ? (
-        <div className="flex items-center">
+        <div className="flex items-center ">
           {data.slice(0, 3).map((member, index) =>
             member.image ? (
               <div

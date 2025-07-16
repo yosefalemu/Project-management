@@ -1,3 +1,4 @@
+"use client";
 import { useCallback, useEffect, useState } from "react";
 import { Task, TaskStatus } from "../constant/types";
 import {
@@ -8,6 +9,8 @@ import {
 } from "@hello-pangea/dnd";
 import KanbanColumnHeader from "./kanban-column-header";
 import KanbanCard from "./kanban-card";
+import { userProfileViewStore } from "@/states/modals/user-profile";
+import { cn } from "@/lib/utils";
 
 interface DataKanbanProps {
   data: Task[];
@@ -28,6 +31,7 @@ type taskState = {
   [key in TaskStatus]: Task[];
 };
 export default function DataKanban({ data, onChange }: DataKanbanProps) {
+  const { isOpen } = userProfileViewStore();
   const [tasks, setTasks] = useState(() => {
     const initialTasks: taskState = {
       [TaskStatus.BACKLOG]: [],
@@ -140,11 +144,16 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex overflow-x-auto h-full">
+      <div
+        className={cn(
+          "flex flex-shrink overflow-x-auto hide-scrollbar w-full",
+          isOpen && "max-w-[850px]"
+        )}
+      >
         {boards.map((board) => (
           <div
             key={board}
-            className="flex-shrink-0 mx-2 bg-muted p-1.5 rounded-md min-w-[350px]"
+            className="mx-2 border-2 p-1.5 rounded-md min-w-[350px]"
           >
             <KanbanColumnHeader board={board} taskCount={tasks[board].length} />
             <Droppable droppableId={board}>
@@ -152,7 +161,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="h-[290px] py-1.5 hide-scrollbar overflow-auto"
+                  className="h-[400px] overflow-y-scroll py-1.5 hide-scrollbar border-t-2"
                 >
                   {tasks[board].map((task, index) => (
                     <Draggable

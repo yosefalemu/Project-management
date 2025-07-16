@@ -35,14 +35,15 @@ export default function Projects() {
           <Link href={href} key={project.id}>
             <div
               className={cn(
-                "flex items-center gap-2.5 rounded-md hover:text-primary transition cursor-pointer text-muted-foreground",
-                isActive && "hover:opacity-100 text-primary"
+                "flex items-center gap-2.5 rounded-md transition cursor-pointer text-muted-foreground text-sm hover:text-foreground",
+                isActive && "text-primary"
               )}
             >
               <div className="flex items-center justify-start font-medium gap-2">
                 <ProjectAvatar
                   name={project.name}
                   image={project.image ?? undefined}
+                  className="size-4 rounded-none"
                 />
                 <span className="truncate lowercase">
                   {project.name.length > 15

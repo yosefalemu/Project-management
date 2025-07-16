@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TbMoodEmpty } from "react-icons/tb";
+import Empty from "@/components/empty";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -105,10 +105,10 @@ export function DataTable<TData, TValue>({
                   className="h-24 text-center"
                 >
                   <div className="flex flex-col gap-y-2 items-center justify-center h-full">
-                    <div className="bg-gray-200 rounded-full p-2 animate-pulse">
-                      <TbMoodEmpty className="size-7 text-muted-foreground" />
-                    </div>
-                    <p className="text-muted-foreground">No Task Found</p>
+                    <Empty
+                      title="No Tasks Found"
+                      description="There are no tasks to display at the moment."
+                    />
                   </div>
                 </TableCell>
               </TableRow>

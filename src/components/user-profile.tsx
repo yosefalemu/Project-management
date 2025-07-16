@@ -37,26 +37,31 @@ export default function UserProfile({
       <DootedSeparator />
       <div className="flex flex-col gap-1 w-full">
         <Button
-          className="flex justify-start w-full hover:bg-primary-foreground/15 h-fit rounded-none p-1"
+          className="flex justify-start w-full h-fit rounded-none p-1"
           onClick={() => {
             openUserProfile();
             setUserProfileTooltipOpen(false);
           }}
+          variant="ghost"
         >
           Profile
         </Button>
         <Button
-          className="flex justify-start w-full hover:bg-primary-foreground/15 h-fit rounded-none p-1"
+          className="flex justify-start w-full h-fit rounded-none p-1"
           onClick={() => {
             openModal();
             setUserProfileTooltipOpen(false);
           }}
+          variant="ghost"
         >
           Preferences
         </Button>
       </div>
       <DootedSeparator />
-      <Button className="flex justify-start p-0 w-full hover:bg-primary-foreground/15 h-fit rounded-sm py-2 px-1">
+      <Button
+        className="flex justify-start p-0 w-full h-fit rounded-sm py-2 px-1"
+        variant="ghost"
+      >
         Signout from {name}.jslack.com
       </Button>
     </div>

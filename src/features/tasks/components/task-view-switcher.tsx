@@ -58,21 +58,26 @@ export default function TaskViewSwitcher() {
   );
 
   return (
-    <Tabs
-      className="bg-pink-500 border rounded-lg flex-1"
-      value={view}
-      onValueChange={setView}
-    >
-      <div className="h-full flex flex-col overflow-auto p-4">
+    <Tabs className="flex-1 overflow-auto" value={view} onValueChange={setView}>
+      <div className="h-full flex flex-col">
         <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
-          <TabsList className="w-full lg:w-auto">
-            <TabsTrigger value="table" className="w-full lg:w-auto">
+          <TabsList className="w-full lg:w-auto h-8 bg-primary rounded-sm">
+            <TabsTrigger
+              value="table"
+              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            >
               Table
             </TabsTrigger>
-            <TabsTrigger value="kanban" className="w-full lg:w-auto">
+            <TabsTrigger
+              value="kanban"
+              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            >
               Kanban
             </TabsTrigger>
-            <TabsTrigger value="calendar" className="w-full lg:w-auto">
+            <TabsTrigger
+              value="calendar"
+              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            >
               Calendar
             </TabsTrigger>
           </TabsList>
@@ -94,8 +99,8 @@ export default function TaskViewSwitcher() {
               <Loader className="animate-spin" />
             </div>
           ) : (
-            <>
-              <TabsContent value="table" className="bg-red-400 w-full">
+            <div className="h-[calc(100vh-240px)] max-w-[calc(100vw-255px)] overflow-auto hide-scrollbar">
+              <TabsContent value="table" className="w-full">
                 <DataTable data={data as Task[]} columns={columns} />
               </TabsContent>
               <TabsContent value="kanban">
@@ -104,7 +109,7 @@ export default function TaskViewSwitcher() {
               <TabsContent value="calendar">
                 <DataCalendar data={data as Task[]} />
               </TabsContent>
-            </>
+            </div>
           )}
         </>
       </div>

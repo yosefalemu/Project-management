@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { TaskStatus } from "../constant/types";
 import { useParams, useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
 
 interface EventCardProps {
   title: string;
@@ -29,16 +30,16 @@ export default function EventCard({
   };
   return (
     <div className="px-2 cursor-pointer">
-      <div
+      <Card
         className={cn(
-          "p-1.5 text-sm bg-white text-primary border rounded-md border-l-4 flex  flex-col gap-y-1.5 cusror-pointer hover:opacity-75 transition",
+          "p-1.5 text-sm border rounded-md border-l-4 flex  flex-col gap-y-1.5 cusror-pointer hover:opacity-75 transition",
           statusColorMatch[status]
         )}
         onClick={onClick}
       >
         <p>{title}</p>
         <p>{assignee}</p>
-      </div>
+      </Card>
     </div>
   );
 }
