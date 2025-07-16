@@ -13,7 +13,7 @@ export default function DootedSeparator({
   color = "#d4d4d8",
   height = "2px",
   dotSize = "2px",
-  gapSize = "6px",
+  gapSize = "0px",
   direction = "horizontal",
 }: DootedSeparatorProps) {
   const isHorizontal = direction === "horizontal";

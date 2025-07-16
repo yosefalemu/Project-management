@@ -41,7 +41,7 @@ export default function KanbanColumnHeader({
       <div className="flex items-center gap-x-2">
         {icon}
         <h2 className="font-medium text-sm">{board}</h2>
-        <div className="size-5 flex items-center justify-center rounded-md bg-neutral-200 text-xs text-neutral-700 font-medium">
+        <div className="size-5 flex items-center justify-center rounded-md text-xs text-neutral-700 font-medium">
           {taskCount}
         </div>
       </div>

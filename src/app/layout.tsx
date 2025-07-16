@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import QueryProviders from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import StoreProvider from "@/store/store-provider";
@@ -20,7 +18,6 @@ export const metadata: Metadata = {
   description: "Jira clone built with Next.js",
 };
 
-const inter = Inter({ subsets: ["latin"] });
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,9 +25,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(inter.className, "antialiased h-screen")}
-      >
+      <body className="antialiased h-screen">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -39,7 +34,7 @@ export default function RootLayout({
           <Toaster />
           <Suspense
             fallback={
-              <div className="h-screen w-screen max-h-screen bg-white flex items-center justify-center overflow-hidden">
+              <div className="h-screen w-screen max-h-screen flex items-center justify-center overflow-hidden">
                 Loading...
               </div>
             }
@@ -52,7 +47,7 @@ export default function RootLayout({
                   <InviteProjectMemberModal />
                   <TaskModal />
                   <TooltipProvider>
-                    <div className="h-screen w-screen overflow-hidden">
+                    <div className="h-screen w-screen overflow-hidden bg-primary">
                       {children}
                     </div>
                   </TooltipProvider>

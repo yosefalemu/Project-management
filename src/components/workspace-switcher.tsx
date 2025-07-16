@@ -35,7 +35,7 @@ export default function WorkspaceSwitcher({
     <div className="flex flex-col gap-y-2">
       {workspaces?.map((workspace, index) => (
         <div
-          className="flex items-center justify-between gap-6 cursor-pointer hover:bg-primary-foreground/15 p-2 rounded-md"
+          className="flex items-center justify-between gap-6 cursor-pointer p-2 rounded-md"
           key={workspace.id}
           onClick={() => handleWorkspaceChange(workspace.id)}
         >
@@ -56,20 +56,20 @@ export default function WorkspaceSwitcher({
         </div>
       ))}
       <div
-        className="flex items-center gap-2 cursor-pointer hover:bg-primary-foreground/15 p-2 rounded-md"
+        className="flex items-center gap-2 cursor-pointer p-2 rounded-md"
         onClick={() => {
           open();
           closeWorkspaceSwitcher(false);
         }}
       >
-        <div className="size-10 flex items-center justify-center border-2 border-primary-foreground rounded-md">
+        <div className="size-10 flex items-center justify-center border-2 border-primary rounded-md">
           <svg
             width="24"
             height="24"
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
-            className="text-primary-foreground"
+            className="text-primary"
           >
             <path
               d="M12 4V20M4 12H20"

@@ -24,7 +24,12 @@ export default function ProjectAvatar({
   }
   return (
     <Avatar className={cn("size-6 rounded-sm", className)} key={name}>
-      <AvatarFallback className="text-white bg-blue-600 font-semibold text-sm uppercase rounded-md">
+      <AvatarFallback
+        className={cn(
+          "text-white bg-blue-600 font-semibold text-sm uppercase",
+          className
+        )}
+      >
         {name[0]}
       </AvatarFallback>
     </Avatar>

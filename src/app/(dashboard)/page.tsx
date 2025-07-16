@@ -31,13 +31,13 @@ export default function Dashboard() {
   }, [loading, isError, data, router, refetch, open]);
 
   return (
-    <div className="h-full">
+    <div className="h-full relative">
       {!loading && isError ? (
         <div>Error</div>
       ) : loading && !isError ? (
         <LoadingLayout />
       ) : (
-        <div className="h-screen w-screen bg-red-500/50" />
+        null
       )}
     </div>
   );

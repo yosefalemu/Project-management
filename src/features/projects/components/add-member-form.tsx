@@ -9,7 +9,7 @@ import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import MemberAvatar from "@/features/members/components/member-avatar";
-import { MoreVerticalIcon, BadgeX, Loader2 } from "lucide-react";
+import { MoreVerticalIcon, Loader2 } from "lucide-react";
 import InviteMemberAction from "./add-member-action";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useEffect, useState } from "react";
@@ -17,6 +17,7 @@ import { addMemberType, addMemberValidator } from "../validators/add-member";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAddProjectMember } from "../api/add-member-api";
 import { toast } from "sonner";
+import Empty from "@/components/empty";
 
 export default function InviteMemberForm() {
   const { projectId, workspaceId } = useParams();
@@ -193,9 +194,11 @@ export default function InviteMemberForm() {
                   })}
                 </>
               ) : (
-                <div className="w-full h-full flex items-center justify-center flex-col space-y-4 bg-gray-50">
-                  <BadgeX className="size-10 opacity-50" />
-                  <p className="text-gray-500">No members found</p>
+                <div className="w-full h-full flex items-center justify-center flex-col space-y-4">
+                  <Empty
+                    title="No Members Found"
+                    description="Try searching with different keywords or invite new members."
+                  />
                 </div>
               )}
             </div>
