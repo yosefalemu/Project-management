@@ -45,6 +45,27 @@ export const selectUserSchema = createInsertSchema(user, {
       .nonempty("Password is required")
       .min(8, "Password must be at least 8 characters"),
 });
+
+export const updateUserSchema = createInsertSchema(user, {
+  id: (schema) => schema.uuid("Invalid uuid format").optional(),
+  name: (schema) =>
+    schema
+      .nonempty("Name is required")
+      .min(3, "Name must be at least 3 characters")
+      .optional(),
+  email: (schema) =>
+    schema
+      .nonempty("Email is required")
+      .email("Invalid email format")
+      .optional(),
+  password: (schema) =>
+    schema
+      .nonempty("Password is required")
+      .min(8, "Password must be at least 8 characters")
+      .optional(),
+  image: (schema) => schema.optional(),
+});
+
 export type insertUserType = typeof insertUserSchema._type;
 export type loginUserType = typeof loginUserSchema._type;
 export type selectUserType = typeof selectUserSchema._type;

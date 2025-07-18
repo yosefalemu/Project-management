@@ -26,5 +26,6 @@ export type Task = {
     confirm_password: string | null;
     createdAt: string;
     updatedAt: string;
+    image: string | null;
   };
 };

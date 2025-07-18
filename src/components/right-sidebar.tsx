@@ -177,6 +177,7 @@ export default function RightSidebar() {
         >
           <MemberAvatar
             name={currentUser?.[0]?.name ?? ""}
+            image={currentUser?.[0]?.image ?? ""}
             className="size-10 rounded-sm cursor-pointer"
           />
         </TooltipTrigger>

@@ -32,6 +32,7 @@ export default function DataCalendar({ data }: DataCalendarProps) {
     data.length > 0 ? new Date(data[0].dueDate) : new Date()
   );
 
+  console.log("DataCalendar data", data);
   const events = data.map((task) => ({
     start: new Date(task.dueDate),
     end: new Date(task.dueDate),
@@ -39,6 +40,7 @@ export default function DataCalendar({ data }: DataCalendarProps) {
     assignee: task.assignedUser.name,
     status: task.status,
     id: task.id,
+    image: task.assignedUser.image || null,
   }));
 
   const handleNavigation = (action: "PREV" | "NEXT" | "TODAY") => {
@@ -73,6 +75,7 @@ export default function DataCalendar({ data }: DataCalendarProps) {
             title={event.title}
             assignee={event.assignee!}
             status={event.status as TaskStatus}
+            image={event.image}
           />
         ),
         toolbar: () => (

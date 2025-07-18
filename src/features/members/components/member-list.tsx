@@ -94,7 +94,11 @@ export default function MembersList() {
               {data?.map((member) => (
                 <Fragment key={member.id}>
                   <div className="flex items-center gap-2">
-                    <MemberAvatar name={member.name!} key={member.id!} />
+                    <MemberAvatar
+                      name={member.name!}
+                      key={member.id!}
+                      image={member.image ?? undefined}
+                    />
                     <div className="flex flex-col">
                       <p className="text-sm font-medium">{member.name}</p>
                       <p className="text-xs font-muted-foreground">

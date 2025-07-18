@@ -67,7 +67,7 @@ export default function ProjectMembers({
           {data.slice(0, 3).map((member, index) =>
             member.image ? (
               <div
-                className="relative h-8 w-8 rounded-full overflow-hidden"
+                className="relative h-8 w-8 rounded-sm overflow-hidden"
                 style={{
                   marginLeft: index === 0 ? "0" : "-16px",
                   zIndex: data.length * 10 - index * 10,
@@ -84,7 +84,7 @@ export default function ProjectMembers({
             ) : (
               <div
                 className={cn(
-                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
+                  "relative h-8 w-8 rounded-sm overflow-hidden flex items-center justify-center",
                   getBackgroundClass(index)
                 )}
                 style={{
@@ -99,7 +99,7 @@ export default function ProjectMembers({
               </div>
             )
           )}
-          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 cursor-pointer">
+          <div className="flex items-center justify-center h-8 w-8 rounded-sm bg-gray-200 cursor-pointer">
             <p className="text-muted-foreground text-xs">{data.length - 3}</p>
           </div>
         </div>
@@ -108,7 +108,7 @@ export default function ProjectMembers({
           {data.map((member, index) =>
             member.image ? (
               <div
-                className="relative h-8 w-8 rounded-full overflow-hidden"
+                className="relative h-8 w-8 rounded-sm overflow-hidden"
                 style={{
                   marginLeft: index === 0 ? "0" : "-16px",
                   zIndex: data.length - index,
@@ -125,7 +125,7 @@ export default function ProjectMembers({
             ) : (
               <div
                 className={cn(
-                  "relative h-8 w-8 rounded-lg overflow-hidden flex items-center justify-center",
+                  "relative h-8 w-8 rounded-sm overflow-hidden flex items-center justify-center",
                   getBackgroundClass(index)
                 )}
                 style={{
@@ -142,8 +142,8 @@ export default function ProjectMembers({
           )}
         </div>
       )}
-      <div className="flex items-center justify-center h-8 w-8 rounded-tr-lg rounded-br-lg rounded-bl-md rounded-tl-md bg-gray-200">
-        <IoAddSharp className="h-4 w-4 text-gray-600" />
+      <div className="flex items-center justify-center h-8 w-8 rounded-tr-sm rounded-br-sm rounded-bl-sm rounded-tl-sm bg-gray-200">
+        <IoAddSharp className="text-gray-600" />
       </div>
     </div>
   );

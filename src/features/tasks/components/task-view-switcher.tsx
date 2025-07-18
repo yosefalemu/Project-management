@@ -61,7 +61,7 @@ export default function TaskViewSwitcher() {
     <Tabs className="flex-1 overflow-auto" value={view} onValueChange={setView}>
       <div className="h-full flex flex-col">
         <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
-          <TabsList className="w-full lg:w-auto h-8 bg-primary rounded-sm">
+          <TabsList className="w-full lg:w-auto h-8 bg-primary/75 rounded-sm">
             <TabsTrigger
               value="table"
               className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
