@@ -319,13 +319,19 @@ const app = new Hono()
         );
 
         const validUsersFound = await db
-          .select({ id: user.id, name: user.name, email: user.email })
+          .select({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          })
           .from(user)
           .where(inArray(user.id, validWorkspaceMembersIds));
         const validUsers = validUsersFound.map((user) => ({
           id: user.id,
           name: user.name,
           email: user.email,
+          image: user.image,
         }));
 
         return c.json({ data: validUsers }, 200);

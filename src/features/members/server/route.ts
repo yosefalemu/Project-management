@@ -37,7 +37,12 @@ const app = new Hono()
           userRole: member.role,
         }));
         const usersFound = await db
-          .select({ id: user.id, name: user.name, email: user.email })
+          .select({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          })
           .from(user)
           .where(
             inArray(

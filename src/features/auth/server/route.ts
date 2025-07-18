@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { deleteCookie, setCookie } from "hono/cookie";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { eq } from "drizzle-orm";
 
@@ -12,6 +12,7 @@ import {
   insertUserSchema,
   loginUserSchema,
   selectUserSchema,
+  updateUserSchema,
 } from "@/zod-schemas/users-schema";
 import { user } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
@@ -101,6 +102,35 @@ const app = new Hono()
       );
     }
   })
+  .patch(
+    "/update-user",
+    sessionMiddleware,
+    zValidator("json", updateUserSchema),
+    async (c) => {
+      const userFrom = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFrom?.id) {
+        return c.json(
+          { error: "Unauthorized", message: "User not found" },
+          401
+        );
+      }
+      try {
+        const { name, email, image } = c.req.valid("json");
+        const updatedUser = await db
+          .update(user)
+          .set({ name, email, image })
+          .where(eq(user.id, userFrom.id))
+          .returning();
+        return c.json({ data: updatedUser[0] });
+      } catch (error) {
+        console.log("Error while updating user", error);
+        return c.json(
+          { error: "InternalServerError", message: "Internal Server Error" },
+          500
+        );
+      }
+    }
+  )
   .get("/current", sessionMiddleware, async (c) => {
     try {
       const userFrom = c.get("user") as typeof auth.$Infer.Session.user | null;

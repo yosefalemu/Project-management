@@ -25,7 +25,7 @@ export default function InviteMemberForm() {
   const { close } = useInviteMemberModalHook();
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredMembers, setFilteredMembers] = useState<
-    { id: string; email: string; name: string }[]
+    { id: string; email: string; name: string; image: string }[]
   >([]);
   const [selectedMembers, setSelectedMembers] = useState<
     { userRole: "admin" | "member" | "viewer"; userId: string }[]
@@ -43,9 +43,14 @@ export default function InviteMemberForm() {
 
   useEffect(() => {
     setFilteredMembers(
-      data?.filter((member) =>
-        member.email.toLowerCase().includes(searchTerm.toLowerCase())
-      ) || []
+      data
+        ?.filter((member) =>
+          member.email.toLowerCase().includes(searchTerm.toLowerCase())
+        )
+        .map((member) => ({
+          ...member,
+          image: member.image ?? "",
+        })) || []
     );
   }, [searchTerm, data]);
 
@@ -172,7 +177,11 @@ export default function InviteMemberForm() {
                               )
                             }
                           />
-                          <MemberAvatar name={member.name} className="size-8" />
+                          <MemberAvatar
+                            name={member.name}
+                            className="size-8"
+                            image={member.image ?? undefined}
+                          />
                           <div>
                             <p className="text-sm">{member.name}</p>
                             <p className="opacity-50 text-xs">{member.email}</p>

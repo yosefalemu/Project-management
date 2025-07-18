@@ -17,12 +17,12 @@ export default function KanbanCard({ task }: KanbanCardProps) {
           <MoreHorizontal className="cursor-pointer" />
         </TaskActions>
       </div>
-      <div className="flex items-center gap-x-1.5">
+      <div className="flex items-center gap-x-3">
         <MemberAvatar
           name={task.assignedUser.name!}
-          className="size-6 text-xs"
+          image={task.assignedUser.image ?? undefined}
+          className="size-6 text-xs rounded-sm"
         />
-        <div className="size-1 rounded-full bg-neutral-300" />
         <TaskDate value={task.dueDate} className="text-xs" />
       </div>
     </Card>
