@@ -40,7 +40,6 @@ export const useUpdateMember = () => {
 
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE UPDATING MEMBER ROLE", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&

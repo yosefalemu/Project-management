@@ -13,7 +13,6 @@ export const useBetterAuthRegister = () => {
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }) => {
       const response = await client.api.auth["sign-up"].email.$post({ json });
-      console.log("Response received:", response);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to register");

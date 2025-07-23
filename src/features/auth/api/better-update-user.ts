@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 import { client } from "@/lib/rpc";
 
@@ -11,10 +11,10 @@ type RequestType = InferRequestType<
 >;
 
 export const useBetterAuthUpdateUser = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }) => {
       const response = await client.api.auth["update-user"].$patch({ json });
-      console.log("Response received:", response);
       if (!response.ok) {
         const errorData = await response.json();
         const errorMessage =
@@ -25,6 +25,9 @@ export const useBetterAuthUpdateUser = () => {
       }
       const data = await response.json();
       return data;
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["currentUser"] });
     },
   });
   return mutation;

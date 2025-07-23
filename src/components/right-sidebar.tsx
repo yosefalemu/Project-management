@@ -11,7 +11,7 @@ import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { Skeleton } from "./ui/skeleton";
 import { useParams } from "next/navigation";
 import DirectMessage from "./direct-message";
-import { useBetterAuthGetUser } from "@/features/auth/api/better-get-session";
+import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import UserProfile from "./user-profile";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
@@ -28,7 +28,6 @@ export default function RightSidebar() {
   const [dmsTooltipOpen, setDmsTooltipOpen] = useState<boolean>(false);
   const [userProfileTooltipOpen, setUserProfileTooltipOpen] =
     useState<boolean>(false);
-  console.log("workspaceTooltipOpen", workspaceTooltipOpen);
 
   const {
     data: currentUser,

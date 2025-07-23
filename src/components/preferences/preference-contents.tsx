@@ -50,10 +50,8 @@ const AppearanceComponent = () => {
     "Noto Sans",
     "Droid Sans",
   ];
-  const { setTheme, resolvedTheme } = useTheme();
+  const { setTheme } = useTheme();
   const { font, setFont } = fontProfile();
-
-  console.log("theme detected", resolvedTheme);
 
   return (
     <div className="flex flex-col space-y-4 h-full">

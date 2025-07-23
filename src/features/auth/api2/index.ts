@@ -2,7 +2,6 @@ import { Hono } from "hono";
 import { auth } from "@/lib/auth";
 
 const app = new Hono();
-console.log("Auth API initialized");
 
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 

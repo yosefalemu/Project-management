@@ -23,7 +23,6 @@ const isProtectedRoute = (pathname: string) => {
     if (route.includes(":path*")) {
       const regexPattern = `^/[^/]+/opengraph-image(?:-[a-z0-9]+)?\\.(?:png|jpg|jpeg|gif)(?:\\?.*)?$`;
       const matches = pathname.match(new RegExp(regexPattern));
-      console.log(`Testing ${pathname} against ${regexPattern}: ${!!matches}`);
       return matches;
     }
     return pathname === route;
