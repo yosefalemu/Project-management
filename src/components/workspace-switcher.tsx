@@ -23,7 +23,6 @@ export default function WorkspaceSwitcher({
   workspaces,
   closeWorkspaceSwitcher,
 }: WorkspaceSwitcherProps) {
-  console.log("WorkspaceSwitcher rendered", workspaces);
   const router = useRouter();
   const { open } = useWorkspaceModalHook();
 

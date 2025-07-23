@@ -26,7 +26,6 @@ export default function ProjectPage() {
           <div className="flex gap-x-2">
             <Skeleton className="h-8 w-20 bg-primary/15" />
             <Skeleton className="h-8 w-20 bg-primary/15" />
-            <Skeleton className="h-8 w-20 bg-primary/15" />
           </div>
           <Skeleton className="h-8 w-56 bg-primary/15" />
           <div className="flex flex-col gap-y-4">

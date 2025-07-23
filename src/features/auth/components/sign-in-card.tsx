@@ -37,13 +37,11 @@ export default function SignInCard({ redirectTo }: SignInCardProps) {
       password: "",
     },
   });
-  console.log("form errors:", form.formState.errors);
   const handleLogin = (data: loginUserType) => {
     betterAuthSignInMutation.mutate(
       { json: data },
       {
-        onSuccess: (data) => {
-          console.log("Login successful:", data);
+        onSuccess: () => {
           toast.success("Logged in successfully");
 
           router.push(redirectTo || "/");

@@ -19,7 +19,6 @@ import { auth } from "@/lib/auth";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
-    console.log("Sign-up request received", c.req.valid("json"));
     const { name, email, password, confirmPassword } = c.req.valid("json");
     if (password !== confirmPassword) {
       return c.json(
@@ -38,7 +37,6 @@ const app = new Hono()
       });
       return c.json({ data: response.user }, 201);
     } catch (error) {
-      console.log("Error during sign-up:", error);
       return c.json(
         {
           error: "InternalServerError",
@@ -66,7 +64,6 @@ const app = new Hono()
       });
       return c.json({ data: response.user }, 200);
     } catch (error) {
-      console.log("Error during sign-in:", error);
       return c.json(
         {
           error: "InternalServerError",
@@ -95,9 +92,15 @@ const app = new Hono()
       }
       return c.json({ data: userFound });
     } catch (error) {
-      console.log("Error while getting user", error);
       return c.json(
-        { error: "InternalServerError", message: "Internal Server Error" },
+        {
+          error: "InternalServerError",
+          message:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message?: string }).message ||
+                "Internal Server Error"
+              : "Internal Server Error",
+        },
         500
       );
     }
@@ -123,9 +126,15 @@ const app = new Hono()
           .returning();
         return c.json({ data: updatedUser[0] });
       } catch (error) {
-        console.log("Error while updating user", error);
         return c.json(
-          { error: "InternalServerError", message: "Internal Server Error" },
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
           500
         );
       }
@@ -146,9 +155,15 @@ const app = new Hono()
       }
       return c.json({ data: userFound[0] });
     } catch (error) {
-      console.log("Error while getting current user", error);
       return c.json(
-        { error: "InternalServerError", message: "Internal Server Error" },
+        {
+          error: "InternalServerError",
+          message:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message?: string }).message ||
+                "Internal Server Error"
+              : "Internal Server Error",
+        },
         500
       );
     }
@@ -191,10 +206,16 @@ const app = new Hono()
         sameSite: "Strict",
       });
       return c.json({ email, password });
-    } catch (err) {
-      console.log("Error while login", err);
+    } catch (error) {
       return c.json(
-        { error: "InternalServerError", message: "Internal Server Error" },
+        {
+          error: "InternalServerError",
+          message:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message?: string }).message ||
+                "Internal Server Error"
+              : "Internal Server Error",
+        },
         500
       );
     }
@@ -203,10 +224,16 @@ const app = new Hono()
     try {
       deleteCookie(c, AUTH_COOKIE);
       return c.json({ message: "Logged out successfully" });
-    } catch (err) {
-      console.log("Error while logout", err);
+    } catch (error) {
       return c.json(
-        { error: "InternalServerError", message: "Internal Server Error" },
+        {
+          error: "InternalServerError",
+          message:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message?: string }).message ||
+                "Internal Server Error"
+              : "Internal Server Error",
+        },
         500
       );
     }

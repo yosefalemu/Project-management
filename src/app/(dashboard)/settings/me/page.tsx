@@ -23,7 +23,6 @@ export default function ProfileSettings() {
     setThemeChecked(resolvedTheme === "dark");
   }, [resolvedTheme]);
 
-  console.log("theme detected", resolvedTheme);
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {

@@ -39,7 +39,6 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
   });
 
   const handleSignUp = async (user: insertUserType) => {
-    console.log("User data for signup:", user);
     betterAuthRegisterMutation.mutate(
       {
         json: {
@@ -50,9 +49,8 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
         },
       },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           toast.success("Successfully signed up!");
-          console.log("Sign up successful:", data);
         },
         onError: (error) => {
           toast.error(error.message || "Sign up failed");
