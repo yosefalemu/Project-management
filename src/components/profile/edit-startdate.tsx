@@ -72,6 +72,7 @@ export default function EditStartDate({ startDatePrev }: EditStartDateProps) {
         }
       );
     } else {
+      console.log("Start date already exists, please edit it instead.");
       // TODO:: IMPLEMENT EDIT FUNCTIONALITY
       toast.error("Start date already exists, please edit it instead.");
     }
