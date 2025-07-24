@@ -3,7 +3,7 @@ import { zValidator } from "@hono/zod-validator";
 import { deleteCookie, setCookie } from "hono/cookie";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { sessionMiddleware } from "@/lib/session-middleware";
@@ -14,8 +14,9 @@ import {
   selectUserSchema,
   updateUserSchema,
 } from "@/zod-schemas/users-schema";
-import { user } from "@/db/schema/schema";
+import { startDate, user } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
+import z, { string } from "zod";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
@@ -118,10 +119,10 @@ const app = new Hono()
         );
       }
       try {
-        const { name, email, image } = c.req.valid("json");
+        const { name, email, image, phoneNumber } = c.req.valid("json");
         const updatedUser = await db
           .update(user)
-          .set({ name, email, image })
+          .set({ name, email, image, phoneNumber })
           .where(eq(user.id, userFrom.id))
           .returning();
         return c.json({ data: updatedUser[0] });
@@ -168,6 +169,127 @@ const app = new Hono()
       );
     }
   })
+  .get(
+    "/get-start-date",
+    sessionMiddleware,
+    zValidator("query", z.object({ workspaceId: string() })),
+    async (c) => {
+      console.log("Fetching in server", c.req.valid("query").workspaceId);
+      try {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        if (!userFound?.id) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "User not found or not authenticated",
+            },
+            401
+          );
+        }
+        const { workspaceId } = c.req.valid("query");
+        console.log("date for workspaceId:", workspaceId);
+        if (!workspaceId) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "Workspace ID is required",
+            },
+            400
+          );
+        }
+        const startDateFound = await db
+          .select()
+          .from(startDate)
+          .where(
+            and(
+              eq(startDate.workspaceId, workspaceId),
+              eq(startDate.userId, userFound.id)
+            )
+          );
+        return c.json(
+          {
+            data: startDateFound.length > 0 ? startDateFound[0] : null,
+          },
+          200
+        );
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .post(
+    "/create-start-date",
+    sessionMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        workspaceId: string(),
+        startDate: z.string().refine((date) => !isNaN(Date.parse(date)), {
+          message: "Invalid date format",
+        }),
+      })
+    ),
+    async (c) => {
+      try {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        if (!userFound?.id) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "User not found or not authenticated",
+            },
+            401
+          );
+        }
+        const { workspaceId, startDate: startDateValue } = c.req.valid("json");
+        if (!workspaceId || !startDateValue) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "Workspace ID and start date are required",
+            },
+            400
+          );
+        }
+        const newStartDate = await db
+          .insert(startDate)
+          .values({
+            id: crypto.randomUUID(),
+            workspaceId,
+            userId: userFound.id,
+            startDate: new Date(startDateValue),
+          })
+          .returning();
+        return c.json({ data: newStartDate });
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
   .post("/login", zValidator("json", selectUserSchema), async (c) => {
     const { email, password } = c.req.valid("json");
     try {

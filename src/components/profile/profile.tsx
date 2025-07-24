@@ -19,6 +19,10 @@ import EditProfile from "./edit-profile";
 import CropImageComponent from "./crop-image";
 import { FileUploader } from "react-drag-drop-files";
 import "react-image-crop/dist/ReactCrop.css";
+import EditContactInformation from "./edit-contact";
+import EditStartDate from "./edit-startdate";
+import { useGetStartDate } from "@/features/auth/api/get-start-date";
+import { formatDistanceToNow } from "date-fns";
 
 const MIN_DIMENSION = 150;
 export default function UserProfileInfo() {
@@ -36,6 +40,10 @@ export default function UserProfileInfo() {
     isLoading: isCurrentUserLoading,
     isError: isCurrentUserError,
   } = useBetterAuthGetUser();
+
+  const { data: startDate, isLoading: isStartDateLoading } = useGetStartDate(
+    "4ca34128-6264-4715-8881-1c2a59a803d5"
+  );
 
   const handleFileChange = (
     input: File | React.ChangeEvent<HTMLInputElement>
@@ -65,14 +73,14 @@ export default function UserProfileInfo() {
     reader.readAsDataURL(file);
   };
 
-  if (isCurrentUserLoading) {
+  if (isCurrentUserLoading || isStartDateLoading) {
     return <div className="p-4">Loading...</div>;
   }
   if (isCurrentUserError || !currentUser) {
     return <div className="p-4">Error loading user profile</div>;
   }
 
-  const { name, image, email } = currentUser[0];
+  const { name, image, email, phoneNumber } = currentUser[0];
   const fileTypes = ["JPG", "PNG", "GIF"];
 
   return (
@@ -202,12 +210,7 @@ export default function UserProfileInfo() {
                   Edit
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Contact Information</DialogTitle>
-                </DialogHeader>
-                <div>Edit Contact Information</div>
-              </DialogContent>
+              <EditContactInformation user={currentUser[0]} />
             </Dialog>
           </div>
           <div className="flex items-start gap-2">
@@ -228,7 +231,7 @@ export default function UserProfileInfo() {
             <div className="flex flex-col justify-between items-start">
               <h1 className="font-semibold text-sm">Phone</h1>
               <p className="text-sm font-normal underline text-blue-600">
-                0952525503
+                {phoneNumber || "Not provided"}
               </p>
             </div>
           </div>
@@ -242,19 +245,33 @@ export default function UserProfileInfo() {
                   Edit
                 </Button>
               </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Edit Start Date</DialogTitle>
-                </DialogHeader>
-                <div>Edit Start Date Form</div>
-              </DialogContent>
+              <EditStartDate startDatePrev={startDate?.startDate ?? null} />
             </Dialog>
           </div>
           <div className="flex flex-col items-start gap-1">
             <h1 className="font-semibold text-sm">Start Date</h1>
-            <p className="text-sm font-normal underline text-blue-600">
-              {email} {/* TODO: Replace with actual start date */}
-            </p>
+            <div className="text-sm font-normal text-blue-600">
+              {startDate ? (
+                <div className="flex items-center gap-x-1">
+                  <p>
+                    {new Date(startDate.startDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
+                  <p>
+                    (
+                    {formatDistanceToNow(new Date(startDate.startDate), {
+                      addSuffix: true,
+                    })}
+                    )
+                  </p>
+                </div>
+              ) : (
+                <p>No start date provided</p>
+              )}
+            </div>
           </div>
         </div>
       </div>

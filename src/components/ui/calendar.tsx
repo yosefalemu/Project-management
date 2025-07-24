@@ -1,13 +1,18 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { DayPicker } from "react-day-picker"
+import * as React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+} from "lucide-react";
+import { DayPicker } from "react-day-picker";
 
-import { cn } from "@/lib/utils"
-import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils";
+import { Button, buttonVariants } from "@/components/ui/button";
 
-export type CalendarProps = React.ComponentProps<typeof DayPicker>
+export type CalendarProps = React.ComponentProps<typeof DayPicker>;
 
 function Calendar({
   className,
@@ -15,8 +20,40 @@ function Calendar({
   showOutsideDays = true,
   ...props
 }: CalendarProps) {
+  const [month, setMonth] = React.useState<Date>(new Date());
+
+  const handleNextMonth = () => {
+    setMonth((prev) => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() + 1);
+      return newDate;
+    });
+  };
+  const handlePreviousMonth = () => {
+    setMonth((prev) => {
+      const newDate = new Date(prev);
+      newDate.setMonth(newDate.getMonth() - 1);
+      return newDate;
+    });
+  };
+  const handleNextYear = () => {
+    setMonth((prev) => {
+      const newDate = new Date(prev);
+      newDate.setFullYear(newDate.getFullYear() + 1);
+      return newDate;
+    });
+  };
+  const handlePreviousYear = () => {
+    setMonth((prev) => {
+      const newDate = new Date(prev);
+      newDate.setFullYear(newDate.getFullYear() - 1);
+      return newDate;
+    });
+  };
   return (
     <DayPicker
+      month={month}
+      onMonthChange={setMonth}
       showOutsideDays={showOutsideDays}
       className={cn("p-3", className)}
       classNames={{
@@ -60,17 +97,53 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          <ChevronLeft className={cn("h-4 w-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          <ChevronRight className={cn("h-4 w-4", className)} {...props} />
+        Caption: ({ displayMonth }) => (
+          <div className="flex justify-between items-center">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:text-muted-foreground hover:bg-transparent p-0 size-4"
+              onClick={handlePreviousYear}
+            >
+              <ChevronsLeft className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:text-muted-foreground hover:bg-transparent p-0 size-4"
+              onClick={handlePreviousMonth}
+            >
+              <ChevronLeft className="size-4" />
+            </Button>
+            <span>
+              {displayMonth.toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:text-muted-foreground hover:bg-transparent p-0 size-4"
+              onClick={handleNextMonth}
+            >
+              <ChevronRight className="size-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:text-muted-foreground hover:bg-transparent p-0 size-4"
+              onClick={handleNextYear}
+            >
+              <ChevronsRight className="size-4" />
+            </Button>
+          </div>
         ),
       }}
       {...props}
     />
-  )
+  );
 }
-Calendar.displayName = "Calendar"
+Calendar.displayName = "Calendar";
 
-export { Calendar }
+export { Calendar };

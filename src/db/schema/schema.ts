@@ -36,6 +36,7 @@ export const user = pgTable("user", {
     .$defaultFn(() => false)
     .notNull(),
   image: text("image"),
+  phoneNumber: text("phone_number"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
@@ -86,6 +87,17 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at").$defaultFn(
     () => /* @__PURE__ */ new Date()
   ),
+});
+
+export const startDate = pgTable("start_date", {
+  id: text("id").primaryKey(),
+  startDate: timestamp("start_date").notNull(),
+  userId: text("user_id"),
+  workspaceId: text("workspace_id")
+    .notNull()
+    .references(() => workspace.id, {
+      onDelete: "cascade",
+    }),
 });
 
 // Workspaces table

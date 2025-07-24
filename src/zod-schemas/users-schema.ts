@@ -58,10 +58,14 @@ export const updateUserSchema = createInsertSchema(user, {
       .nonempty("Email is required")
       .email("Invalid email format")
       .optional(),
-  password: (schema) =>
-    schema
-      .optional(),
+  password: (schema) => schema.optional(),
   image: (schema) => schema.optional(),
+  phoneNumber: z
+    .string()
+    .optional()
+    .refine((value) => !value || /^\+?[1-9]\d{10,14}$/.test(value), {
+      message: "Invalid phone number format",
+    }),
 });
 
 export type insertUserType = typeof insertUserSchema._type;
