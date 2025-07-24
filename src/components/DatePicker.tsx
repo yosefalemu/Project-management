@@ -17,6 +17,9 @@ interface DatePickerProps {
   className?: string;
   value?: Date | null;
   onChange?: (date: Date | null) => void;
+  side?: "top" | "bottom" | "left" | "right";
+  sideOffset?: number;
+  popoverClassName?: string;
 }
 
 export function DatePicker({
@@ -24,6 +27,9 @@ export function DatePicker({
   className,
   value,
   onChange,
+  side = "bottom",
+  sideOffset = 4,
+  popoverClassName,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   return (
@@ -41,7 +47,11 @@ export function DatePicker({
           {value ? format(value, "PPP") : <span>{placeHolder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
+      <PopoverContent
+        className={cn("w-auto p-4", popoverClassName)}
+        side={side}
+        sideOffset={sideOffset}
+      >
         <Calendar
           mode="single"
           selected={value || undefined}
