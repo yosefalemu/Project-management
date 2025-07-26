@@ -2,7 +2,7 @@
 "use client";
 
 import { userProfileViewStore } from "@/states/modals/user-profile";
-import { Button } from "../ui/button";
+import { Button } from "../../../components/ui/button";
 import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import Image from "next/image";
 import {
@@ -11,10 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../ui/dialog";
+} from "../../../components/ui/dialog";
 import { Mail, Phone } from "lucide-react";
 import React, { useRef, useState } from "react";
-import { Input } from "../ui/input";
+import { Input } from "../../../components/ui/input";
 import EditProfile from "./edit-profile";
 import CropImageComponent from "./crop-image";
 import { FileUploader } from "react-drag-drop-files";
@@ -23,10 +23,14 @@ import EditContactInformation from "./edit-contact";
 import EditStartDate from "./edit-startdate";
 import { useGetStartDate } from "@/features/auth/api/get-start-date";
 import { formatDistanceToNow } from "date-fns";
+import { useParams } from "next/navigation";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const MIN_DIMENSION = 150;
 export default function UserProfileInfo() {
+  const params = useParams();
   const userProfileViewRef = useRef<HTMLInputElement>(null);
+  const workspaceId = params.workspaceId as string;
 
   const { closeUserProfile } = userProfileViewStore();
   const [previewImage, setPreviewImage] = useState<string | null>(null);
@@ -41,9 +45,8 @@ export default function UserProfileInfo() {
     isError: isCurrentUserError,
   } = useBetterAuthGetUser();
 
-  const { data: startDate, isLoading: isStartDateLoading } = useGetStartDate(
-    "4ca34128-6264-4715-8881-1c2a59a803d5"
-  );
+  const { data: startDate, isLoading: isStartDateLoading } =
+    useGetStartDate(workspaceId);
 
   const handleFileChange = (
     input: File | React.ChangeEvent<HTMLInputElement>
@@ -74,7 +77,53 @@ export default function UserProfileInfo() {
   };
 
   if (isCurrentUserLoading || isStartDateLoading) {
-    return <div className="p-4">Loading...</div>;
+    return (
+      <div className="min-w-96 flex flex-col gap-4 border-l-2">
+        <div className="flex items-center justify-between p-4 border-b-2">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="h-5 w-5" />
+        </div>
+        <div className="flex flex-col gap-4 p-4 h-[545px] overflow-auto hide-scrollbar">
+          <div className="flex items-center justify-center w-full min-h-72">
+            <Skeleton className="w-5/6 h-72 rounded-lg" />
+          </div>
+          <div className="flex items-center justify-between w-full border-b-2 pb-4">
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-6 w-16" />
+          </div>
+          <div className="flex flex-col gap-2 border-b-2 pb-4">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-6 w-16" />
+            </div>
+            <div className="flex items-start gap-2">
+              <Skeleton className="h-10 w-10 rounded-md" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+            </div>
+            <div className="flex items-start gap-2">
+              <Skeleton className="h-10 w-10 rounded-md" />
+              <div className="flex flex-col gap-2">
+                <Skeleton className="h-4 w-20" />
+                <Skeleton className="h-4 w-48" />
+              </div>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-6 w-24" />
+              <Skeleton className="h-6 w-16" />
+            </div>
+            <div className="flex flex-col gap-1">
+              <Skeleton className="h-4 w-20" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
   }
   if (isCurrentUserError || !currentUser) {
     return <div className="p-4">Error loading user profile</div>;

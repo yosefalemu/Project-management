@@ -3,9 +3,9 @@ import { useGetProjects } from "@/features/projects/api/get-projects-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
 import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal";
 import { cn } from "@/lib/utils";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { RiAddBoxFill } from "react-icons/ri";
 
 interface Project {
   id: string;
@@ -20,13 +20,15 @@ export default function Projects() {
     workspaceId: params.workspaceId! as string,
   });
   return (
-    <div className="flex flex-col gap-y-2">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-y-2 w-full min-w-fit">
+      <div className="flex items-center justify-between gap-x-4">
         <p className="text-xs uppercase">Projects</p>
-        <RiAddBoxFill
-          className="size-5 cursor-pointer hover:opacity-75 rounded-sm"
-          onClick={open}
-        />
+        <div className="flex h-4 w-4 items-center justify-center rounded-sm group">
+          <Plus
+            className="size-4 cursor-pointer hover:opacity-75 rounded-sm group-hover:bg-primary group-hover:text-primary-foreground transition-all"
+            onClick={open}
+          />
+        </div>
       </div>
       {data?.map((project: Project) => {
         const href = `/workspaces/${params.workspaceId}/projects/${project.id}`;

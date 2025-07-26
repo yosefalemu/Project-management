@@ -5,7 +5,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "../ui/dialog";
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -13,13 +13,13 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "../ui/form";
-import { DatePicker } from "../DatePicker";
-import { Button } from "../ui/button";
+} from "@/components/ui/form";
+import { DatePicker } from "@/components/DatePicker";
+import { Button } from "@/components/ui/button";
 import { useCreateStartDate } from "@/features/auth/api/create-start-date";
 import { useParams } from "next/navigation";
 import { useEffect } from "react";
-import { toast } from "sonner";
+import { useUpateStartDate } from "@/features/auth/api/update-startdate";
 
 type FormValues = {
   startDate: Date | null;
@@ -31,6 +31,7 @@ type EditStartDateProps = {
 export default function EditStartDate({ startDatePrev }: EditStartDateProps) {
   const params = useParams();
   const createStartDate = useCreateStartDate();
+  const updateStartDate = useUpateStartDate();
 
   const form = useForm<FormValues>({
     defaultValues: {
@@ -72,9 +73,20 @@ export default function EditStartDate({ startDatePrev }: EditStartDateProps) {
         }
       );
     } else {
-      console.log("Start date already exists, please edit it instead.");
-      // TODO:: IMPLEMENT EDIT FUNCTIONALITY
-      toast.error("Start date already exists, please edit it instead.");
+      updateStartDate.mutate(
+        {
+          workspaceId: params.workspaceId as string,
+          startDateSend: value.startDate.toISOString(),
+        },
+        {
+          onSuccess: () => {
+            console.log("Start date updated successfully");
+          },
+          onError: () => {
+            console.error("Error updating start date");
+          },
+        }
+      );
     }
   };
   return (
@@ -116,7 +128,9 @@ export default function EditStartDate({ startDatePrev }: EditStartDateProps) {
             <Button
               disabled={!form.formState.isValid || createStartDate.isPending}
             >
-              {createStartDate.isPending ? "Saving..." : "Save"}
+              {createStartDate.isPending || updateStartDate.isPending
+                ? "Saving..."
+                : "Save Changes"}
             </Button>
           </div>
         </form>

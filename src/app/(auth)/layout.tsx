@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
             </Link>
           </Button>
         </nav>
-        <div className="flex flex-col flex-1 items-center justify-center pt-4 md:pt-14">
+        <div className="flex flex-col flex-1 items-center justify-center">
           {children}
         </div>
       </div>

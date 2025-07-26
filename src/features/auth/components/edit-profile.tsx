@@ -1,14 +1,14 @@
 import { useForm } from "react-hook-form";
 import { useRef } from "react";
-import CustomInputLabel from "../inputs/custom-input-label";
-import { Form } from "../ui/form";
+import CustomInputLabel from "../../../components/inputs/custom-input-label";
+import { Form } from "../../../components/ui/form";
 import Image from "next/image";
-import { Button } from "../ui/button";
+import { Button } from "../../../components/ui/button";
 import { useState } from "react";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { updateUserSchema, updateUserType } from "@/zod-schemas/users-schema";
-import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import { DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
 import CropImageComponent from "./crop-image";
 import { cn } from "@/lib/utils";
 

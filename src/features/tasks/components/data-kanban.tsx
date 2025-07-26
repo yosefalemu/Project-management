@@ -40,8 +40,8 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
       [TaskStatus.IN_REVIEW]: [],
       [TaskStatus.DONE]: [],
     };
-    data.forEach((task) => initialTasks[task.status].push(task));
-    Object.keys(initialTasks).forEach((status) => {
+    data?.forEach((task) => initialTasks[task.status].push(task));
+    Object.keys(initialTasks)?.forEach((status) => {
       initialTasks[status as TaskStatus].sort(
         (a, b) => parseInt(a.position) - parseInt(b.position)
       );
@@ -57,8 +57,8 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
       [TaskStatus.IN_REVIEW]: [],
       [TaskStatus.DONE]: [],
     };
-    data.forEach((task) => newTasks[task.status].push(task));
-    Object.keys(newTasks).forEach((status) => {
+    data?.forEach((task) => newTasks[task.status].push(task));
+    Object.keys(newTasks)?.forEach((status) => {
       newTasks[status as TaskStatus].sort(
         (a, b) => parseInt(a.position) - parseInt(b.position)
       );
@@ -118,7 +118,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
 
         // If source and destination are different, include source column tasks
         if (sourceStatus !== destinationStatus) {
-          updatedSourceColumn.forEach((task, index) => {
+          updatedSourceColumn?.forEach((task, index) => {
             updatesPayloads.push({
               id: task.id,
               status: sourceStatus,
@@ -128,7 +128,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
         }
 
         // Include all destination column tasks
-        updatedDestinationColumn.forEach((task, index) => {
+        updatedDestinationColumn?.forEach((task, index) => {
           updatesPayloads.push({
             id: task.id,
             status: destinationStatus,

@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import Preferences from "./preferences/preferences";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { useState, useRef, useEffect } from "react";
+import { useConfirm } from "@/hooks/use-confirm";
 
 export default function RightSidebar() {
   const params = useParams();
@@ -60,12 +61,18 @@ export default function RightSidebar() {
     };
   }, [workspaceTooltipOpen, dmsTooltipOpen, userProfileTooltipOpen]);
 
+  const [ConfirmSignOut, confirm] = useConfirm(
+    "Sign out",
+    `Are you sure you want to sign out from ${currentUser?.[0]?.name}.jslack.com?`,
+    {
+      variant: "destructive",
+      confirmLabel: "Sign out",
+      cancelLabel: "Cancel",
+    }
+  );
+
   if (isLoading || isCurrentUserLoading) {
     return <Skeleton className="h-14 w-14" />;
-  }
-
-  if (data?.length === 0) {
-    return <div>Add</div>;
   }
 
   if (isError || isCurrentUserError) {
@@ -84,6 +91,7 @@ export default function RightSidebar() {
   return (
     <div className="h-full min-w-12 flex flex-col justify-between items-center">
       <PreferenceDialog />
+      <ConfirmSignOut />
       <div className="flex gap-4 flex-col">
         <Tooltip open={workspaceTooltipOpen}>
           <TooltipTrigger asChild>
@@ -91,11 +99,19 @@ export default function RightSidebar() {
               onClick={() => setWorkspaceTooltipOpen((prev) => !prev)}
               className="cursor-pointer"
             >
-              <WorkspaceAvatar
-                name={currentWorkspace?.name ?? ""}
-                image={currentWorkspace?.image ?? ""}
-                className="size-10"
-              />
+              {currentWorkspace ? (
+                <WorkspaceAvatar
+                  name={currentWorkspace.name}
+                  image={currentWorkspace.image ?? ""}
+                  className="size-10"
+                />
+              ) : (
+                <WorkspaceAvatar
+                  name="Logo"
+                  image="/images/logo.png"
+                  className="size-14"
+                />
+              )}
             </div>
           </TooltipTrigger>
           <TooltipContent
@@ -190,6 +206,7 @@ export default function RightSidebar() {
           <UserProfile
             user={currentUserData}
             setUserProfileTooltipOpen={setUserProfileTooltipOpen}
+            confirm={confirm}
           />
         </TooltipContent>
       </Tooltip>

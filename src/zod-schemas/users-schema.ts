@@ -64,7 +64,7 @@ export const updateUserSchema = createInsertSchema(user, {
     .string()
     .optional()
     .refine((value) => !value || /^\+?[1-9]\d{10,14}$/.test(value), {
-      message: "Invalid phone number format",
+      message: "Phone number must be a valid international format",
     }),
 });
 

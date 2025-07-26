@@ -3,7 +3,7 @@ import Projects from "./projects";
 
 export default function Sidebar() {
   return (
-    <div className="h-full p-4 w-full">
+    <div className="h-full w-full">
       <Projects />
       {/* <Navigation /> */}
     </div>

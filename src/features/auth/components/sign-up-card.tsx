@@ -38,7 +38,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
     },
   });
 
-  const handleSignUp = async (user: insertUserType) => {
+  const handleSignUp = (user: insertUserType) => {
     betterAuthRegisterMutation.mutate(
       {
         json: {
@@ -50,7 +50,8 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
       },
       {
         onSuccess: () => {
-          toast.success("Successfully signed up!");
+          toast.success("Successfully signed up and verification email sent");
+          form.reset();
         },
         onError: (error) => {
           toast.error(error.message || "Sign up failed");
@@ -67,7 +68,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
   };
 
   return (
-    <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
+    <Card className="w-full h-full max-h-[570px] overflow-auto md:w-[487px] border-none hide-scrollbar shadow-none px-2 py-4 space-y-4">
       <CardHeader className="flex items-center justify-center text-center p-0">
         <CardTitle className="text-2xl">Sign Up</CardTitle>
         <CardDescription className="text-sm">

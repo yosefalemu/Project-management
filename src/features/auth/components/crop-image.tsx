@@ -9,8 +9,8 @@ import ReactCrop, {
   type PixelCrop,
 } from "react-image-crop";
 import setCanvasPreview from "@/lib/setCanvasPreview";
-import { DialogClose, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Button } from "../ui/button";
+import { DialogClose, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import { Button } from "../../../components/ui/button";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
 import { toast } from "sonner";
 
@@ -219,7 +219,7 @@ export default function CropImageComponent({
           onClick={handleSaveCroppedImage}
           disabled={!uploadedImage || !crop || updateUserProfile.isPending}
         >
-          {updateUserProfile.isPending ? "Saving..." : "Save"}
+          {updateUserProfile.isPending ? "Saving..." : "Save Changes"}
         </Button>
       </div>
     </div>
