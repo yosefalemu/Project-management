@@ -1,8 +1,10 @@
+"use client";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import DootedSeparator from "./dooted-separator";
 import { Button } from "./ui/button";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { userProfileViewStore } from "@/states/modals/user-profile";
+import { useLogout } from "@/features/auth/api/logout-api";
 
 type UserProfileProps = {
   user: {
@@ -10,14 +12,23 @@ type UserProfileProps = {
     image?: string;
   };
   setUserProfileTooltipOpen: (userProfileTooltipOpen: boolean) => void;
+  confirm: () => Promise<unknown>;
 };
 export default function UserProfile({
   user,
   setUserProfileTooltipOpen,
+  confirm,
 }: UserProfileProps) {
   const { name, image } = user;
   const { openModal } = usePreferenceModalStore();
   const { openUserProfile } = userProfileViewStore();
+  const logoutUser = useLogout();
+
+  const handleSignOut = async () => {
+    const confirmed = await confirm();
+    if (!confirmed) return;
+    logoutUser.mutate();
+  };
 
   return (
     <div className="p-4 min-w-[250px] flex flex-col gap-2 items-start">
@@ -61,6 +72,10 @@ export default function UserProfile({
       <Button
         className="flex justify-start p-0 w-full h-fit rounded-sm py-2 px-1"
         variant="ghost"
+        onClick={() => {
+          setUserProfileTooltipOpen(false);
+          handleSignOut();
+        }}
       >
         Signout from {name}.jslack.com
       </Button>

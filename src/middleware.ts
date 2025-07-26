@@ -4,6 +4,7 @@ import { getSessionCookie } from "better-auth/cookies";
 const publicRoutes = [
   "/sign-in",
   "/sign-up",
+  "/verify-email",
   "/blogs",
   "/terms",
   "/privacy-policy",
@@ -39,24 +40,21 @@ export async function middleware(req: NextRequest) {
   if (isSocialMediaCrawler(req)) {
     return NextResponse.next();
   }
-
-  if (pathname === "/") {
-    try {
-      const sessionCookie = getSessionCookie(req);
-      if (!sessionCookie) {
-        return NextResponse.redirect(new URL("/sign-in", req.url));
-      }
-    } catch {
-      return redirectTo("/sign-in", req);
-    }
+  if (!isProtectedRoute(pathname)) {
+    return NextResponse.next();
   }
 
   if (isProtectedRoute(pathname)) {
+    console.log("Protected route accessed:", req.url);
     const redirectUrl = req.url.split(`${process.env.NEXT_PUBLIC_APP_URL}`)[1];
+    console.log("Redirecting to sign-in for protected route:", redirectUrl);
     try {
-      getSessionCookie(req);
+      const sessionCookie = getSessionCookie(req);
+      if (!sessionCookie) {
+        return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
+      }
     } catch {
-      return redirectTo(`/sign-in?redirectTo=${redirectUrl}`, req);
+      return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
     }
   }
 

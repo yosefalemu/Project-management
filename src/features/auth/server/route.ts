@@ -1,22 +1,15 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { deleteCookie, setCookie } from "hono/cookie";
-import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
 import { and, eq } from "drizzle-orm";
 
 import { db } from "@/db";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { AUTH_COOKIE } from "../constants/constant";
-import {
-  insertUserSchema,
-  loginUserSchema,
-  selectUserSchema,
-  updateUserSchema,
-} from "@/zod-schemas/users-schema";
+import { insertUserSchema, updateUserSchema } from "@/zod-schemas/users-schema";
 import { startDate, user } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import z, { string } from "zod";
+import { headers } from "next/headers";
+import { loginUserSchema } from "../validators/login-validators";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
@@ -41,27 +34,29 @@ const app = new Hono()
       return c.json(
         {
           error: "InternalServerError",
-          message:
-            typeof error === "object" && error !== null && "message" in error
-              ? (error as { message?: string }).message ||
-                "Internal Server Error"
-              : "Internal Server Error",
+          message: error instanceof Error ? error.message : "Failed to sign up",
         },
         500
       );
     }
   })
   .post("/sign-in/email", zValidator("json", loginUserSchema), async (c) => {
-    const { email, password } = c.req.valid("json");
+    const { email, password, rememberMe } = c.req.valid("json");
     if (!email || !password) {
       return c.json(
         { error: "BadRequest", message: "Email and password are required" },
         400
       );
     }
+    console.log("Signing in with email:", email, "Remember me:", rememberMe);
+
     try {
       const response = await auth.api.signInEmail({
-        body: { email, password, callbackURL: "/", rememberMe: true },
+        body: {
+          email,
+          password,
+          rememberMe: rememberMe,
+        },
       });
       return c.json({ data: response.user }, 200);
     } catch (error) {
@@ -78,6 +73,44 @@ const app = new Hono()
       );
     }
   })
+  .get(
+    "/verify-email",
+    zValidator("query", z.object({ token: z.string() })),
+    async (c) => {
+      const { token } = c.req.valid("query");
+      if (!token) {
+        return c.json(
+          { error: "BadRequest", message: "Token is required" },
+          400
+        );
+      }
+      try {
+        const response = await auth.api.verifyEmail({
+          query: { token },
+        });
+        console.log("Email verification response:", response);
+        if (!response || !response.status) {
+          return c.json(
+            { error: "Unauthorized", message: "Invalid or expired token" },
+            401
+          );
+        }
+        return c.json({ data: response.user }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
   .get("/get-user", sessionMiddleware, async (c) => {
     try {
       const currUser = c.get("user") as typeof auth.$Infer.Session.user | null;
@@ -208,6 +241,7 @@ const app = new Hono()
               eq(startDate.userId, userFound.id)
             )
           );
+        console.log("Start date found:", startDateFound);
         return c.json(
           {
             data: startDateFound.length > 0 ? startDateFound[0] : null,
@@ -290,62 +324,86 @@ const app = new Hono()
       }
     }
   )
-  .post("/login", zValidator("json", selectUserSchema), async (c) => {
-    const { email, password } = c.req.valid("json");
-    try {
-      const userFound = await db
-        .select()
-        .from(user)
-        .where(eq(user.email, email));
-      if (userFound.length === 0) {
-        return c.json(
-          { error: "Unauthorized", message: "User not found" },
-          401
-        );
-      }
-      const isPasswordValid = await bcrypt.compare(
-        password!,
-        userFound[0].password
-      );
-      if (!isPasswordValid) {
-        return c.json(
-          { error: "Unauthorized", message: "Incorrect password" },
-          401
-        );
-      }
-      const token = jwt.sign(
-        { email, id: userFound[0].id },
-        process.env.JWT_SECRET! as string,
-        {
-          expiresIn: "7d",
+  .patch(
+    "/update-start-date",
+    sessionMiddleware,
+    zValidator(
+      "json",
+      z.object({
+        workspaceId: z.string(),
+        startDateSend: z.string().refine((date) => !isNaN(Date.parse(date)), {
+          message: "Invalid date format",
+        }),
+      })
+    ),
+    async (c) => {
+      try {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        if (!userFound) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "User not found or not authenticated",
+            },
+            401
+          );
         }
-      );
-      setCookie(c, "JIRA_CLONE_AUTH_COOKIE", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        path: "/",
-        maxAge: 7 * 24 * 60 * 60,
-        sameSite: "Strict",
-      });
-      return c.json({ email, password });
-    } catch (error) {
-      return c.json(
-        {
-          error: "InternalServerError",
-          message:
-            typeof error === "object" && error !== null && "message" in error
-              ? (error as { message?: string }).message ||
-                "Internal Server Error"
-              : "Internal Server Error",
-        },
-        500
-      );
+        const { startDateSend, workspaceId } = c.req.valid("json");
+        if (!workspaceId || !startDateSend) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "Workspace ID and start date are required",
+            },
+            400
+          );
+        }
+        const updatedStartDate = await db
+          .update(startDate)
+          .set({ startDate: new Date(startDateSend) })
+          .where(
+            and(
+              eq(startDate.workspaceId, workspaceId),
+              eq(startDate.userId, userFound.id)
+            )
+          )
+          .returning();
+        if (updatedStartDate.length === 0) {
+          return c.json(
+            { error: "NotFound", message: "Start date not found" },
+            404
+          );
+        }
+        return c.json({ data: updatedStartDate[0] });
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
     }
-  })
+  )
   .post("/logout", sessionMiddleware, async (c) => {
     try {
-      deleteCookie(c, AUTH_COOKIE);
-      return c.json({ message: "Logged out successfully" });
+      const ok = await auth.api.signOut({
+        headers: await headers(),
+      });
+      if (!ok) {
+        return c.json(
+          { error: "InternalServerError", message: "Failed to log out" },
+          500
+        );
+      }
+      return c.json({ message: "Logged out successfully" }, 200);
     } catch (error) {
       return c.json(
         {

@@ -1,8 +1,8 @@
 import { useForm } from "react-hook-form";
-import { DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
-import { Form } from "../ui/form";
-import CustomInputLabel from "../inputs/custom-input-label";
-import { Button } from "../ui/button";
+import { DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import { Form } from "../../../components/ui/form";
+import CustomInputLabel from "../../../components/inputs/custom-input-label";
+import { Button } from "../../../components/ui/button";
 import { updateUserSchema, updateUserType } from "@/zod-schemas/users-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
@@ -72,9 +72,7 @@ export default function EditContactInformation({
             placeHolder="Enter your phone number"
           />
           <Button type="submit" disabled={updateUserProfile.isPending}>
-            {updateUserProfile.isPending
-              ? "Updating..."
-              : "Update Contact Info"}
+            {updateUserProfile.isPending ? "Saving..." : "Save Changes"}
           </Button>
         </form>
       </Form>

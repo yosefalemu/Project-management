@@ -16,43 +16,49 @@ import {
 import { Form } from "@/components/ui/form";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
-import { useLogin } from "../api/login-api";
-import { loginUserSchema, loginUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useBetterAuthSignIn } from "../api/better-signin";
+import {
+  loginUserSchema,
+  LoginUserSchemaType,
+} from "../validators/login-validators";
+import CustomCheckBox from "@/components/inputs/custom-checkbox";
+import { useRouter } from "next/navigation";
 
 interface SignInCardProps {
-  redirectTo?: string;
+  redirects?: string;
 }
-export default function SignInCard({ redirectTo }: SignInCardProps) {
+export default function SignInCard({ redirects }: SignInCardProps) {
+  console.log("SignInCard rendered with redirectTo:", redirects);
   const router = useRouter();
-  const loginMutation = useLogin();
   const betterAuthSignInMutation = useBetterAuthSignIn();
-  const form = useForm<loginUserType>({
+  const form = useForm<LoginUserSchemaType>({
     resolver: zodResolver(loginUserSchema),
     defaultValues: {
       email: "",
       password: "",
+      rememberMe: false,
     },
   });
-  const handleLogin = (data: loginUserType) => {
+
+  console.log("form values", form.getValues());
+  console.log("form errors", form.formState.errors);
+
+  const handleLogin = (data: LoginUserSchemaType) => {
     betterAuthSignInMutation.mutate(
       { json: data },
       {
         onSuccess: () => {
           toast.success("Logged in successfully");
-
-          router.push(redirectTo || "/");
+          if (redirects) {
+            router.push(redirects);
+          } else {
+            router.push("/");
+          }
         },
-        onError: () => {
-          console.error("Login failed:", loginMutation.error);
-          toast.error(
-            loginMutation.error
-              ? loginMutation.error.message
-              : "An error occured while logging in"
-          );
+        onError: (error) => {
+          toast.error(error.message || "Login failed");
         },
       }
     );
@@ -76,6 +82,10 @@ export default function SignInCard({ redirectTo }: SignInCardProps) {
               nameInSchema="password"
               placeHolder="Enter password"
               className="h-12"
+            />
+            <CustomCheckBox
+              nameInSchema="rememberMe"
+              fieldTitle="Remember me"
             />
             <DootedSeparator className="py-2" />
             <Button
@@ -120,7 +130,9 @@ export default function SignInCard({ redirectTo }: SignInCardProps) {
             Don&rsquo;t have an account
             <Link
               href={
-                redirectTo ? `sign-up?redirectTo=${redirectTo}` : "/sign-up"
+                redirects !== undefined
+                  ? `sign-up?redirects=${redirects}`
+                  : "/sign-up"
               }
             >
               <span className="ml-2 text-blue-700 underline">Sign Up</span>

@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751700900669,
-      "tag": "0000_short_hellcat",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1753338370998,
-      "tag": "0001_sturdy_jack_power",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1753342072024,
-      "tag": "0002_loose_doctor_octopus",
+      "when": 1753429258537,
+      "tag": "0000_nice_scarecrow",
       "breakpoints": true
     }
   ]

@@ -1,6 +1,6 @@
 "use client";
 
-import UserProfileInfo from "@/components/profile/profile";
+import UserProfileInfo from "@/features/auth/components/profile";
 import RightSidebar from "@/components/right-sidebar";
 import Sidebar from "@/components/sidebar";
 import { cn } from "@/lib/utils";
@@ -85,7 +85,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <RightSidebar />
         </div>
         <div className="flex flex-1 gap-x-2 bg-primary-foreground border rounded-lg">
-          <div className="border-r">
+          <div className="border-r py-4 px-2">
             <Sidebar />
           </div>
           <main className="flex flex-col flex-1">{children}</main>

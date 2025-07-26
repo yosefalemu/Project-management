@@ -37,9 +37,6 @@ export const sessionMiddleware = createMiddleware<CustomEnv>(
       c.set("user", session.user);
       c.set("session", session.session);
       return next();
-
-      // Proceed to the next middleware or handler
-      await next();
     } catch (error) {
       console.error("Token validation failed:", error);
       return c.json(
