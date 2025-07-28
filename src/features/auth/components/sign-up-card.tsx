@@ -22,11 +22,13 @@ import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
 import { useBetterAuthRegister } from "../api/better-signup";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface SignUpCardProps {
   redirectTo?: string;
 }
 export default function SignUpCard({ redirectTo }: SignUpCardProps) {
+  const router = useRouter();
   const betterAuthRegisterMutation = useBetterAuthRegister();
   const form = useForm<insertUserType>({
     resolver: zodResolver(insertUserSchema),
@@ -52,6 +54,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
         onSuccess: () => {
           toast.success("Successfully signed up and verification email sent");
           form.reset();
+          router.push("/confirm-signup");
         },
         onError: (error) => {
           toast.error(error.message || "Sign up failed");
@@ -68,7 +71,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
   };
 
   return (
-    <Card className="w-full h-full max-h-[570px] overflow-auto md:w-[487px] border-none hide-scrollbar shadow-none px-2 py-4 space-y-4">
+    <Card className="w-full h-full max-h-[570px] overflow-auto md:w-[487px]  hide-scrollbar px-2 py-4 space-y-4">
       <CardHeader className="flex items-center justify-center text-center p-0">
         <CardTitle className="text-2xl">Sign Up</CardTitle>
         <CardDescription className="text-sm">

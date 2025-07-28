@@ -25,7 +25,6 @@ const app = new Hono()
         401
       );
     }
-    console.log("Fetching workspaces for user:", user, session);
     const members = await db
       .select()
       .from(workspaceMember)

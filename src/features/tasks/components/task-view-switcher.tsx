@@ -86,8 +86,7 @@ export default function TaskViewSwitcher() {
             className="w-full lg:w-auto"
             onClick={() => open(TaskStatus.BACKLOG)}
           >
-            <PlusIcon className="mr-1 size-4" />
-            New
+            <PlusIcon className="size-4" />
           </Button>
         </div>
         <DootedSeparator className="my-4" />

@@ -1,15 +1,15 @@
 import { redirect } from "next/navigation";
-import VerifyEmailClient from "./client-component";
+import ResetPasswordClient from "./client-component";
 
-type VerifyEmailPageProps = {
+type ResetPasswordPageProps = {
   searchParams: Promise<{
     token?: string;
   }>;
 };
 
-export default async function VerifyEmailPage({
+export default async function ResetPasswordPage({
   searchParams,
-}: VerifyEmailPageProps) {
+}: ResetPasswordPageProps) {
   const params = await searchParams;
   const { token } = params;
 
@@ -18,8 +18,8 @@ export default async function VerifyEmailPage({
   }
 
   return (
-    <div className="h-full pt-36 flex items-start justify-center">
-      <VerifyEmailClient token={token} />
+    <div className="h-full flex items-start justify-center">
+      <ResetPasswordClient token={token} />
     </div>
   );
 }

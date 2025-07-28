@@ -9,7 +9,7 @@ import {
 } from "@hello-pangea/dnd";
 import KanbanColumnHeader from "./kanban-column-header";
 import KanbanCard from "./kanban-card";
-import { userProfileViewStore } from "@/states/modals/user-profile";
+import { userProfileViewStore } from "@/states/user-profile";
 import { cn } from "@/lib/utils";
 
 interface DataKanbanProps {

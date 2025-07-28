@@ -3,7 +3,8 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
 import { session, user, verification, account } from "@/db/schema/schema";
 import { nextCookies } from "better-auth/next-js";
-import { sendVerificationEmail } from "@/features/auth/utils/send-email";
+import { sendVerificationEmail } from "@/features/auth/utils/send-verification-email";
+import { sendResetPasswordEmail } from "@/features/auth/utils/send-password-reset-email";
 
 export const auth = betterAuth({
   plugins: [nextCookies()],
@@ -21,6 +22,11 @@ export const auth = betterAuth({
     autoSignIn: true,
     minPasswordLength: 8,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, token }) => {
+      const resetPasswordUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
+      await sendResetPasswordEmail(resetPasswordUrl, user.email);
+    },
+    resetPasswordTokenExpiresIn: 600,
   },
   emailVerification: {
     sendVerificationEmail: async ({ token, user }) => {
@@ -28,6 +34,6 @@ export const auth = betterAuth({
       await sendVerificationEmail(verificationUrl, user.email);
     },
     sendOnSignUp: true,
-    expiresIn: 120,
+    expiresIn: 600,
   },
 });

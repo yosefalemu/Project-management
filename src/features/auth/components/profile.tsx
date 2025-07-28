@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { userProfileViewStore } from "@/states/modals/user-profile";
+import { userProfileViewStore } from "@/states/user-profile";
 import { Button } from "../../../components/ui/button";
 import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import Image from "next/image";

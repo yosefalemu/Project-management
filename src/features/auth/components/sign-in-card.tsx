@@ -46,6 +46,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   console.log("form errors", form.formState.errors);
 
   const handleLogin = (data: LoginUserSchemaType) => {
+    console.log("Login data submitted:", data);
     betterAuthSignInMutation.mutate(
       { json: data },
       {
@@ -54,7 +55,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           if (redirects) {
             router.push(redirects);
           } else {
-            router.push("/");
+            router.push("/dashboard");
           }
         },
         onError: (error) => {
@@ -65,7 +66,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   };
 
   return (
-    <Card className="w-full h-full md:w-[487px] border-none shadow-none px-2 py-4 space-y-4">
+    <Card className="w-full h-full md:w-[487px] px-2 py-4 space-y-4">
       <CardHeader className="flex items-center justify-center text-center p-0">
         <CardTitle className="text-2xl">Welcome back!</CardTitle>
       </CardHeader>
@@ -138,6 +139,9 @@ export default function SignInCard({ redirects }: SignInCardProps) {
               <span className="ml-2 text-blue-700 underline">Sign Up</span>
             </Link>
           </div>
+          <Link href="/forgot-password">
+            <span className="underline text-sm">Forget Password?</span>
+          </Link>
         </CardFooter>
       </CardContent>
     </Card>

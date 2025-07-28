@@ -5,20 +5,22 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import WorkspaceSwitcher from "./workspace-switcher";
+import WorkspaceSwitcher from "../workspace-switcher";
 import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
-import { Skeleton } from "./ui/skeleton";
+import { Skeleton } from "../ui/skeleton";
 import { useParams } from "next/navigation";
-import DirectMessage from "./direct-message";
+import DirectMessage from "../direct-message";
 import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import UserProfile from "./user-profile";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import Preferences from "./preferences/preferences";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { useState, useRef, useEffect } from "react";
 import { useConfirm } from "@/hooks/use-confirm";
+import { useAccountModalStore } from "@/states/modals/account-setting";
+import AccountSetting from "@/components/sidebars/account-settings/account-setting";
 
 export default function RightSidebar() {
   const params = useParams();
@@ -91,6 +93,7 @@ export default function RightSidebar() {
   return (
     <div className="h-full min-w-12 flex flex-col justify-between items-center">
       <PreferenceDialog />
+      <AccountSettingDialog />
       <ConfirmSignOut />
       <div className="flex gap-4 flex-col">
         <Tooltip open={workspaceTooltipOpen}>
@@ -227,16 +230,41 @@ const PreferenceDialog = () => {
         }
       }}
     >
-      <DialogContent
-        className="w-full max-w-4xl p-0
-      "
-      >
+      <DialogContent className="w-full max-w-4xl p-0 gap-0">
         <DialogHeader className="border-b-2">
           <DialogTitle>
             <p className="text-lg font-semibold py-2 px-4">Preferences</p>
           </DialogTitle>
         </DialogHeader>
         <Preferences />
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const AccountSettingDialog = () => {
+  const { isOpen, openModal, closeModal } = useAccountModalStore();
+  return (
+    <Dialog
+      open={isOpen}
+      onOpenChange={(open) => {
+        if (open) {
+          openModal();
+        } else {
+          closeModal();
+        }
+      }}
+    >
+      <DialogContent
+        className="w-full max-w-4xl p-0 gap-0
+      "
+      >
+        <DialogHeader className="border-b-2">
+          <DialogTitle>
+            <p className="text-lg font-semibold py-2 px-4">Account Settings</p>
+          </DialogTitle>
+        </DialogHeader>
+        <AccountSetting />
       </DialogContent>
     </Dialog>
   );

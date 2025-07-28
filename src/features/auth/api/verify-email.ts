@@ -9,7 +9,8 @@ export const useVerifyEmail = (token: string) => {
         query: { token },
       });
       if (!response.ok) {
-        return null;
+        const { message } = await response.json();
+        throw new Error(message || "Failed to verify email.");
       }
       const { data } = await response.json();
       return data;

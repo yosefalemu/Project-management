@@ -1,10 +1,12 @@
 import { NextResponse, NextRequest } from "next/server";
-import { getSessionCookie } from "better-auth/cookies";
 
 const publicRoutes = [
   "/sign-in",
   "/sign-up",
+  "/forgot-password",
+  "/reset-password",
   "/verify-email",
+  "/confirm-signup",
   "/blogs",
   "/terms",
   "/privacy-policy",
@@ -16,6 +18,15 @@ const isSocialMediaCrawler = (req: NextRequest) => {
   const userAgent = req.headers.get("user-agent") || "";
   return /facebookexternalhit|Twitterbot|LinkedInBot|Slackbot|WhatsApp|Pinterest/.test(
     userAgent
+  );
+};
+
+const isImageRequest = (pathname: string) => {
+  return (
+    pathname.endsWith(".png") ||
+    pathname.endsWith(".jpg") ||
+    pathname.endsWith(".jpeg") ||
+    pathname.endsWith(".gif")
   );
 };
 
@@ -43,18 +54,32 @@ export async function middleware(req: NextRequest) {
   if (!isProtectedRoute(pathname)) {
     return NextResponse.next();
   }
+  if (isImageRequest(pathname)) {
+    return NextResponse.next();
+  }
 
   if (isProtectedRoute(pathname)) {
-    console.log("Protected route accessed:", req.url);
-    const redirectUrl = req.url.split(`${process.env.NEXT_PUBLIC_APP_URL}`)[1];
-    console.log("Redirecting to sign-in for protected route:", redirectUrl);
-    try {
-      const sessionCookie = getSessionCookie(req);
+    let redirectUrl = null;
+    if (pathname !== "/") {
+      redirectUrl = req.url.split(`${process.env.NEXT_PUBLIC_APP_URL}`)[1];
+      const sessionCookie = req.cookies.get("better-auth.session_token");
       if (!sessionCookie) {
-        return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
+        if (redirectUrl) {
+          return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
+        } else {
+          return redirectTo("/sign-in", req);
+        }
       }
-    } catch {
-      return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
+    } else if (pathname === "/") {
+      const notRememberMe = req.cookies.get("better-auth.dont_remember");
+      const sessionCookie = req.cookies.get("better-auth.session_token");
+      if (!sessionCookie) {
+        return redirectTo("/sign-in", req);
+      } else if (sessionCookie && notRememberMe) {
+        return redirectTo("/sign-in", req);
+      } else if (sessionCookie && !notRememberMe) {
+        return redirectTo("/dashboard", req);
+      }
     }
   }
 

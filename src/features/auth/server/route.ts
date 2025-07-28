@@ -10,6 +10,9 @@ import { auth } from "@/lib/auth";
 import z, { string } from "zod";
 import { headers } from "next/headers";
 import { loginUserSchema } from "../validators/login-validators";
+import { changePasswordBackendSchema } from "@/features/auth/validators/change-password";
+import { forgotPasswordSchema } from "@/features/auth/validators/forgot-password";
+import { resetPasswordBackendSchema } from "../validators/reset-password";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
@@ -95,7 +98,199 @@ const app = new Hono()
             401
           );
         }
-        return c.json({ data: response.user }, 200);
+        return c.json({ data: response.status, user: response.user }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .post(
+    "/send-verification-email",
+    zValidator("json", z.object({ email: z.string().email() })),
+    async (c) => {
+      const { email } = c.req.valid("json");
+      if (!email || email.trim() === "") {
+        return c.json(
+          { error: "BadRequest", message: "Token is required" },
+          400
+        );
+      }
+      const userFound = await db
+        .select()
+        .from(user)
+        .where(eq(user.email, email));
+      if (userFound.length === 0) {
+        return c.json({ error: "NotFound", message: "User not found" }, 404);
+      }
+      if (userFound[0].emailVerified) {
+        return c.json(
+          { error: "BadRequest", message: "Email already verified" },
+          400
+        );
+      }
+      try {
+        const response = await auth.api.sendVerificationEmail({
+          body: {
+            email: email,
+          },
+        });
+        console.log("Email verification response:", response);
+        if (!response || !response.status) {
+          return c.json(
+            { error: "Unauthorized", message: "Invalid or expired token" },
+            401
+          );
+        }
+        return c.json({ data: response.status }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .post(
+    "/change-password",
+    sessionMiddleware,
+    zValidator("json", changePasswordBackendSchema),
+    async (c) => {
+      try {
+        console.log("Change Password Request:", c.req.valid("json"));
+        const { newPassword, oldPassword } = c.req.valid("json");
+        if (!newPassword || !oldPassword) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "New and old passwords are required",
+            },
+            400
+          );
+        }
+        if (newPassword === oldPassword) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "New password cannot be the same as old password",
+            },
+            400
+          );
+        }
+        const data = await auth.api.changePassword({
+          body: {
+            newPassword,
+            currentPassword: oldPassword,
+            revokeOtherSessions: true,
+          },
+          headers: await headers(),
+        });
+        return c.json({ data: data.user }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .post(
+    "/forgot-password",
+    zValidator("json", forgotPasswordSchema),
+    async (c) => {
+      try {
+        const { email } = c.req.valid("json");
+        if (!email || email.trim() === "") {
+          return c.json(
+            { error: "BadRequest", message: "Email is required" },
+            400
+          );
+        }
+        const userFound = await db
+          .select()
+          .from(user)
+          .where(eq(user.email, email));
+        if (userFound.length === 0) {
+          return c.json({ error: "NotFound", message: "User not found" }, 404);
+        }
+        const response = await auth.api.requestPasswordReset({
+          body: {
+            email: email,
+          },
+        });
+        if (!response || !response.status) {
+          return c.json(
+            {
+              error: "InternalServerError",
+              message: "Failed to send password reset email",
+            },
+            500
+          );
+        }
+        return c.json({ data: response.status }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .post(
+    "/reset-password",
+    zValidator("json", resetPasswordBackendSchema),
+    async (c) => {
+      try {
+        const { token, newPassword } = c.req.valid("json");
+        if (!token || !newPassword) {
+          return c.json(
+            { error: "BadRequest", message: "All fields are required" },
+            400
+          );
+        }
+        const response = await auth.api.resetPassword({
+          body: {
+            token,
+            newPassword,
+          },
+        });
+        if (!response || !response.status) {
+          return c.json(
+            { error: "Unauthorized", message: "Invalid or expired token" },
+            401
+          );
+        }
+        return c.json({ data: response.status }, 200);
       } catch (error) {
         return c.json(
           {
@@ -158,7 +353,7 @@ const app = new Hono()
           .set({ name, email, image, phoneNumber })
           .where(eq(user.id, userFrom.id))
           .returning();
-        return c.json({ data: updatedUser[0] });
+        return c.json({ data: updatedUser[0] }, 200);
       } catch (error) {
         return c.json(
           {
@@ -308,7 +503,7 @@ const app = new Hono()
             startDate: new Date(startDateValue),
           })
           .returning();
-        return c.json({ data: newStartDate });
+        return c.json({ data: newStartDate }, 201);
       } catch (error) {
         return c.json(
           {

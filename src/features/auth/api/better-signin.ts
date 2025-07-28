@@ -14,8 +14,8 @@ export const useBetterAuthSignIn = () => {
     mutationFn: async ({ json }) => {
       const response = await client.api.auth["sign-in"].email.$post({ json });
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to register");
+        const { message } = await response.json();
+        throw new Error(message || "Failed to register");
       }
       const data = await response.json();
       return data;

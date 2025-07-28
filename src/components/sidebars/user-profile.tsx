@@ -1,10 +1,11 @@
 "use client";
 import MemberAvatar from "@/features/members/components/member-avatar";
-import DootedSeparator from "./dooted-separator";
-import { Button } from "./ui/button";
+import DootedSeparator from "../dooted-separator";
+import { Button } from "../ui/button";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
-import { userProfileViewStore } from "@/states/modals/user-profile";
+import { userProfileViewStore } from "@/states/user-profile";
 import { useLogout } from "@/features/auth/api/logout-api";
+import { useAccountModalStore } from "@/states/modals/account-setting";
 
 type UserProfileProps = {
   user: {
@@ -20,7 +21,8 @@ export default function UserProfile({
   confirm,
 }: UserProfileProps) {
   const { name, image } = user;
-  const { openModal } = usePreferenceModalStore();
+  const { openModal: openPreferenceModal } = usePreferenceModalStore();
+  const { openModal: openAccountModal } = useAccountModalStore();
   const { openUserProfile } = userProfileViewStore();
   const logoutUser = useLogout();
 
@@ -60,12 +62,22 @@ export default function UserProfile({
         <Button
           className="flex justify-start w-full h-fit rounded-none p-1"
           onClick={() => {
-            openModal();
+            openPreferenceModal();
             setUserProfileTooltipOpen(false);
           }}
           variant="ghost"
         >
           Preferences
+        </Button>
+        <Button
+          className="flex justify-start w-full h-fit rounded-none p-1"
+          onClick={() => {
+            openAccountModal();
+            setUserProfileTooltipOpen(false);
+          }}
+          variant="ghost"
+        >
+          Account Settings
         </Button>
       </div>
       <DootedSeparator />

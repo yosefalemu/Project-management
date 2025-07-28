@@ -15,7 +15,8 @@ export const useCreateStartDate = () => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to create start date");
+        const { message } = await response.json();
+        throw new Error(message || "Failed to create start date");
       }
       const { data } = await response.json();
       return data;
