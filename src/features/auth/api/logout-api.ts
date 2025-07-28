@@ -18,7 +18,6 @@ export const useLogout = () => {
   const mutation = useMutation<ResponseType, Error>({
     mutationFn: async () => {
       const response = await client.api.auth.logout["$post"]();
-      console.log("Logout API response:", response);
       if (!response.ok) {
         const errorData: ErrorResponse = await response.json();
         throw new Error(
@@ -26,7 +25,6 @@ export const useLogout = () => {
         );
       }
       const data = await response.json();
-      console.log("Logout API data:", data);
       return data;
     },
     onSuccess: () => {

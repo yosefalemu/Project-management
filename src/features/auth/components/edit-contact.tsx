@@ -1,5 +1,9 @@
 import { useForm } from "react-hook-form";
-import { DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
 import { Form } from "../../../components/ui/form";
 import CustomInputLabel from "../../../components/inputs/custom-input-label";
 import { Button } from "../../../components/ui/button";
@@ -24,7 +28,6 @@ export default function EditContactInformation({
   user,
 }: EditContactInformationProps) {
   const updateUserProfile = useBetterAuthUpdateUser();
-  console.log("User data in EditContactInformation", user);
   const form = useForm<updateUserType>({
     resolver: zodResolver(updateUserSchema),
     defaultValues: {
@@ -32,10 +35,8 @@ export default function EditContactInformation({
       phoneNumber: user.phoneNumber ?? "",
     },
   });
-  console.log("Form errors", form.formState.errors);
 
   const handleSubmit = (data: updateUserType) => {
-    console.log("Form submitted", data);
     updateUserProfile.mutate(
       {
         json: {

@@ -12,7 +12,7 @@ import {
   Link,
 } from "@react-email/components";
 
-export default function VerifyEmailTemplate(props: { url: string }) {
+export default function ResetPasswordEmailTemplate(props: { url: string }) {
   const { url } = props;
 
   return (
@@ -27,7 +27,7 @@ export default function VerifyEmailTemplate(props: { url: string }) {
           padding: 0,
         }}
       >
-        <Preview>Verify Your ADA Account</Preview>
+        <Preview>Reset Your ADA Project Password</Preview>
         <Container
           style={{
             maxWidth: "600px",
@@ -70,7 +70,7 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
               }}
             >
-              Verify Your Email Address
+              Reset Your Password
             </Heading>
             <Text
               style={{
@@ -82,9 +82,9 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
               }}
             >
-              Thank you for registering with the ADA Project. To complete your
-              account setup, please verify your email address by clicking the
-              button below. This step ensures the security of your account.
+              We received a request to reset the password for your ADA Project
+              account. To proceed, please click the button below to set a new
+              password. This link is valid for 10 minutes.
             </Text>
             <Container
               style={{
@@ -97,7 +97,7 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                 style={{
                   backgroundColor: "#005B99",
                   color: "#ffffff",
-                  padding: "12px 24px",
+                  padding: "10px 32px",
                   borderRadius: "6px",
                   fontSize: "16px",
                   fontWeight: "500",
@@ -107,7 +107,7 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                   cursor: "pointer",
                 }}
               >
-                Verify Email Address
+                Reset Password
               </Link>
               <Text
                 style={{
@@ -118,7 +118,7 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                     "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
                 }}
               >
-                This verification link is valid for 10 minutes.
+                This password reset link is valid for 10 minutes.
               </Text>
             </Container>
             <Text
@@ -130,9 +130,10 @@ export default function VerifyEmailTemplate(props: { url: string }) {
                   "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
               }}
             >
-              If you did not initiate this request, please disregard this email.
-              For your security, the ADA Project will never ask you to share
-              your password, credit card, or banking details via email.
+              If you did not request a password reset, please disregard this
+              email or contact our support team. For your security, the ADA
+              Project will never ask you to share your password, credit card, or
+              banking details via email.
             </Text>
           </Section>
 

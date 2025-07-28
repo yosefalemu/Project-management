@@ -16,12 +16,8 @@ export const useBetterAuthUpdateUser = () => {
     mutationFn: async ({ json }) => {
       const response = await client.api.auth["update-user"].$patch({ json });
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage =
-          typeof errorData === "object" && "message" in errorData
-            ? errorData.message
-            : "Failed to update user";
-        throw new Error(errorMessage);
+        const { message } = await response.json();
+        throw new Error(message || "Failed to update user");
       }
       const data = await response.json();
       return data;

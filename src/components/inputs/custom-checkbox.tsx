@@ -21,7 +21,11 @@ export default function CustomCheckBox({
           <FormItem>
             <div className="flex items-center justify-start gap-x-2 w-fit">
               <FormControl>
-                <Checkbox {...props} {...field} />
+                <Checkbox
+                  {...props}
+                  {...field}
+                  onCheckedChange={field.onChange}
+                />
               </FormControl>
               <FormLabel>{fieldTitle}</FormLabel>
             </div>

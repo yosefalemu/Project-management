@@ -47,7 +47,7 @@ export default function RootLayout({
                   <InviteProjectMemberModal />
                   <TaskModal />
                   <TooltipProvider>
-                    <div className="h-screen w-screen overflow-hidden bg-primary">
+                    <div className="h-screen w-screen overflow-hidden">
                       {children}
                     </div>
                   </TooltipProvider>

@@ -1,5 +1,5 @@
 // import Navigation from "@/components/navigation";
-import Projects from "./projects";
+import Projects from "@/components/projects";
 
 export default function Sidebar() {
   return (

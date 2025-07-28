@@ -1,11 +1,11 @@
 "use client";
 
 import UserProfileInfo from "@/features/auth/components/profile";
-import RightSidebar from "@/components/right-sidebar";
-import Sidebar from "@/components/sidebar";
+import RightSidebar from "@/components/sidebars/right-sidebar";
+import Sidebar from "@/components/sidebars/sidebar";
 import { cn } from "@/lib/utils";
 import { fontProfile } from "@/states/font/font-state";
-import { userProfileViewStore } from "@/states/modals/user-profile";
+import { userProfileViewStore } from "@/states/user-profile";
 import {
   Inter,
   Roboto,
@@ -75,7 +75,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div
       className={cn(
-        "h-screen w-full p-0.5 flex flex-col bg-violet-700/90 text-primary relative",
+        "h-screen w-full p-0.5 flex flex-col bg-red-900 text-primary relative",
         selectedFont.className
       )}
     >

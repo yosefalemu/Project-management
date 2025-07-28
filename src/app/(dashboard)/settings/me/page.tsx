@@ -7,7 +7,6 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { useCurrentUser } from "@/features/auth/api/current-api";
 import { useLogout } from "@/features/auth/api/logout-api";
 
 export default function ProfileSettings() {
@@ -17,7 +16,6 @@ export default function ProfileSettings() {
   const [themeChecked, setThemeChecked] = useState<boolean>(
     resolvedTheme === "dark"
   );
-  const {} = useCurrentUser();
 
   useEffect(() => {
     setThemeChecked(resolvedTheme === "dark");

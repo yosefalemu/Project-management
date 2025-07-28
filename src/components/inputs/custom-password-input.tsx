@@ -40,7 +40,7 @@ export default function CustomPasswordInput({
                 <Input
                   id={nameInSchema}
                   className={cn(
-                    "w-full max-w-xl disabled:cursor-not-allowed relative",
+                    "w-full disabled:cursor-not-allowed",
                     className
                   )}
                   placeholder={placeHolder}
