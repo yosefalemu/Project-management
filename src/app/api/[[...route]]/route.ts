@@ -13,9 +13,11 @@ const app = new Hono().basePath("/api").use(
       "http://localhost:3000",
       "https://project-management-beryl-five.vercel.app",
     ],
+    allowMethods: ["GET", "POST", "PATCH", "DELETE"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
-app.use();
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routes = app
   .route("/auth", auth)
