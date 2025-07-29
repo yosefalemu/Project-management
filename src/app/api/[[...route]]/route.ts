@@ -13,8 +13,10 @@ const app = new Hono().basePath("/api").use(
       "http://localhost:3000",
       "https://project-management-beryl-five.vercel.app",
     ],
-    allowMethods: ["GET", "POST", "PATCH", "DELETE"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
+    allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],
+    exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
+    maxAge: 600, // 10 minutes
     credentials: true,
   })
 );
