@@ -12,7 +12,7 @@ export default function AccountSetting() {
           setCurrentTab={setCurrentTab}
         />
       </div>
-      <div className="flex-1 px-2 h-[520px] overflow-y-auto hide-scrollbar">
+      <div className="flex-1 p-4 h-[520px] overflow-y-auto hide-scrollbar">
         <AccountSettingContent currentTab={currnetTab} />
       </div>
     </div>

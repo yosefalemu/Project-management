@@ -72,7 +72,7 @@ export default function ForgotPasswordPage() {
       </CardContent>
       <CardFooter>
         <div className="w-full text-sm flex items-center justify-center">
-          Already have an account?
+          Remembered your password?
           <Link href="/sign-in">
             <span className="ml-2 text-blue-700 underline">Sign In</span>
           </Link>

@@ -2,7 +2,13 @@
 
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { useResetPassword } from "@/features/auth/api/reset-password";
 import {
@@ -10,6 +16,7 @@ import {
   ResetPasswordFrontendSchemaType,
 } from "@/features/auth/validators/reset-password";
 import { zodResolver } from "@hookform/resolvers/zod";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -79,6 +86,14 @@ export default function ResetPasswordClient({ token }: { token: string }) {
           </form>
         </Form>
       </CardContent>
+      <CardFooter>
+        <div className="w-full text-sm flex items-center justify-center">
+          Remembered your password?
+          <Link href="/sign-in">
+            <span className="ml-2 text-blue-700 underline">Sign In</span>
+          </Link>
+        </div>
+      </CardFooter>
     </Card>
   );
 }
