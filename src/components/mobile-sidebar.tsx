@@ -3,8 +3,8 @@ import { usePathname } from "next/navigation";
 import { MenuIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "./ui/sheet";
-import Sidebar from "./sidebar";
 import { useEffect, useState } from "react";
+import Sidebar from "./sidebars/sidebar";
 
 export default function MobileSidebar() {
   const pathname = usePathname();
