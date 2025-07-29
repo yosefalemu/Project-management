@@ -18,6 +18,7 @@ const app = new Hono().basePath("/api").use(
     credentials: true,
   })
 );
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routes = app
   .route("/auth", auth)
