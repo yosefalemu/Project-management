@@ -13,6 +13,8 @@ import { loginUserSchema } from "../validators/login-validators";
 import { changePasswordBackendSchema } from "@/features/auth/validators/change-password";
 import { forgotPasswordSchema } from "@/features/auth/validators/forgot-password";
 import { resetPasswordBackendSchema } from "../validators/reset-password";
+import { deleteCookie } from "hono/cookie";
+import { AUTH_REMEMBER_ME_COOKIE } from "../constants/constant";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
@@ -51,8 +53,9 @@ const app = new Hono()
         400
       );
     }
-    console.log("Signing in with email:", email, "Remember me:", rememberMe);
-
+    if (rememberMe) {
+      deleteCookie(c, AUTH_REMEMBER_ME_COOKIE);
+    }
     try {
       const response = await auth.api.signInEmail({
         body: {

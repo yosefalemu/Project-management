@@ -62,7 +62,7 @@ export async function middleware(req: NextRequest) {
     let redirectUrl = null;
     if (pathname !== "/") {
       redirectUrl = req.url.split(`${process.env.NEXT_PUBLIC_APP_URL}`)[1];
-      const sessionCookie = req.cookies.get("better-auth.session_token");
+      const sessionCookie = req.cookies.get("better-auth.session_token")?.value;
       if (!sessionCookie) {
         if (redirectUrl) {
           return redirectTo(`/sign-in?redirects=${redirectUrl}`, req);
@@ -71,8 +71,8 @@ export async function middleware(req: NextRequest) {
         }
       }
     } else if (pathname === "/") {
-      const notRememberMe = req.cookies.get("better-auth.dont_remember");
-      const sessionCookie = req.cookies.get("better-auth.session_token");
+      const notRememberMe = req.cookies.get("better-auth.dont_remember")?.value;
+      const sessionCookie = req.cookies.get("better-auth.session_token")?.value;
       if (!sessionCookie) {
         return redirectTo("/sign-in", req);
       } else if (sessionCookie && notRememberMe) {
