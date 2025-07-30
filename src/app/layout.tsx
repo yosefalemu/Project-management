@@ -14,8 +14,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
 export const metadata: Metadata = {
-  title: "Jira-clone",
-  description: "Jira clone built with Next.js",
+  title: "ADA PROJECT",
+  description: "A project management tool for teams",
 };
 
 export default function RootLayout({
@@ -25,6 +25,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="icon" href="/images/logo.svg" sizes="any" />
+      </head>
       <body className="antialiased h-screen">
         <ThemeProvider
           attribute="class"

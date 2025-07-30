@@ -9,12 +9,14 @@ import { startDate, user } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import z, { string } from "zod";
 import { headers } from "next/headers";
-import { loginUserSchema } from "../validators/login-validators";
+import { loginUserSchema } from "../validators/login";
 import { changePasswordBackendSchema } from "@/features/auth/validators/change-password";
 import { forgotPasswordSchema } from "@/features/auth/validators/forgot-password";
 import { resetPasswordBackendSchema } from "../validators/reset-password";
 import { deleteCookie } from "hono/cookie";
 import { AUTH_REMEMBER_ME_COOKIE } from "../constants/constant";
+import { getCookie } from "hono/cookie";
+import { google } from "googleapis";
 
 const app = new Hono()
   .post("/sign-up/email", zValidator("json", insertUserSchema), async (c) => {
@@ -66,6 +68,78 @@ const app = new Hono()
       });
       return c.json({ data: response.user }, 200);
     } catch (error) {
+      return c.json(
+        {
+          error: "InternalServerError",
+          message:
+            typeof error === "object" && error !== null && "message" in error
+              ? (error as { message?: string }).message ||
+                "Internal Server Error"
+              : "Internal Server Error",
+        },
+        500
+      );
+    }
+  })
+  .post(
+    "/sign-in/social",
+    zValidator("json", z.object({ provider: z.string() })),
+    async (c) => {
+      const { provider } = c.req.valid("json");
+      if (!provider) {
+        return c.json(
+          { error: "BadRequest", message: "Provider is required" },
+          400
+        );
+      }
+      console.log("Social sign-in request for provider:", provider);
+      try {
+        console.log("Calling authClient for social sign-in");
+        const response = await auth.api.signInSocial({
+          body: {
+            provider,
+          },
+        });
+        console.log("Social sign-in response:", response);
+        return c.json({ data: response }, 200);
+      } catch (error) {
+        return c.json(
+          {
+            error: "InternalServerError",
+            message:
+              typeof error === "object" && error !== null && "message" in error
+                ? (error as { message?: string }).message ||
+                  "Internal Server Error"
+                : "Internal Server Error",
+          },
+          500
+        );
+      }
+    }
+  )
+  .get("/callback/google", async (c) => {
+    try {
+      const oauth2Client = new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        "http://localhost:3000/api/auth/callback/google"
+      );
+      console.log("GOOGLE AUTH QUERY PARAMS:", c.req.query());
+      const { code } = c.req.query();
+      console.log("Google OAuth code:", code);
+      if (!code) {
+        return c.json(
+          { error: "BadRequest", message: "Code is required" },
+          400
+        );
+      }
+      const code_verifier = getCookie(c, "code_verifier");
+      console.log("Code verifier:", code_verifier);
+      const { tokens } = await oauth2Client.getToken(code);
+      console.log("Google OAuth tokens:", tokens);
+      oauth2Client.setCredentials(tokens);
+    } catch (error) {
+      console.error("Error in Google OAuth callback:", error);
       return c.json(
         {
           error: "InternalServerError",

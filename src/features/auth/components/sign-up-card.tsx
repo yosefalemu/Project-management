@@ -2,9 +2,6 @@
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
-
 import {
   Card,
   CardContent,
@@ -18,10 +15,11 @@ import CustomInputLabel from "@/components/inputs/custom-input-label";
 import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
-import { insertUserSchema, insertUserType } from "@/zod-schemas/users-schema";
 import { Loader } from "lucide-react";
-import { useBetterAuthRegister } from "../api/better-signup";
 import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { signupSchema, SignupSchemaType } from "../validators/signup";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SignUpCardProps {
@@ -29,9 +27,9 @@ interface SignUpCardProps {
 }
 export default function SignUpCard({ redirectTo }: SignUpCardProps) {
   const router = useRouter();
-  const betterAuthRegisterMutation = useBetterAuthRegister();
-  const form = useForm<insertUserType>({
-    resolver: zodResolver(insertUserSchema),
+  const [signUpLoading, setSignUpLoading] = useState<boolean>(false);
+  const form = useForm<SignupSchemaType>({
+    resolver: zodResolver(signupSchema),
     defaultValues: {
       name: "",
       email: "",
@@ -39,35 +37,28 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
       confirmPassword: "",
     },
   });
-
-  const handleSignUp = (user: insertUserType) => {
-    betterAuthRegisterMutation.mutate(
-      {
-        json: {
-          name: user.name,
-          email: user.email,
-          password: user.password,
-          confirmPassword: user.confirmPassword,
+  const handleSignUp = async (data: SignupSchemaType) => {
+    await authClient.signUp.email({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+      callbackURL: "/confirm-signup",
+      fetchOptions: {
+        onRequest: () => {
+          setSignUpLoading(true);
+        },
+        onSuccess: ({ data }) => {
+          console.log("Sign up successful:", data);
+          setSignUpLoading(false);
+          form.reset();
+          router.push(`/confirm-signup/${data.user.email}`);
+        },
+        onError: ({ error }) => {
+          toast.error(error.message || "Sign up failed");
+          setSignUpLoading(false);
         },
       },
-      {
-        onSuccess: () => {
-          toast.success("Successfully signed up and verification email sent");
-          form.reset();
-          router.push("/confirm-signup");
-        },
-        onError: (error) => {
-          toast.error(error.message || "Sign up failed");
-          console.error(
-            "Sign up error:",
-            error.cause,
-            error.message,
-            error.stack,
-            error.name
-          );
-        },
-      }
-    );
+    });
   };
 
   return (
@@ -125,9 +116,9 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={betterAuthRegisterMutation.isPending}
+              disabled={signUpLoading}
             >
-              {betterAuthRegisterMutation.isPending ? (
+              {signUpLoading ? (
                 <span className="flex items-center justify-center">
                   <Loader className="mr-2 animate-spin" />
                   <p>Signing Up</p>
@@ -138,15 +129,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
             </Button>
           </form>
         </Form>
-        <CardFooter className="w-full space-y-4 flex flex-col p-0">
-          <Button variant="secondary" className="h-12 w-full cursor-pointer">
-            <FcGoogle className="mr-2" />
-            Signup with google
-          </Button>
-          <Button variant="secondary" className="h-12 w-full cursor-pointer">
-            <FaGithub className="mr-2" />
-            Signup with github
-          </Button>
+        <CardFooter className="w-full p-0">
           <div className="w-full text-sm flex items-center justify-center">
             Already have an account?
             <Link
