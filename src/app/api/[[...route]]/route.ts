@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { handle } from "hono/vercel";
-import auth from "@/features/auth/server/route";
+import { auth } from "@/lib/auth";
 import workspace from "@/features/workspace/server/route";
 import member from "@/features/members/server/route";
 import project from "@/features/projects/server/route";
@@ -20,10 +21,12 @@ const app = new Hono().basePath("/api").use(
     credentials: true,
   })
 );
+// Handle authentication routes using better-auth
+app.on(["POST", "GET"], "/auth/*", (c) => {
+  return auth.handler(c.req.raw);
+});
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const routes = app
-  .route("/auth", auth)
   .route("/workspace", workspace)
   .route("/members", member)
   .route("/projects", project)

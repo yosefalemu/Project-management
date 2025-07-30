@@ -1,6 +1,5 @@
 import { useForm } from "react-hook-form";
 import { FaGithub } from "react-icons/fa";
-import { FcGoogle } from "react-icons/fc";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import CustomInputLabel from "@/components/inputs/custom-input-label";
@@ -18,21 +17,24 @@ import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import Link from "next/link";
 import { Loader } from "lucide-react";
 import { toast } from "sonner";
-import { useBetterAuthSignIn } from "../api/better-signin";
 import {
   loginUserSchema,
   LoginUserSchemaType,
-} from "../validators/login-validators";
+} from "../validators/login";
 import CustomCheckBox from "@/components/inputs/custom-checkbox";
-import { useRouter } from "next/navigation";
+import { authClient } from "@/lib/auth-client";
+import { FcGoogle } from "react-icons/fc";
+import { useState } from "react";
 
 interface SignInCardProps {
   redirects?: string;
 }
 export default function SignInCard({ redirects }: SignInCardProps) {
-  console.log("SignInCard rendered with redirectTo:", redirects);
-  const router = useRouter();
-  const betterAuthSignInMutation = useBetterAuthSignIn();
+  const [signInLoading, setSignInLoading] = useState<boolean>(false);
+  const [signInGoogleLoading, setSignInGoogleLoading] =
+    useState<boolean>(false);
+  const [signInGithubLoading, setSignInGithubLoading] =
+    useState<boolean>(false);
   const form = useForm<LoginUserSchemaType>({
     resolver: zodResolver(loginUserSchema),
     defaultValues: {
@@ -42,27 +44,66 @@ export default function SignInCard({ redirects }: SignInCardProps) {
     },
   });
 
-  console.log("form values", form.getValues());
-  console.log("form errors", form.formState.errors);
-
-  const handleLogin = (data: LoginUserSchemaType) => {
-    console.log("Login data submitted:", data);
-    betterAuthSignInMutation.mutate(
-      { json: data },
-      {
+  const handleLogin = async (data: LoginUserSchemaType) => {
+    await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+      rememberMe: data.rememberMe,
+      callbackURL: "/dashboard",
+      fetchOptions: {
         onSuccess: () => {
           toast.success("Logged in successfully");
-          if (redirects) {
-            router.push(redirects);
-          } else {
-            router.push("/dashboard");
-          }
+          setSignInLoading(false);
         },
-        onError: (error) => {
-          toast.error(error.message || "Login failed");
+        onError: ({ error }) => {
+          toast.error(error.message || "Failed to log in");
+          setSignInLoading(false);
         },
-      }
-    );
+        onRequest: () => {
+          setSignInLoading(true);
+        },
+      },
+    });
+  };
+
+  const signInWithGoogle = async () => {
+    await authClient.signIn.social({
+      provider: "google",
+      callbackURL: "/dashboard",
+      errorCallbackURL: "/sign-in",
+      requestSignUp: true,
+      fetchOptions: {
+        onRequest: () => {
+          setSignInGoogleLoading(true);
+        },
+        onSuccess: () => {
+          setSignInGoogleLoading(false);
+        },
+        onError: ({ error }) => {
+          setSignInGoogleLoading(false);
+          toast.error(error.message || "Failed to log in with Google");
+        },
+      },
+    });
+  };
+  const signInWithGithub = async () => {
+    await authClient.signIn.social({
+      provider: "github",
+      callbackURL: "/dashboard",
+      errorCallbackURL: "/sign-in",
+      fetchOptions: {
+        onRequest: () => {
+          setSignInGithubLoading(true);
+        },
+        onSuccess: () => {
+          setSignInGithubLoading(false);
+        },
+        onError: ({ error }) => {
+          setSignInGithubLoading(false);
+          toast.error(error.message || "Failed to log in with Github");
+        },
+      },
+    });
   };
 
   return (
@@ -92,9 +133,9 @@ export default function SignInCard({ redirects }: SignInCardProps) {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={betterAuthSignInMutation.isPending}
+              disabled={signInLoading}
             >
-              {betterAuthSignInMutation.isPending ? (
+              {signInLoading ? (
                 <span className="flex items-center justify-center">
                   <Loader className="mr-2 animate-spin" />
                   <p>Logging</p>
@@ -108,24 +149,43 @@ export default function SignInCard({ redirects }: SignInCardProps) {
         <CardFooter className="w-full space-y-4 flex flex-col p-0">
           <Button
             type="button"
+            onClick={signInWithGoogle}
             className="w-full cursor-pointer"
             size="xl"
             variant="secondary"
+            disabled={signInGoogleLoading}
           >
-            <FcGoogle className="mr-2" />
-            Login with Google
+            {signInGoogleLoading ? (
+              <div className="flex items-center justify-center">
+                <Loader className="mr-2 animate-spin" />
+                <p>Logging in with Google</p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <FcGoogle className="mr-2" />
+                Login with Google
+              </div>
+            )}
           </Button>
           <Button
             type="button"
             className="w-full cursor-pointer"
             size="xl"
             variant="secondary"
+            onClick={signInWithGithub}
+            disabled={signInGithubLoading}
           >
-            <FaGithub
-              className="mr-2 
-          "
-            />
-            Login with Github
+            {signInGithubLoading ? (
+              <div className="flex items-center justify-center">
+                <Loader className="mr-2 animate-spin" />
+                <p>Logging in with Github</p>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center">
+                <FaGithub className="mr-2" />
+                Login with Github
+              </div>
+            )}
           </Button>
           <div className="w-full text-sm flex items-center justify-center">
             Don&rsquo;t have an account

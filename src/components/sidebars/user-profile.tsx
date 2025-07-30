@@ -4,8 +4,10 @@ import DootedSeparator from "../dooted-separator";
 import { Button } from "../ui/button";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { userProfileViewStore } from "@/states/user-profile";
-import { useLogout } from "@/features/auth/api/logout-api";
 import { useAccountModalStore } from "@/states/modals/account-setting";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 type UserProfileProps = {
   user: {
@@ -21,15 +23,26 @@ export default function UserProfile({
   confirm,
 }: UserProfileProps) {
   const { name, image } = user;
+  const router = useRouter();
   const { openModal: openPreferenceModal } = usePreferenceModalStore();
   const { openModal: openAccountModal } = useAccountModalStore();
   const { openUserProfile } = userProfileViewStore();
-  const logoutUser = useLogout();
 
   const handleSignOut = async () => {
     const confirmed = await confirm();
     if (!confirmed) return;
-    logoutUser.mutate();
+    await authClient.signOut({
+      fetchOptions: {
+        onSuccess: () => {
+          toast.success("Signed out successfully");
+          router.push("/sign-in");
+        },
+        onError: ({ error, request, response }) => {
+          console.error("Sign out error:", error, request, response);
+          toast.error(error.message || "Failed to sign out");
+        },
+      },
+    });
   };
 
   return (

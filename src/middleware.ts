@@ -6,7 +6,7 @@ const publicRoutes = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
-  "/confirm-signup",
+  "/confirm-signup/:email",
   "/blogs",
   "/terms",
   "/privacy-policy",
@@ -31,15 +31,20 @@ const isImageRequest = (pathname: string) => {
 };
 
 const isProtectedRoute = (pathname: string) => {
-  const isProtected = !publicRoutes.some((route) => {
+  return !publicRoutes.some((route) => {
+    // Handle dynamic routes with :path* (e.g., opengraph-image, twitter-image)
     if (route.includes(":path*")) {
       const regexPattern = `^/[^/]+/opengraph-image(?:-[a-z0-9]+)?\\.(?:png|jpg|jpeg|gif)(?:\\?.*)?$`;
-      const matches = pathname.match(new RegExp(regexPattern));
-      return matches;
+      return pathname.match(new RegExp(regexPattern));
     }
+    // Handle dynamic route /confirm-signup/:email
+    if (route === "/confirm-signup/:email") {
+      const regexPattern = `^/confirm-signup/[^/]+(?:\\?.*)?$`;
+      return pathname.match(new RegExp(regexPattern));
+    }
+    // Handle static routes
     return pathname === route;
   });
-  return isProtected;
 };
 
 const redirectTo = (url: string, req: NextRequest) =>
