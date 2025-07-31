@@ -8,7 +8,9 @@ export const useCreateStartDate = () => {
       workspaceId: string;
       startDate: string;
     }) => {
-      const response = await client.api.auth["create-start-date"].$post({
+      const response = await client.api["custom-auth"][
+        "create-start-date"
+      ].$post({
         json: {
           workspaceId: dataSend.workspaceId,
           startDate: dataSend.startDate,

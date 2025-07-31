@@ -7,40 +7,41 @@ import {
 import { Form } from "../../../components/ui/form";
 import CustomInputLabel from "../../../components/inputs/custom-input-label";
 import { Button } from "../../../components/ui/button";
-import { updateUserSchema, updateUserType } from "@/zod-schemas/users-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
+import {
+  updateUserInfoSchema,
+  updateUserInfoSchemaType,
+} from "@/features/auth/validators/update-user";
+import { toast } from "sonner";
+import { Loader } from "lucide-react";
 
 type EditContactInformationProps = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    password: string;
-    emailVerified: boolean;
-    image: string | null;
-    createdAt: string;
-    updatedAt: string;
-    phoneNumber: string | null;
-  };
+  email: string;
+  phoneNumber: string | null;
 };
 export default function EditContactInformation({
-  user,
+  email,
+  phoneNumber,
 }: EditContactInformationProps) {
   const updateUserProfile = useBetterAuthUpdateUser();
-  const form = useForm<updateUserType>({
-    resolver: zodResolver(updateUserSchema),
+  const form = useForm<updateUserInfoSchemaType>({
+    resolver: zodResolver(updateUserInfoSchema),
     defaultValues: {
-      email: user.email ?? "",
-      phoneNumber: user.phoneNumber ?? "",
+      email: email ?? "",
+      phoneNumber: phoneNumber ?? "",
     },
   });
 
-  const handleSubmit = (data: updateUserType) => {
+  const handleSubmit = (data: updateUserInfoSchemaType) => {
+    // TODO:: IT SHOULD BE OPTIONAL BUT FOR NOW IT IS REQUIRED
+    if (!data.phoneNumber) {
+      toast.error("Phone number is required");
+      return;
+    }
     updateUserProfile.mutate(
       {
         json: {
-          email: data.email,
           phoneNumber: data.phoneNumber,
         },
       },
@@ -66,6 +67,7 @@ export default function EditContactInformation({
             fieldTitle="Email"
             nameInSchema="email"
             placeHolder="Enter your email"
+            disabled={true}
           />
           <CustomInputLabel
             fieldTitle="Phone Number"
@@ -73,7 +75,14 @@ export default function EditContactInformation({
             placeHolder="Enter your phone number"
           />
           <Button type="submit" disabled={updateUserProfile.isPending}>
-            {updateUserProfile.isPending ? "Saving..." : "Save Changes"}
+            {updateUserProfile.isPending ? (
+              <span className="flex items-center justify-center">
+                <Loader className="mr-2 animate-spin" />
+                <p>Saving...</p>
+              </span>
+            ) : (
+              <p>Save Changes</p>
+            )}
           </Button>
         </form>
       </Form>

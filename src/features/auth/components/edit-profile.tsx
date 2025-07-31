@@ -7,33 +7,34 @@ import { Button } from "../../../components/ui/button";
 import { useState } from "react";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateUserSchema, updateUserType } from "@/zod-schemas/users-schema";
-import { DialogContent, DialogHeader, DialogTitle } from "../../../components/ui/dialog";
+import {
+  updateUserInfoSchema,
+  updateUserInfoSchemaType,
+} from "@/features/auth/validators/update-user";
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "../../../components/ui/dialog";
 import CropImageComponent from "./crop-image";
 import { cn } from "@/lib/utils";
 
 type EditProfileProps = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    password: string;
-    emailVerified: boolean;
-    image: string | null;
-    createdAt: string;
-    updatedAt: string;
-  };
+  name: string;
+  email: string;
+  image: string | undefined | null;
   setUserProfileView: (value: boolean) => void;
   userProfileView: boolean;
 };
 export default function EditProfile({
-  user,
+  name,
+  email,
+  image,
   setUserProfileView,
   userProfileView,
 }: EditProfileProps) {
   const imageInputRef = useRef<HTMLInputElement>(null);
   const updateUserProfile = useBetterAuthUpdateUser();
-  const { id, name, email, password, emailVerified, image } = user;
   const [imagePreviewInEditProfile, setImagePreviewInEditProfile] = useState<
     string | null
   >(image || null);
@@ -52,24 +53,21 @@ export default function EditProfile({
     reader.readAsDataURL(file);
   };
 
-  const form = useForm<updateUserType>({
-    resolver: zodResolver(updateUserSchema),
+  const form = useForm<updateUserInfoSchemaType>({
+    resolver: zodResolver(updateUserInfoSchema),
     defaultValues: {
-      id,
       name,
       email,
-      password,
-      emailVerified,
-      image,
+      image: image as string | undefined,
     },
   });
 
-  const handleSubmit = (data: updateUserType) => {
+  const handleSubmit = (data: updateUserInfoSchemaType) => {
     updateUserProfile.mutate(
       {
         json: {
           ...data,
-          image: imagePreviewInEditProfile || null,
+          image: imagePreviewInEditProfile || undefined,
         },
       },
       {
@@ -96,18 +94,17 @@ export default function EditProfile({
             >
               <div className="flex flex-col gap-2 max-h-[450px] overflow-y-auto hide-scrollbar">
                 <div className="flex items-start justify-between gap-8">
-                  <div className="flex flex-col gap-1 flex-1">
+                  <div className="flex flex-col gap-1 flex-1 px-1">
                     <CustomInputLabel
                       fieldTitle="Full Name"
                       nameInSchema="name"
                       placeHolder="Enter your full name"
-                      className=""
                     />
                     <CustomInputLabel
                       fieldTitle="Email"
                       nameInSchema="email"
                       placeHolder="Enter your email"
-                      className=""
+                      disabled={true}
                     />
                   </div>
                   <div className="flex flex-col gap-1">

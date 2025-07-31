@@ -3,18 +3,20 @@ import { InferRequestType, InferResponseType } from "hono";
 import { client } from "@/lib/rpc";
 
 type ResponseType = InferResponseType<
-  (typeof client.api.auth)["update-user"]["$patch"]
+  (typeof client.api)["custom-auth"]["update-user"]["$patch"]
 >;
 
 type RequestType = InferRequestType<
-  (typeof client.api.auth)["update-user"]["$patch"]
+  (typeof client.api)["custom-auth"]["update-user"]["$patch"]
 >;
 
 export const useBetterAuthUpdateUser = () => {
   const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }) => {
-      const response = await client.api.auth["update-user"].$patch({ json });
+      const response = await client.api["custom-auth"]["update-user"].$patch({
+        json,
+      });
       if (!response.ok) {
         const { message } = await response.json();
         throw new Error(message || "Failed to update user");

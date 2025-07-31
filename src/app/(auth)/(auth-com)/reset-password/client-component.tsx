@@ -1,5 +1,4 @@
 "use client";
-
 import CustomPasswordInput from "@/components/inputs/custom-password-input";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,20 +9,22 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { useResetPassword } from "@/features/auth/api/reset-password";
 import {
   resetPasswordFrontendSchema,
   ResetPasswordFrontendSchemaType,
 } from "@/features/auth/validators/reset-password";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function ResetPasswordClient({ token }: { token: string }) {
   const router = useRouter();
-  const resetPassword = useResetPassword();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<ResetPasswordFrontendSchemaType>({
     resolver: zodResolver(resetPasswordFrontendSchema),
     defaultValues: {
@@ -32,26 +33,26 @@ export default function ResetPasswordClient({ token }: { token: string }) {
       confirmPassword: "",
     },
   });
-  const handleResetPassword = (data: ResetPasswordFrontendSchemaType) => {
-    const dataSend = {
-      token: data.token,
+  const handleResetPassword = async (data: ResetPasswordFrontendSchemaType) => {
+    await authClient.resetPassword({
       newPassword: data.newPassword,
-    };
-    resetPassword.mutate(
-      {
-        json: dataSend,
-      },
-      {
+      token: data.token,
+      fetchOptions: {
+        onRequest: () => {
+          setIsLoading(true);
+        },
         onSuccess: () => {
-          toast.success("Password reset successfully");
+          setIsLoading(false);
           form.reset();
+          toast.success("Password reset successfully");
           router.push("/sign-in");
         },
-        onError: (error) => {
+        onError: ({ error }) => {
+          setIsLoading(false);
           toast.error(error.message || "Failed to reset password");
         },
-      }
-    );
+      },
+    });
   };
   return (
     <Card className="w-full md:w-[487px] px-2 py-4 space-y-4">
@@ -79,9 +80,16 @@ export default function ResetPasswordClient({ token }: { token: string }) {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={resetPassword.isPending}
+              disabled={isLoading}
             >
-              {resetPassword.isPending ? "Resetting..." : "Reset Password"}
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <Loader className="mr-2 animate-spin" />
+                  <p>Resetting...</p>
+                </span>
+              ) : (
+                <p>Reset Password</p>
+              )}
             </Button>
           </form>
         </Form>

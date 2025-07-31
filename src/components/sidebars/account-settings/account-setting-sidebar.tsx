@@ -8,8 +8,8 @@ export default function AccountSettingSidebar({
   currentTab,
   setCurrentTab,
 }: AccountSettingProps) {
-
   const accountSettingItems = [
+    { id: "account", label: "Account", icon: "👤" },
     { id: "security", label: "Security", icon: "🔒" },
     { id: "notifications", label: "Notifications", icon: "🔔" },
     { id: "privacy", label: "Privacy", icon: "🔍" },

@@ -39,6 +39,7 @@ export default function VerifyEmailClient({ token }: { token: string }) {
           toast.success("Email verified successfully");
         },
         onError: ({ error }) => {
+          console.error("Verification error:", error);
           setIsVerifying(false);
           setError(error.message || "Failed to verify email");
         },

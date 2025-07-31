@@ -5,6 +5,7 @@ import { session, user, verification, account } from "@/db/schema/schema";
 import { nextCookies } from "better-auth/next-js";
 import { sendVerificationEmail } from "@/features/auth/utils/send-verification-email";
 import { sendResetPasswordEmail } from "@/features/auth/utils/send-password-reset-email";
+import { sendChangeEmail } from "@/features/auth/utils/send-change-email";
 
 export const auth = betterAuth({
   plugins: [nextCookies()],
@@ -29,9 +30,8 @@ export const auth = betterAuth({
     resetPasswordTokenExpiresIn: 600,
   },
   emailVerification: {
-    sendVerificationEmail: async ({ token, user }) => {
-      const verificationUrl = `${process.env.NEXT_PUBLIC_APP_URL}/verify-email?token=${token}`;
-      await sendVerificationEmail(verificationUrl, user.email);
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendVerificationEmail(url, user.email);
     },
     sendOnSignUp: true,
     expiresIn: 600,
@@ -46,6 +46,23 @@ export const auth = betterAuth({
     github: {
       clientId: process.env.GITHUB_CLIENT_ID as string,
       clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+    },
+  },
+  user: {
+    modelName: "user",
+    additionalFields: {
+      phoneNumber: {
+        type: "string",
+        required: false,
+        defaultValue: null,
+      },
+    },
+    changeEmail: {
+      enabled: true,
+      sendChangeEmailVerification: async ({ url, user }) => {
+        console.log("Sending change email verification to:", url);
+        await sendChangeEmail(url, user.email);
+      },
     },
   },
 });

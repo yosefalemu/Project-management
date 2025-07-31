@@ -8,7 +8,9 @@ export const useUpateStartDate = () => {
       workspaceId: string;
       startDateSend: string;
     }) => {
-      const response = await client.api.auth["update-start-date"].$patch({
+      const response = await client.api["custom-auth"][
+        "update-start-date"
+      ].$patch({
         json: {
           workspaceId: dataSend.workspaceId,
           startDateSend: dataSend.startDateSend,

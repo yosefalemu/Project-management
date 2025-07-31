@@ -3,7 +3,7 @@ import AccountSettingContent from "./account-setting-content";
 import AccountSettingSidebar from "./account-setting-sidebar";
 
 export default function AccountSetting() {
-  const [currnetTab, setCurrentTab] = React.useState("security");
+  const [currnetTab, setCurrentTab] = React.useState("account");
   return (
     <div className="flex">
       <div className="w-1/4 border-r">

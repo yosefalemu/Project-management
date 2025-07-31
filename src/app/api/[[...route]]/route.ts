@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { handle } from "hono/vercel";
 import { auth } from "@/lib/auth";
+import customAuth from "@/features/auth/server/route";
 import workspace from "@/features/workspace/server/route";
 import member from "@/features/members/server/route";
 import project from "@/features/projects/server/route";
@@ -27,6 +28,7 @@ app.on(["POST", "GET"], "/auth/*", (c) => {
 });
 
 const routes = app
+  .route("/custom-auth", customAuth)
   .route("/workspace", workspace)
   .route("/members", member)
   .route("/projects", project)

@@ -5,7 +5,7 @@ export const useGetStartDate = (workspaceId: string) => {
   const query = useQuery({
     queryKey: ["startDate", workspaceId],
     queryFn: async () => {
-      const response = await client.api.auth["get-start-date"].$get({
+      const response = await client.api["custom-auth"]["get-start-date"].$get({
         query: { workspaceId },
       });
       if (!response.ok) {
