@@ -244,7 +244,9 @@ export default function UserProfileInfo() {
               </Button>
             </DialogTrigger>
             <EditProfile
-              user={currentUser[0]}
+              name={name}
+              email={email}
+              image={image}
               setUserProfileView={setUserProfileView}
               userProfileView={userProfileView}
             />
@@ -259,7 +261,7 @@ export default function UserProfileInfo() {
                   Edit
                 </Button>
               </DialogTrigger>
-              <EditContactInformation user={currentUser[0]} />
+              <EditContactInformation email={email} phoneNumber={phoneNumber} />
             </Dialog>
           </div>
           <div className="flex items-start gap-2">

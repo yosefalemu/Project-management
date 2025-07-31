@@ -15,6 +15,7 @@ interface CustomInputLabelProps {
   placeHolder: string;
   className?: string;
   maxCharLength?: number;
+  disabled?: boolean;
 }
 export default function CustomInputLabel({
   fieldTitle,
@@ -22,6 +23,7 @@ export default function CustomInputLabel({
   placeHolder,
   className,
   maxCharLength,
+  disabled = false,
   ...props
 }: CustomInputLabelProps) {
   const form = useFormContext();
@@ -44,11 +46,15 @@ export default function CustomInputLabel({
             <FormControl>
               <Input
                 id={nameInSchema}
-                className="w-full max-w-xl disabled:cursor-not-allowed h-12"
+                className={cn(
+                  "w-full max-w-xl disabled:cursor-not-allowed h-12",
+                  className
+                )}
                 placeholder={placeHolder}
                 {...props}
                 {...field}
                 onChange={handleChange}
+                disabled={disabled}
               />
             </FormControl>
             {maxCharLength && (

@@ -10,39 +10,45 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { useForgotPassword } from "@/features/auth/api/forgot-password";
 import {
   forgotPasswordSchema,
   ForgotPasswordSchemaType,
 } from "@/features/auth/validators/forgot-password";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {
-  const forgotPassword = useForgotPassword();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const form = useForm<ForgotPasswordSchemaType>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
     },
   });
-  const handleForgotPassword = (data: ForgotPasswordSchemaType) => {
-    forgotPassword.mutate(
-      {
-        json: data,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Password reset email sent successfully");
-          form.reset();
+  const handleForgotPassword = async (data: ForgotPasswordSchemaType) => {
+    await authClient.requestPasswordReset({
+      email: data.email,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/reset-password`,
+      fetchOptions: {
+        onRequest: () => {
+          setIsLoading(true);
         },
-        onError: (error) => {
+        onSuccess: () => {
+          setIsLoading(false);
+          form.reset();
+          toast.success("Password reset email sent successfully");
+        },
+        onError: ({ error }) => {
+          setIsLoading(false);
           toast.error(error.message || "Failed to send forgot password email");
         },
-      }
-    );
+      },
+    });
   };
   return (
     <Card className="w-full h-full md:w-[487px] px-2 py-4 space-y-4">
@@ -63,9 +69,16 @@ export default function ForgotPasswordPage() {
             <Button
               type="submit"
               className="w-full h-12 cursor-pointer"
-              disabled={forgotPassword.isPending}
+              disabled={isLoading}
             >
-              {forgotPassword.isPending ? "Sending..." : "Forgot Password"}
+              {isLoading ? (
+                <span className="flex items-center justify-center">
+                  <Loader className="mr-2 animate-spin" />
+                  <p>Sending...</p>
+                </span>
+              ) : (
+                <p>Forgot Password</p>
+              )}
             </Button>
           </form>
         </Form>

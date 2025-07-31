@@ -5,7 +5,7 @@ export const useBetterAuthGetUser = () => {
   const query = useQuery({
     queryKey: ["currentUser"],
     queryFn: async () => {
-      const response = await client.api.auth["get-user"].$get();
+      const response = await client.api["custom-auth"]["get-user"].$get();
       if (!response.ok) {
         return null;
       }

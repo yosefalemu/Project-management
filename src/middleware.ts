@@ -77,13 +77,15 @@ export async function middleware(req: NextRequest) {
       }
     } else if (pathname === "/") {
       const notRememberMe = req.cookies.get("better-auth.dont_remember")?.value;
+      console.log("Not Remember Me:", notRememberMe);
       const sessionCookie = req.cookies.get("better-auth.session_token")?.value;
+      console.log("Session Cookie:", sessionCookie);
       if (!sessionCookie) {
-        return redirectTo("/sign-in", req);
-      } else if (sessionCookie && notRememberMe) {
         return redirectTo("/sign-in", req);
       } else if (sessionCookie && !notRememberMe) {
         return redirectTo("/dashboard", req);
+      } else if (sessionCookie && notRememberMe) {
+        return redirectTo("/sign-in", req);
       }
     }
   }
