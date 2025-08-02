@@ -30,7 +30,7 @@ export default function JoinWorkspaceForm({
       { json: { inviteCode }, param: { workspaceId } },
       {
         onSuccess: () => {
-          router.push(`/workspaces/${workspaceId}`);
+          router.push(`/${workspaceId}`);
           toast.success(
             `You have successfully joined the ${workspaceFound.name}`
           );

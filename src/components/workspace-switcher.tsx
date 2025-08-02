@@ -27,7 +27,7 @@ export default function WorkspaceSwitcher({
   const { open } = useWorkspaceModalHook();
 
   const handleWorkspaceChange = (value: string) => {
-    router.push(`/workspaces/${value}`);
+    router.push(`/${value}`);
   };
 
   return (

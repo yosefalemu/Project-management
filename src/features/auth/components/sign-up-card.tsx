@@ -42,7 +42,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: "/confirm-signup",
+      callbackURL: "/sign-in",
       fetchOptions: {
         onRequest: () => {
           setSignUpLoading(true);

@@ -102,7 +102,7 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
             form.reset();
             setTimeout(() => {
               router.push(
-                `/workspaces/${params.workspaceId}/projects/${data.id}`
+                `/${params.workspaceId}/projects/${data.id}`
               );
             }, 100);
             close();
@@ -129,7 +129,7 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
         <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
           {!onModal && (
             <BackButton
-              backTo={`/workspaces/${params.workspaceId}/projects/${params.projectId}`}
+              backTo={`/${params.workspaceId}/projects/${params.projectId}`}
             />
           )}
           <CardTitle className="text-xl font-bold">

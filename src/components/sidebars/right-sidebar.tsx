@@ -21,6 +21,9 @@ import { useState, useRef, useEffect } from "react";
 import { useConfirm } from "@/hooks/use-confirm";
 import { useAccountModalStore } from "@/states/modals/account-setting";
 import AccountSetting from "@/components/sidebars/account-settings/account-setting";
+import { fonts } from "@/lib/font";
+import { fontProfile } from "@/states/font/font-state";
+import { cn } from "@/lib/utils";
 
 export default function RightSidebar() {
   const params = useParams();
@@ -38,6 +41,7 @@ export default function RightSidebar() {
     isError: isCurrentUserError,
   } = useBetterAuthGetUser();
   const { data, isLoading, isError } = useGetWorkspaces();
+  const { font } = fontProfile();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -89,9 +93,15 @@ export default function RightSidebar() {
     name: currentUser?.[0]?.name ?? "",
     image: currentUser?.[0]?.image ?? "",
   };
+  const selectedFont = fonts[font] || fonts["Inter"];
 
   return (
-    <div className="h-full min-w-12 flex flex-col justify-between items-center">
+    <div
+      className={cn(
+        "h-full w-12 flex flex-col justify-between items-center",
+        selectedFont.className
+      )}
+    >
       <PreferenceDialog />
       <AccountSettingDialog />
       <ConfirmSignOut />

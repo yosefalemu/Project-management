@@ -31,7 +31,7 @@ export default function Projects() {
         </div>
       </div>
       {data?.map((project: Project) => {
-        const href = `/workspaces/${params.workspaceId}/projects/${project.id}`;
+        const href = `/${params.workspaceId}/projects/${project.id}`;
         const isActive = pathname === href;
         return (
           <Link href={href} key={project.id}>

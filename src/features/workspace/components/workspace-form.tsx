@@ -87,7 +87,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
           onSuccess: (data: any) => {
             toast.success("Workspace created successfully");
             if (data) {
-              router.push(`/workspaces/${data.data.id}`);
+              router.push(`/${data.data.id}`);
             }
           },
           onError: () => {
