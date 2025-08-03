@@ -79,14 +79,14 @@ export const auth = betterAuth({
       },
     },
   },
-  advanced: {
-    cookies: {
-      dont_remember: {
-        name: "dont_remember",
-        attributes: {},
-      },
-    },
-  },
+  // advanced: {
+  //   cookies: {
+  //     dont_remember: {
+  //       name: "dont_remember",
+  //       attributes: {},
+  //     },
+  //   },
+  // },
 });
 
 export type Session = typeof auth.$Infer.Session;

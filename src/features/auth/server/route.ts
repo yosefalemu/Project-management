@@ -8,41 +8,8 @@ import { startDate, user } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import z, { string } from "zod";
 import { updateUserInfoSchema } from "../validators/update-user";
-import { deleteCookie } from "hono/cookie";
-import { AUTH_REMEMBER_ME_COOKIE } from "../constants/constant";
-import { loginUserSchema } from "@/features/auth/validators/login";
 
 const app = new Hono()
-  .post("/sign-in", zValidator("json", loginUserSchema), async (c) => {
-    const { email, password, rememberMe } = c.req.valid("json");
-    try {
-      if (!email || !password) {
-        return c.json(
-          { error: "BadRequest", message: "Email and password are required" },
-          400
-        );
-      }
-      if (rememberMe) {
-        deleteCookie(c, AUTH_REMEMBER_ME_COOKIE);
-      }
-      const response = await auth.api.signInEmail({
-        body: { email, password, rememberMe },
-      });
-      return c.json({ data: response }, 200);
-    } catch (error) {
-      return c.json(
-        {
-          error: "InternalServerError",
-          message:
-            typeof error === "object" && error !== null && "message" in error
-              ? (error as { message?: string }).message ||
-                "Internal Server Error"
-              : "Internal Server Error",
-        },
-        500
-      );
-    }
-  })
   .get("/get-user", sessionMiddleware, async (c) => {
     try {
       const currUser = c.get("user") as typeof auth.$Infer.Session.user | null;

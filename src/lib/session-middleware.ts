@@ -1,7 +1,5 @@
 import "server-only";
-import { getCookie } from "hono/cookie";
 import { createMiddleware } from "hono/factory";
-import { AUTH_COOKIE } from "@/features/auth/constants/constant";
 
 import type { Env } from "hono";
 import { auth } from "./auth";
@@ -16,15 +14,6 @@ interface CustomEnv extends Env {
 
 export const sessionMiddleware = createMiddleware<CustomEnv>(
   async (c, next) => {
-    const token = getCookie(c, AUTH_COOKIE);
-    console.log("Token from cookie:", token);
-    if (!token) {
-      return c.json(
-        { error: "Unauthorized", message: "No token provided" },
-        401
-      );
-    }
-
     try {
       const session = await auth.api.getSession({ headers: c.req.raw.headers });
       if (!session) {
