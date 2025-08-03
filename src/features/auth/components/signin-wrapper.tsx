@@ -1,7 +1,7 @@
 "use client";
 import { useSearchParams } from "next/navigation";
-import SignInCard from "@/features/auth/components/sign-in-card";
 import { Suspense } from "react";
+import SignInCard from "./sign-in-card";
 
 const SignInCardWrapperComponent = () => {
   const searchParams = useSearchParams();

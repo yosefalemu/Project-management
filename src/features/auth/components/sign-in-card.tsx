@@ -22,7 +22,6 @@ import CustomCheckBox from "@/components/inputs/custom-checkbox";
 import { authClient } from "@/lib/auth-client";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
-import { useBetterSigninUser } from "../api/better-signin-user";
 import { useRouter } from "next/navigation";
 
 interface SignInCardProps {
@@ -30,7 +29,7 @@ interface SignInCardProps {
 }
 export default function SignInCard({ redirects }: SignInCardProps) {
   const router = useRouter();
-  const signinEmail = useBetterSigninUser();
+  const [signInEmailLoading, setSignInEmailLoading] = useState<boolean>(false);
   const [signInGoogleLoading, setSignInGoogleLoading] =
     useState<boolean>(false);
   const [signInGithubLoading, setSignInGithubLoading] =
@@ -44,21 +43,28 @@ export default function SignInCard({ redirects }: SignInCardProps) {
     },
   });
 
-  const handleLogin = (data: LoginUserSchemaType) => {
-    signinEmail.mutate(
-      {
-        json: data,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Logged in successfully");
-          router.push("/");
+  const handleLogin = async (data: LoginUserSchemaType) => {
+    await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+      rememberMe: data.rememberMe,
+      callbackURL: redirects ?? "/",
+      fetchOptions: {
+        onRequest: () => {
+          setSignInEmailLoading(true);
         },
-        onError: (error) => {
+        onSuccess: () => {
+          setSignInEmailLoading(false);
+          form.reset();
+          toast.success("Logged in successfully");
+          router.push(redirects ?? "/");
+        },
+        onError: ({ error }) => {
+          setSignInEmailLoading(false);
           toast.error(error.message || "Failed to log in");
         },
-      }
-    );
+      },
+    });
   };
 
   const signInWithGoogle = async () => {
@@ -129,12 +135,10 @@ export default function SignInCard({ redirects }: SignInCardProps) {
               type="submit"
               className="w-full h-12 cursor-pointer"
               disabled={
-                signinEmail.isPending ||
-                signInGoogleLoading ||
-                signInGithubLoading
+                signInEmailLoading || signInGoogleLoading || signInGithubLoading
               }
             >
-              {signinEmail.isPending ? (
+              {signInEmailLoading ? (
                 <span className="flex items-center justify-center">
                   <Loader className="mr-2 animate-spin" />
                   <p>Logging</p>
@@ -153,9 +157,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
             size="xl"
             variant="secondary"
             disabled={
-              signInGoogleLoading ||
-              signinEmail.isPending ||
-              signInGithubLoading
+              signInGoogleLoading || signInEmailLoading || signInGithubLoading
             }
           >
             {signInGoogleLoading ? (
@@ -177,9 +179,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
             variant="secondary"
             onClick={signInWithGithub}
             disabled={
-              signInGithubLoading ||
-              signinEmail.isPending ||
-              signInGoogleLoading
+              signInGithubLoading || signInEmailLoading || signInGoogleLoading
             }
           >
             {signInGithubLoading ? (
