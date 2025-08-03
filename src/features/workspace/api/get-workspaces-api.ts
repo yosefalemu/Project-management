@@ -1,19 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
 import { client } from "@/lib/rpc";
 
-export const getWorkspaces = async () => {
-  const response = await client.api.workspace["$get"]();
-  console.log("Response from getWorkspaces:", response);
+export const getUserWorkspaces = async () => {
+  const response = await client.api.workspace["user-workspaces"]["$get"]();
+  console.log("Response from getUserWorkspaces:", response);
   if (!response.ok) {
     throw new Error("An error occurred while fetching workspaces");
   }
   const { data } = await response.json();
   return data;
 };
-export const useGetWorkspaces = () => {
+export const useGetUserWorkspaces = () => {
   const query = useQuery({
     queryKey: ["workspaces"],
-    queryFn: getWorkspaces,
+    queryFn: getUserWorkspaces,
   });
   return query;
 };

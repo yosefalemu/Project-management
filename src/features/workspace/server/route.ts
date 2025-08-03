@@ -1,11 +1,11 @@
 import { db } from "@/db";
-import { workspaceMember, workspace } from "@/db/schema/schema";
+import { workspaceMember, workspace, user } from "@/db/schema/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createWorkspaceSchema } from "@/zod-schemas/workspace-schema";
 import { zValidator } from "@hono/zod-validator";
 import { NeonDbError } from "@neondatabase/serverless";
 import { Context, Hono } from "hono";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { MemberRole } from "@/features/members/types/type";
 import { generateInviteCode } from "@/lib/utils";
 import { insertMemberSchemaType } from "@/zod-schemas/member-schema";
@@ -14,7 +14,7 @@ import { isBefore } from "date-fns";
 import { auth } from "@/lib/auth";
 
 const app = new Hono()
-  .get("/", sessionMiddleware, async (c) => {
+  .get("/user-workspaces", sessionMiddleware, async (c) => {
     const user = c.get("user") as typeof auth.$Infer.Session.user | null;
     const session = c.get("session") as
       | typeof auth.$Infer.Session.session
@@ -30,48 +30,70 @@ const app = new Hono()
       .from(workspaceMember)
       .where(eq(workspaceMember.userId, user.id));
     if (members.length === 0) {
-      return c.json({ data: [] });
+      return c.json({ error: "NotFound", message: "No workspaces found" }, 404);
     }
     const workspacesIds = members.map((member) => member.workspaceId);
     const workspacesFound = await db
       .select()
       .from(workspace)
       .where(inArray(workspace.id, workspacesIds));
-    return c.json({ data: workspacesFound });
+    const workspacesWithUserInfo = workspacesFound.map((workspace) => {
+      const member = members.find((m) => m.workspaceId === workspace.id);
+      return {
+        ...workspace,
+        member: member,
+      };
+    });
+    return c.json({ data: workspacesWithUserInfo });
   })
   .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
-    const userId = c.get("userId") as string;
-    const workspaceId = c.req.param("workspaceId") as string;
-    const members = await db
-      .select()
-      .from(workspaceMember)
-      .where(eq(workspaceMember.userId, userId));
-    if (members.length === 0) {
+    try {
+      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!user) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+      console.log("User ID from context:", user.id);
+      const workspaceId = c.req.param("workspaceId") as string;
+      const memberFound = await db
+        .select()
+        .from(workspaceMember)
+        .where(
+          and(
+            eq(workspaceMember.userId, user.id),
+            eq(workspaceMember.workspaceId, workspaceId)
+          )
+        );
+      if (memberFound.length === 0) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "You are not a member of this workspace",
+          },
+          403
+        );
+      }
+      const workspaceFound = await db
+        .select()
+        .from(workspace)
+        .where(eq(workspace.id, workspaceId));
+      const workspaceWithMemberInfo = {
+        ...workspaceFound[0],
+        member: memberFound[0],
+      };
+      return c.json({ data: workspaceWithMemberInfo });
+    } catch (error) {
+      console.error("Error in workspace route:", error);
       return c.json(
         {
-          error: "Forbidden",
-          message: "You are not a member of this workspace",
+          error: "InternalServerError",
+          message: "An error occurred while processing your request",
         },
-        403
+        500
       );
     }
-    const workspacesIds = members.map((member) => member.workspaceId);
-    const workspaceFound = await db
-      .select()
-      .from(workspace)
-      .where(
-        inArray(workspace.id, workspacesIds) && eq(workspace.id, workspaceId)
-      );
-    if (workspaceFound.length === 0) {
-      return c.json(
-        {
-          error: "NotFound",
-          message: "Workspace not found",
-        },
-        404
-      );
-    }
-    return c.json({ data: workspaceFound[0] });
   })
   .get("/get-workspace-info/:workspaceId", sessionMiddleware, async (c) => {
     const workspaceId = c.req.param("workspaceId");
@@ -130,8 +152,8 @@ const app = new Hono()
       } else {
         uploadedImage = image || "";
       }
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFound) {
         return c.json({
           error: "Unauthorized",
           message: "User not authenticated",
@@ -148,7 +170,7 @@ const app = new Hono()
             name,
             description: description.trim(),
             image: uploadedImage,
-            creatorId: user.id,
+            creatorId: userFound.id,
             inviteCode: generateInviteCode(10),
           })
           .returning();
@@ -158,9 +180,26 @@ const app = new Hono()
           await db.insert(workspaceMember).values({
             id: crypto.randomUUID(),
             workspaceId: newWorkspace.id,
-            userId: user.id,
+            userId: userFound.id,
             role: MemberRole.Admin,
           });
+          // Update the user's lastWorkspaceId
+          try {
+            await db
+              .update(user)
+              .set({ lastWorkspaceId: newWorkspace.id })
+              .where(eq(user.id, userFound.id));
+          } catch (err) {
+            console.error("Error while updating user's last workspace", err);
+            // Rollback: Delete the created workspace member
+            await db.delete(workspace).where(eq(workspace.id, newWorkspace.id));
+            await db
+              .delete(workspaceMember)
+              .where(
+                eq(workspaceMember.workspaceId, newWorkspace.id) &&
+                  eq(workspaceMember.userId, userFound.id)
+              );
+          }
         } catch (err) {
           console.error("Error while creating member", err);
 

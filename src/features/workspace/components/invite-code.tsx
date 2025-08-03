@@ -1,6 +1,11 @@
-import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useConfirm } from "@/hooks/use-confirm";
 import { CopyIcon, Loader } from "lucide-react";
@@ -21,7 +26,7 @@ export default function InviteCode({
   setIsResetInviteCodeLoading,
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
-  const fullInviteCode = `${window.location.origin}/join/workspaces/${workspaceId}/${inviteCode}`;
+  const fullInviteCode = `${window.location.origin}/join/${workspaceId}/${inviteCode}`;
   const { mutate, isPending } = useUpdateInviteCodeWorkspace();
   const [ResetInviteCode, confirmReset] = useConfirm(
     "Reset invite code",
@@ -55,49 +60,48 @@ export default function InviteCode({
   return (
     <div>
       <ResetInviteCode />
-      <Card className="shadow-none border-none bg-neutral-0 col-span-1 bg-neutral-50">
-        <CardContent className="p-7">
-          <div className="flex flex-col">
-            <h3 className="font-bold text-lg" onClick={() => {}}>
-              Invite code
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              Use the invite code to add members to your workspace.
-            </p>
+      <Card className="col-span-1">
+        <CardHeader>
+          <CardTitle>Invite code</CardTitle>
+          <CardDescription>
+            Use the invite code to add members to your workspace.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-y-4">
+          <div className="flex items-center gap-x-2">
+            <Input disabled={true} value={fullInviteCode} className="h-12" />
+            <Button
+              onClick={() =>
+                navigator.clipboard
+                  .writeText(fullInviteCode)
+                  .then(() => toast.success("Invite code copied to clipboard"))
+              }
+              variant="ghost"
+              className="size-12"
+              disabled={loadingState}
+            >
+              <CopyIcon className="size-5" />
+            </Button>
           </div>
-          <div className="mt-5">
-            <div className="flex items-center gap-x-2">
-              <Input disabled={true} value={fullInviteCode} className="h-12" />
-              <Button
-                onClick={() =>
-                  navigator.clipboard
-                    .writeText(fullInviteCode)
-                    .then(() =>
-                      toast.success("Invite code copied to clipboard")
-                    )
-                }
-                variant="ghost"
-                className="size-12"
-                disabled={loadingState}
-              >
-                <CopyIcon className="size-5" />
-              </Button>
-            </div>
-            <DootedSeparator className="py-7" />
-            <div className="w-full flex justify-end">
-              {" "}
-              <Button
-                className="mt-6 w-fit"
-                size={isDesktop ? "lg" : "sm"}
-                variant="destructive"
-                type="button"
-                onClick={handleDeleteWorkspace}
-                disabled={loadingState || isPending}
-              >
-                {isPending ? <Loader className="animate-spin" /> : null}
-                {isPending ? "Reseting" : "Reset invite code"}
-              </Button>
-            </div>
+          <div className="w-full flex justify-end">
+            <Button
+              className="w-fit"
+              size={isDesktop ? "lg" : "sm"}
+              variant="destructive"
+              type="button"
+              onClick={handleDeleteWorkspace}
+              disabled={loadingState || isPending}
+            >
+              {isPending ? (
+                <div className="flex items-center justify-center">
+                  <Loader className="animate-spin" />
+                </div>
+              ) : (
+                <div className="flex items-center justify-center">
+                  Reset Invite Code
+                </div>
+              )}
+            </Button>
           </div>
         </CardContent>
       </Card>

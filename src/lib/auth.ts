@@ -64,8 +64,11 @@ export const auth = betterAuth({
     additionalFields: {
       phoneNumber: {
         type: "string",
-        required: false,
-        defaultValue: null,
+        input: false,
+      },
+      lastWorkspaceId: {
+        type: "string",
+        input: false,
       },
     },
     changeEmail: {
@@ -85,3 +88,5 @@ export const auth = betterAuth({
     },
   },
 });
+
+export type Session = typeof auth.$Infer.Session;

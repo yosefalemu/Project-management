@@ -12,9 +12,11 @@ export default async function RootPage() {
     redirect("/sign-in");
   }
 
+  const { lastWorkspaceId } = session.user || {};
+
   return (
     <div className="bg-red-500 h-full flex items-center justify-center">
-      <MainPageClient />
+      <MainPageClient lastWorkspaceId={lastWorkspaceId} />
     </div>
   );
 }

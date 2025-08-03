@@ -6,7 +6,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import WorkspaceSwitcher from "../workspace-switcher";
-import { useGetWorkspaces } from "@/features/workspace/api/get-workspaces-api";
+import { useGetUserWorkspaces } from "@/features/workspace/api/get-workspaces-api";
 import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { Skeleton } from "../ui/skeleton";
 import { useParams } from "next/navigation";
@@ -14,7 +14,14 @@ import DirectMessage from "../direct-message";
 import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import UserProfile from "./user-profile";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "../ui/dialog";
+import { Drawer, DrawerContent, DrawerTitle } from "../ui/drawer";
 import Preferences from "./preferences/preferences";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { useState, useRef, useEffect } from "react";
@@ -24,9 +31,14 @@ import AccountSetting from "@/components/sidebars/account-settings/account-setti
 import { fonts } from "@/lib/font";
 import { fontProfile } from "@/states/font/font-state";
 import { cn } from "@/lib/utils";
+import { DMIcon, HomeIcon, SettingsIcon } from "./sidebar-svg";
+import WorkspaceSettingComponent from "@/features/workspace/components/workspace-setting";
+import { Button } from "../ui/button";
+import { useMedia } from "react-use";
 
 export default function RightSidebar() {
   const params = useParams();
+  const isDesktop = useMedia("(min-width: 1024px)", true);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const dmsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -34,13 +46,19 @@ export default function RightSidebar() {
   const [dmsTooltipOpen, setDmsTooltipOpen] = useState<boolean>(false);
   const [userProfileTooltipOpen, setUserProfileTooltipOpen] =
     useState<boolean>(false);
+  const [workspaceSettingDialogOpen, setWorkspaceSettingDialogOpen] =
+    useState<boolean>(false);
 
   const {
     data: currentUser,
     isLoading: isCurrentUserLoading,
     isError: isCurrentUserError,
   } = useBetterAuthGetUser();
-  const { data, isLoading, isError } = useGetWorkspaces();
+  const {
+    data: workspaces,
+    isLoading: isWorkspacesLoading,
+    isError: isWorkspacesError,
+  } = useGetUserWorkspaces();
   const { font } = fontProfile();
 
   useEffect(() => {
@@ -77,15 +95,39 @@ export default function RightSidebar() {
     }
   );
 
-  if (isLoading || isCurrentUserLoading) {
-    return <Skeleton className="h-14 w-14" />;
+  if (isWorkspacesLoading || isCurrentUserLoading) {
+    const selectedFont = fonts[font] || fonts["Inter"];
+    return (
+      <div
+        className={cn(
+          "h-full w-12 flex flex-col justify-between items-center",
+          selectedFont.className
+        )}
+      >
+        <div className="flex gap-4 flex-col">
+          <Skeleton className="size-12 rounded-sm" />
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <Skeleton className="size-10 rounded-md" />
+            <Skeleton className="h-4 w-10" />
+          </div>
+          <div className="flex flex-col gap-2 items-center justify-center">
+            <Skeleton className="size-10 rounded-md" />
+            <Skeleton className="h-4 w-10" />
+          </div>
+        </div>
+        <div className="flex flex-col gap-2 items-center justify-center">
+          <Skeleton className="size-9 rounded-full" />
+          <Skeleton className="size-10 rounded-sm" />
+        </div>
+      </div>
+    );
   }
 
-  if (isError || isCurrentUserError) {
+  if (isWorkspacesError || isCurrentUserError) {
     return <div>Error...</div>;
   }
 
-  const currentWorkspace = data?.find(
+  const currentWorkspace = workspaces?.find(
     (workspace) => workspace.id === params.workspaceId
   );
 
@@ -135,28 +177,14 @@ export default function RightSidebar() {
             onClick={(e) => e.stopPropagation()}
           >
             <WorkspaceSwitcher
-              workspaces={data}
+              workspaces={workspaces}
               closeWorkspaceSwitcher={setWorkspaceTooltipOpen}
             />
           </TooltipContent>
         </Tooltip>
         <div className="flex flex-col gap-2 items-center justify-center">
           <div className="hover:bg-primary-foreground/15 p-2 rounded-md cursor-pointer">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="lucide lucide-house-icon lucide-house"
-            >
-              <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
-              <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-            </svg>
+            <HomeIcon />
           </div>
           <p className="text-xs">Home</p>
         </div>
@@ -167,23 +195,7 @@ export default function RightSidebar() {
                 className="hover:bg-primary-foreground/15 p-2 rounded-md"
                 onClick={() => setDmsTooltipOpen((prev) => !prev)}
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="lucide lucide-message-circle-more-icon lucide-message-circle-more"
-                >
-                  <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
-                  <path d="M8 12h.01" />
-                  <path d="M12 12h.01" />
-                  <path d="M16 12h.01" />
-                </svg>
+                <DMIcon />
               </div>
             </TooltipTrigger>
             <TooltipContent
@@ -199,30 +211,77 @@ export default function RightSidebar() {
           <p className="text-xs">DMs</p>
         </div>
       </div>
-      <Tooltip open={userProfileTooltipOpen}>
-        <TooltipTrigger
-          onClick={() => setUserProfileTooltipOpen((prev) => !prev)}
-        >
-          <MemberAvatar
-            name={currentUser?.[0]?.name ?? ""}
-            image={currentUser?.[0]?.image ?? ""}
-            className="size-10 rounded-sm cursor-pointer"
-          />
-        </TooltipTrigger>
-        <TooltipContent
-          className="rounded-sm"
-          side="right"
-          align="start"
-          ref={profileRef}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <UserProfile
-            user={currentUserData}
-            setUserProfileTooltipOpen={setUserProfileTooltipOpen}
-            confirm={confirm}
-          />
-        </TooltipContent>
-      </Tooltip>
+      <div className="flex flex-col gap-2 items-center justify-center">
+        {currentWorkspace?.member?.role === "admin" && (
+          <div>
+            {isDesktop ? (
+              <Dialog
+                open={workspaceSettingDialogOpen}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setWorkspaceSettingDialogOpen(true);
+                  } else {
+                    setWorkspaceSettingDialogOpen(false);
+                  }
+                }}
+              >
+                <DialogTrigger asChild className="border-none">
+                  <Button
+                    className="flex items-center justify-center w-full rounded-none p-1 border-none bg-transparent hover:bg-transparent"
+                    onClick={() => {
+                      setWorkspaceSettingDialogOpen(true);
+                    }}
+                    variant="ghost"
+                  >
+                    <SettingsIcon />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent
+                  className="w-full max-w-6xl
+      "
+                >
+                  <DialogTitle className="hidden" />
+                  <WorkspaceSettingComponent />
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <Drawer
+                open={workspaceSettingDialogOpen}
+                onOpenChange={setWorkspaceSettingDialogOpen}
+              >
+                <DrawerTitle className="hidden" />
+                <DrawerContent>
+                  <div className="overflow-y-auto hide-scrollbar max-h-[85vh]"></div>
+                </DrawerContent>
+              </Drawer>
+            )}
+          </div>
+        )}
+        <Tooltip open={userProfileTooltipOpen}>
+          <TooltipTrigger
+            onClick={() => setUserProfileTooltipOpen((prev) => !prev)}
+          >
+            <MemberAvatar
+              name={currentUser?.[0]?.name ?? ""}
+              image={currentUser?.[0]?.image ?? ""}
+              className="size-10 rounded-sm cursor-pointer"
+            />
+          </TooltipTrigger>
+          <TooltipContent
+            className="rounded-sm"
+            side="right"
+            align="start"
+            ref={profileRef}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <UserProfile
+              user={currentUserData}
+              setUserProfileTooltipOpen={setUserProfileTooltipOpen}
+              confirm={confirm}
+            />
+          </TooltipContent>
+        </Tooltip>
+      </div>
     </div>
   );
 }

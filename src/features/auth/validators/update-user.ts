@@ -10,6 +10,7 @@ export const updateUserInfoSchema = z.object({
   image: z.string().optional(),
   name: z.string().optional(),
   email: z.string().optional(),
+  lastWorkspaceId: z.string().optional(),
 });
 
 export const updateUserEmailSchema = z.object({

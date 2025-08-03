@@ -3,6 +3,7 @@
 import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { useRouter } from "next/navigation";
 import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
+import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
 
 type WorkspaceSwitcherProps = {
   workspaces?: Array<{
@@ -24,9 +25,15 @@ export default function WorkspaceSwitcher({
   closeWorkspaceSwitcher,
 }: WorkspaceSwitcherProps) {
   const router = useRouter();
+  const updateLastWorkspace = useBetterAuthUpdateUser();
   const { open } = useWorkspaceModalHook();
 
   const handleWorkspaceChange = (value: string) => {
+    updateLastWorkspace.mutate({
+      json: {
+        lastWorkspaceId: value,
+      },
+    });
     router.push(`/${value}`);
   };
 
