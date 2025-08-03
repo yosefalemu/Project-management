@@ -87,7 +87,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
           onSuccess: (data: any) => {
             toast.success("Workspace created successfully");
             if (data) {
-              router.push(`/workspaces/${data.data.id}`);
+              router.push(`/${data.data.id}`);
             }
           },
           onError: () => {
@@ -103,20 +103,17 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   };
 
   return (
-    <div className="h-full w-full flex flex-col gap-y-4">
-      <Card className="shadow-none border-none w-full">
-        <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
-          <CardTitle className="text-xl font-bold">
-            {workspace ? "Edit workspace" : "Create a new workspace"}
+    <div className="h-full w-full flex flex-col gap-y-4 max-h-[550px] overflow-y-auto pb-14 hide-scrollbar">
+      <Card className="shadow-none border-none w-full ">
+        <CardHeader className="border-b-2">
+          <CardTitle>
+            {workspace ? "Edit Workspace" : "Create Workspace"}
           </CardTitle>
         </CardHeader>
-        <div className="px-7">
-          <DootedSeparator />
-        </div>
-        <CardContent className="p-7">
+        <CardContent className="pt-4">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-              <div className="flex flex-col items-start gap-4">
+              <div className="flex  items-start gap-4">
                 <div className="flex flex-col gap-y-4 w-full">
                   <CustomInputLabel
                     fieldTitle="Workspace Name"
@@ -148,7 +145,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                 <div className="flex flex-col gap-y-4 w-full">Column Two</div>
               </div>
               <DootedSeparator className="py-7" />
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-end gap-x-4">
                 <Button
                   type="button"
                   size={isDesktop ? "lg" : "sm"}
@@ -180,11 +177,10 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                   {createWorkspaceMutation.isPending ||
                   updateWorkspaceMutation.isPending ? (
                     <span className="flex items-center justify-center">
-                      <Loader className="mr-2 animate-spin" />
-                      <p>{workspace ? "Editing" : "Creating"}</p>
+                      <Loader className="animate-spin" />
                     </span>
                   ) : (
-                    <p>{workspace ? "Edit workspace" : "Create Workspace"}</p>
+                    <p>{workspace ? "Save Changes" : "Create Workspace"}</p>
                   )}
                 </Button>
               </div>
@@ -193,7 +189,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
         </CardContent>
       </Card>
       {workspace && (
-        <div className="flex flex-col gap-y-4">
+        <div className="flex flex-col gap-y-4 p-6">
           <InviteCode
             workspaceId={workspace.id!}
             inviteCode={workspace.inviteCode!}

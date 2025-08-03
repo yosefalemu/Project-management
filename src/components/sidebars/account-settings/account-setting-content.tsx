@@ -53,7 +53,7 @@ const AccountTab = () => {
     }
     authClient.changeEmail({
       newEmail: data.email,
-      callbackURL: "/dashboard",
+      callbackURL: "/",
       fetchOptions: {
         onRequest: () => {
           setIsChangingEmail(true);
@@ -93,6 +93,7 @@ const AccountTab = () => {
         onSubmit={changeEmailForm.handleSubmit(handleEmailChange)}
         className="space-y-4"
       >
+        <div dangerouslySetInnerHTML={{ __html: user?.user?.email }} />
         <CustomInputLabel
           fieldTitle="Change Email Address"
           nameInSchema="email"

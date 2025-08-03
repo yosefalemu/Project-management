@@ -84,10 +84,11 @@ const app = new Hono()
         );
       }
       try {
-        const { phoneNumber, image, name } = c.req.valid("json");
+        const { phoneNumber, image, name, lastWorkspaceId } =
+          c.req.valid("json");
         const updatedUser = await db
           .update(user)
-          .set({ phoneNumber, image, name })
+          .set({ phoneNumber, image, name, lastWorkspaceId })
           .where(eq(user.id, userFrom.id))
           .returning();
         return c.json({ data: updatedUser[0] }, 200);

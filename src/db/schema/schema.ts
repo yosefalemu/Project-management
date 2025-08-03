@@ -36,6 +36,7 @@ export const user = pgTable("user", {
     .notNull(),
   image: text("image"),
   phoneNumber: text("phone_number"),
+  lastWorkspaceId: text("last_workspace_id"),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),

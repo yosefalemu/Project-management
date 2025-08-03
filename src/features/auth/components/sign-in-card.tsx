@@ -52,7 +52,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
       {
         onSuccess: () => {
           toast.success("Logged in successfully");
-          router.push("/dashboard");
+          router.push("/");
         },
         onError: (error) => {
           toast.error(error.message || "Failed to log in");
@@ -64,7 +64,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   const signInWithGoogle = async () => {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/dashboard",
+      callbackURL: "/",
       errorCallbackURL: "/sign-in",
       requestSignUp: true,
       fetchOptions: {
@@ -84,7 +84,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   const signInWithGithub = async () => {
     await authClient.signIn.social({
       provider: "github",
-      callbackURL: "/dashboard",
+      callbackURL: "/",
       errorCallbackURL: "/sign-in",
       fetchOptions: {
         onRequest: () => {

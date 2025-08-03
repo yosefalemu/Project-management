@@ -3,12 +3,24 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
 import { session, user, verification, account } from "@/db/schema/schema";
 import { nextCookies } from "better-auth/next-js";
+// import { emailOTP } from "better-auth/plugins";
 import { sendVerificationEmail } from "@/features/auth/utils/send-verification-email";
 import { sendResetPasswordEmail } from "@/features/auth/utils/send-password-reset-email";
 import { sendChangeEmail } from "@/features/auth/utils/send-change-email";
 
 export const auth = betterAuth({
-  plugins: [nextCookies()],
+  appName: "ADA Project Management",
+  plugins: [
+    nextCookies(),
+    // emailOTP({
+    //   sendVerificationOnSignUp: true,
+    //   sendVerificationOTP: async ({ otp, email }) => {
+    //     console.log("Sending Out", { email, otp });
+    //   },
+    //   otpLength: 8,
+    //   allowedAttempts: 3,
+    // }),
+  ],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -23,9 +35,8 @@ export const auth = betterAuth({
     autoSignIn: true,
     minPasswordLength: 8,
     requireEmailVerification: true,
-    sendResetPassword: async ({ user, token }) => {
-      const resetPasswordUrl = `${process.env.NEXT_PUBLIC_APP_URL}/reset-password?token=${token}`;
-      await sendResetPasswordEmail(resetPasswordUrl, user.email);
+    sendResetPassword: async ({ user, url }) => {
+      await sendResetPasswordEmail(url, user.email);
     },
     resetPasswordTokenExpiresIn: 600,
   },
@@ -53,8 +64,11 @@ export const auth = betterAuth({
     additionalFields: {
       phoneNumber: {
         type: "string",
-        required: false,
-        defaultValue: null,
+        input: false,
+      },
+      lastWorkspaceId: {
+        type: "string",
+        input: false,
       },
     },
     changeEmail: {
@@ -65,4 +79,14 @@ export const auth = betterAuth({
       },
     },
   },
+  advanced: {
+    cookies: {
+      dont_remember: {
+        name: "dont_remember",
+        attributes: {},
+      },
+    },
+  },
 });
+
+export type Session = typeof auth.$Infer.Session;

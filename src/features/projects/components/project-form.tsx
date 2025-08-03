@@ -101,9 +101,7 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
             toast.success("Project created successfully");
             form.reset();
             setTimeout(() => {
-              router.push(
-                `/workspaces/${params.workspaceId}/projects/${data.id}`
-              );
+              router.push(`/${params.workspaceId}/projects/${data.id}`);
             }, 100);
             close();
           },
@@ -129,7 +127,7 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
         <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
           {!onModal && (
             <BackButton
-              backTo={`/workspaces/${params.workspaceId}/projects/${params.projectId}`}
+              backTo={`/${params.workspaceId}/projects/${params.projectId}`}
             />
           )}
           <CardTitle className="text-xl font-bold">
@@ -161,7 +159,7 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
                 isPending={false}
               />
               <DootedSeparator className="py-7" />
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-end gap-x-4">
                 <Button
                   type="button"
                   size={isDesktop ? "lg" : "sm"}
