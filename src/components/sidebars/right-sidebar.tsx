@@ -140,14 +140,14 @@ export default function RightSidebar() {
   return (
     <div
       className={cn(
-        "h-full w-12 flex flex-col justify-between items-center",
+        "h-full w-12 min-w-12 flex flex-col justify-between items-center",
         selectedFont.className
       )}
     >
       <PreferenceDialog />
       <AccountSettingDialog />
       <ConfirmSignOut />
-      <div className="flex gap-4 flex-col">
+      <div className="flex gap-y-4 flex-col items-center w-full">
         <Tooltip open={workspaceTooltipOpen}>
           <TooltipTrigger asChild>
             <div
