@@ -4,6 +4,7 @@ import Sidebar from "@/components/sidebars/sidebar";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
+import { Card } from "@/components/ui/card";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -25,12 +26,12 @@ export default async function DashboardLayout({
       <div className="h-8 text-center">Top</div>
       <div className="flex flex-1 p-1 gap-x-2">
         <RightSidebar />
-        <div className="flex flex-1 gap-x-2 bg-primary-foreground border rounded-lg">
+        <Card className="flex flex-1 gap-x-2 border rounded-tr-lg rounded-br-lg">
           <Sidebar />
           <main className="flex-1">
             <DashboardLayoutClient>{children}</DashboardLayoutClient>
           </main>
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -144,6 +144,26 @@ export const project = pgTable("project", {
     .$onUpdate(() => new Date()),
 });
 
+// Channels table
+export const channel = pgTable("channel", {
+  id: text("id").primaryKey(),
+  name: varchar("name").notNull(),
+  description: text("description").notNull(),
+  projectId: text("project_id")
+    .notNull()
+    .references(() => project.id, { onDelete: "cascade" }),
+  creatorId: text("creator_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 // Tasks table
 export const task = pgTable("task", {
   id: text("id").primaryKey(),
@@ -224,6 +244,32 @@ export const projectMember = pgTable(
     pk: unique().on(table.projectId, table.userId),
     projectIdIdx: index("pm_project_id_idx").on(table.projectId),
     userIdIdx: index("pm_user_id_idx").on(table.userId),
+  })
+);
+
+// Channel_members table
+export const channelMember = pgTable(
+  "channel_members",
+  {
+    id: text("id").primaryKey(),
+    channelId: text("channel_id")
+      .notNull()
+      .references(() => channel.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    pk: unique().on(table.channelId, table.userId),
+    channelIdIdx: index("cm_channel_id_idx").on(table.channelId),
+    userIdIdx: index("cm_user_id_idx").on(table.userId),
   })
 );
 

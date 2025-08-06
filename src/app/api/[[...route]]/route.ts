@@ -8,6 +8,7 @@ import workspace from "@/features/workspace/server/route";
 import member from "@/features/members/server/route";
 import project from "@/features/projects/server/route";
 import task from "@/features/tasks/server/route";
+import channel from "@/features/channels/server/route";
 
 const app = new Hono().basePath("/api").use(
   cors({
@@ -32,7 +33,8 @@ const routes = app
   .route("/workspace", workspace)
   .route("/members", member)
   .route("/projects", project)
-  .route("/tasks", task);
+  .route("/tasks", task)
+  .route("/channels", channel);
 
 export const GET = handle(app);
 export const POST = handle(app);
