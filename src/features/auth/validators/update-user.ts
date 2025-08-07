@@ -11,6 +11,7 @@ export const updateUserInfoSchema = z.object({
   name: z.string().optional(),
   email: z.string().optional(),
   lastWorkspaceId: z.string().optional(),
+  lastProjectId: z.string().optional(),
 });
 
 export const updateUserEmailSchema = z.object({

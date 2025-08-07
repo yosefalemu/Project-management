@@ -4,6 +4,7 @@ import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { useRouter } from "next/navigation";
 import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
+import HomeIcon from "./icons/add-icon";
 
 type WorkspaceSwitcherProps = {
   workspaces?: Array<{
@@ -69,22 +70,7 @@ export default function WorkspaceSwitcher({
         }}
       >
         <div className="size-10 flex items-center justify-center border-2 border-primary rounded-md">
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            className="text-primary"
-          >
-            <path
-              d="M12 4V20M4 12H20"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
+          <HomeIcon />
         </div>
         <h1 className="font-semibold text-sm">Add Workspace</h1>
       </div>

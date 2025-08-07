@@ -9,6 +9,7 @@ import WorkspaceModal from "@/features/workspace/components/workspace-modal";
 import InviteProjectMemberModal from "@/features/projects/components/invite-project-member-modal";
 import TaskModal from "@/features/tasks/components/task-modal";
 import CreateProjectModal from "@/features/projects/components/project-modal";
+import CreateChannelModal from "@/features/channels/components/channel-modal";
 import { Suspense } from "react";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -49,6 +50,7 @@ export default function RootLayout({
                   <CreateProjectModal />
                   <InviteProjectMemberModal />
                   <TaskModal />
+                  <CreateChannelModal />
                   <TooltipProvider>
                     <div className="h-screen w-screen overflow-hidden">
                       {children}
