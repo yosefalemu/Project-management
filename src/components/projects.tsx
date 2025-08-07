@@ -145,7 +145,6 @@ export default function Projects() {
       </div>
     );
   }
-
   if (userError || projectsError || channelsError) {
     return (
       <div className="flex items-start justify-center h-full">
@@ -295,6 +294,7 @@ export default function Projects() {
       >
         Tasks
       </Link>
+
     </div>
   );
 }
