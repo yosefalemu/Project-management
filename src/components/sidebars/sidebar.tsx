@@ -10,7 +10,7 @@ export default function Sidebar() {
   const selectedFont = fonts[font] || fonts["Inter"];
 
   return (
-    <div className={cn("h-full w-56 border-r", selectedFont.className)}>
+    <div className={cn("h-full w-56 border-r p-0.5", selectedFont.className)}>
       <Projects />
     </div>
   );

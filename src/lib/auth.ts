@@ -3,24 +3,13 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/db";
 import { session, user, verification, account } from "@/db/schema/schema";
 import { nextCookies } from "better-auth/next-js";
-// import { emailOTP } from "better-auth/plugins";
 import { sendVerificationEmail } from "@/features/auth/utils/send-verification-email";
 import { sendResetPasswordEmail } from "@/features/auth/utils/send-password-reset-email";
 import { sendChangeEmail } from "@/features/auth/utils/send-change-email";
 
 export const auth = betterAuth({
   appName: "ADA Project Management",
-  plugins: [
-    nextCookies(),
-    // emailOTP({
-    //   sendVerificationOnSignUp: true,
-    //   sendVerificationOTP: async ({ otp, email }) => {
-    //     console.log("Sending Out", { email, otp });
-    //   },
-    //   otpLength: 8,
-    //   allowedAttempts: 3,
-    // }),
-  ],
+  plugins: [nextCookies()],
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -70,6 +59,10 @@ export const auth = betterAuth({
         type: "string",
         input: false,
       },
+      lastProjectId: {
+        type: "string",
+        input: false,
+      },
     },
     changeEmail: {
       enabled: true,
@@ -79,14 +72,21 @@ export const auth = betterAuth({
       },
     },
   },
-  // advanced: {
-  //   cookies: {
-  //     dont_remember: {
-  //       name: "dont_remember",
-  //       attributes: {},
-  //     },
-  //   },
-  // },
+  session: {
+    modelName: "session",
+    expiresIn: 60 * 60 * 24 * 30, // 30 days
+    autoExtend: true,
+    additionalFields: {
+      lastWorkspaceId: {
+        type: "string",
+        input: false,
+      },
+      lastProjectId: {
+        type: "string",
+        input: false,
+      },
+    },
+  },
 });
 
 export type Session = typeof auth.$Infer.Session;

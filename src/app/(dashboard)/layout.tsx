@@ -26,7 +26,7 @@ export default async function DashboardLayout({
       <div className="h-8 text-center">Top</div>
       <div className="flex flex-1 p-1 gap-x-2">
         <RightSidebar />
-        <Card className="flex flex-1 gap-x-2 border rounded-tr-lg rounded-br-lg">
+        <Card className="flex flex-1 gap-x-2 border rounded-none rounded-tr-lg rounded-br-lg">
           <Sidebar />
           <main className="flex-1">
             <DashboardLayoutClient>{children}</DashboardLayoutClient>
