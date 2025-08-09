@@ -1,44 +1,45 @@
 import { db } from "@/db";
 import { workspaceMember, workspace, user } from "@/db/schema/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { createWorkspaceSchema } from "@/zod-schemas/workspace-schema";
+import { createWorkspaceSchema } from "@/features/workspace/validators/create-workspace";
 import { zValidator } from "@hono/zod-validator";
-import { NeonDbError } from "@neondatabase/serverless";
 import { Context, Hono } from "hono";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, gt, inArray } from "drizzle-orm";
 import { MemberRole } from "@/features/members/types/type";
 import { generateInviteCode } from "@/lib/utils";
-import { insertMemberSchemaType } from "@/zod-schemas/member-schema";
-import { z } from "zod";
-import { isBefore } from "date-fns";
 import { auth } from "@/lib/auth";
+import { updateWorkspaceSchema } from "../validators/update-workspace";
+import { joinWorkspaceSchema } from "../validators/join-workspace";
 
 const app = new Hono()
   .get("/user-workspaces", sessionMiddleware, async (c) => {
-    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+    const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
     const session = c.get("session") as
       | typeof auth.$Infer.Session.session
       | null;
-    if (!user || !session) {
+    if (!userFound || !session) {
       return c.json(
         { error: "Unauthorized", message: "User not authenticated" },
         401
       );
     }
-    const members = await db
+    const userWorkspaces = await db
       .select()
       .from(workspaceMember)
-      .where(eq(workspaceMember.userId, user.id));
-    if (members.length === 0) {
-      return c.json({ error: "NotFound", message: "No workspaces found" }, 404);
+      .where(eq(workspaceMember.userId, userFound.id));
+    if (userWorkspaces.length === 0) {
+      return c.json(
+        { error: "NotFound", message: "No workspaces found with the user" },
+        404
+      );
     }
-    const workspacesIds = members.map((member) => member.workspaceId);
+    const workspacesIds = userWorkspaces.map((member) => member.workspaceId);
     const workspacesFound = await db
       .select()
       .from(workspace)
       .where(inArray(workspace.id, workspacesIds));
     const workspacesWithUserInfo = workspacesFound.map((workspace) => {
-      const member = members.find((m) => m.workspaceId === workspace.id);
+      const member = userWorkspaces.find((m) => m.workspaceId === workspace.id);
       return {
         ...workspace,
         member: member,
@@ -48,25 +49,27 @@ const app = new Hono()
   })
   .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
     try {
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
         return c.json(
           { error: "Unauthorized", message: "User not authenticated" },
           401
         );
       }
-      console.log("User ID from context:", user.id);
       const workspaceId = c.req.param("workspaceId") as string;
-      const memberFound = await db
+      const userWorkspace = await db
         .select()
         .from(workspaceMember)
         .where(
           and(
-            eq(workspaceMember.userId, user.id),
+            eq(workspaceMember.userId, userFound.id),
             eq(workspaceMember.workspaceId, workspaceId)
           )
         );
-      if (memberFound.length === 0) {
+      if (userWorkspace.length === 0) {
         return c.json(
           {
             error: "Forbidden",
@@ -81,9 +84,9 @@ const app = new Hono()
         .where(eq(workspace.id, workspaceId));
       const workspaceWithMemberInfo = {
         ...workspaceFound[0],
-        member: memberFound[0],
+        member: userWorkspace,
       };
-      return c.json({ data: workspaceWithMemberInfo });
+      return c.json({ data: workspaceWithMemberInfo }, 200);
     } catch (error) {
       console.error("Error in workspace route:", error);
       return c.json(
@@ -96,8 +99,18 @@ const app = new Hono()
     }
   })
   .get("/get-workspace-info/:workspaceId", sessionMiddleware, async (c) => {
-    const workspaceId = c.req.param("workspaceId");
     try {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+      const workspaceId = c.req.param("workspaceId");
       const workspaceFound = await db
         .select()
         .from(workspace)
@@ -111,6 +124,7 @@ const app = new Hono()
           404
         );
       }
+      // TODO:: DISPLAY THE COUNT OF MEMBERS AND SOME USERS INFO
       return c.json({
         data: { name: workspaceFound[0].name, image: workspaceFound[0].image },
       });
@@ -130,197 +144,153 @@ const app = new Hono()
     zValidator("form", createWorkspaceSchema),
     sessionMiddleware,
     async (c) => {
-      const { name, image, description } = c.req.valid("form");
-      let uploadedImage: string | undefined;
-
-      if (image instanceof File) {
-        try {
-          const fileReader = await image.arrayBuffer();
-          uploadedImage = `data:${image.type};base64,${Buffer.from(
-            fileReader
-          ).toString("base64")}`;
-        } catch (err) {
-          console.error("Error while processing image file", err);
-          return c.json(
-            {
-              error: "InvalidImage",
-              message: "Failed to process the image file",
-            },
-            400
-          );
-        }
-      } else {
-        uploadedImage = image || "";
-      }
-      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!userFound) {
-        return c.json({
-          error: "Unauthorized",
-          message: "User not authenticated",
-        });
-      }
-      let newWorkspace;
-
       try {
-        // Create the workspace
-        [newWorkspace] = await db
-          .insert(workspace)
-          .values({
-            id: crypto.randomUUID(),
-            name,
-            description: description.trim(),
-            image: uploadedImage,
-            creatorId: userFound.id,
-            inviteCode: generateInviteCode(10),
-          })
-          .returning();
-
-        try {
-          // Create the member
-          await db.insert(workspaceMember).values({
-            id: crypto.randomUUID(),
-            workspaceId: newWorkspace.id,
-            userId: userFound.id,
-            role: MemberRole.Admin,
-          });
-          // Update the user's lastWorkspaceId
-          try {
-            await db
-              .update(user)
-              .set({ lastWorkspaceId: newWorkspace.id })
-              .where(eq(user.id, userFound.id));
-          } catch (err) {
-            console.error("Error while updating user's last workspace", err);
-            // Rollback: Delete the created workspace member
-            await db.delete(workspace).where(eq(workspace.id, newWorkspace.id));
-            await db
-              .delete(workspaceMember)
-              .where(
-                eq(workspaceMember.workspaceId, newWorkspace.id) &&
-                  eq(workspaceMember.userId, userFound.id)
-              );
-          }
-        } catch (err) {
-          console.error("Error while creating member", err);
-
-          // Rollback: Delete the created workspace
-          await db.delete(workspace).where(eq(workspace.id, newWorkspace.id));
-
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        const session = c.get("session") as
+          | typeof auth.$Infer.Session.session
+          | null;
+        if (!userFound || !session) {
           return c.json(
             {
-              error: "InternalServerError",
-              message: "Failed to create member. Workspace rolled back.",
+              error: "Unauthorized",
+              message: "User not authenticated",
             },
-            500
+            401
           );
         }
+        const { name, image, description } = c.req.valid("form");
 
-        return c.json({ data: newWorkspace }, 200);
-      } catch (err) {
-        console.error("ERROR WHILE CREATING WORKSPACE", err);
-
-        if (err instanceof NeonDbError && err.code === "23505") {
-          return c.json(
-            { error: "Conflict", message: "Workspace already exists" },
-            409
-          );
-        }
-
+        const result = await db.transaction(
+          async (tx) => {
+            const existingWorkspace = await tx
+              .select()
+              .from(workspace)
+              .where(eq(workspace.name, name.trim()));
+            if (existingWorkspace.length > 0) {
+              throw new Error("Workspace with this name already exists");
+            }
+            const newWorkspace = await tx
+              .insert(workspace)
+              .values({
+                id: crypto.randomUUID(),
+                name: name.trim(),
+                description: description.trim(),
+                image: image,
+                creatorId: userFound.id,
+                inviteCode: generateInviteCode(10),
+              })
+              .returning();
+            const newWorkspaceMember = await tx
+              .insert(workspaceMember)
+              .values({
+                id: crypto.randomUUID(),
+                workspaceId: newWorkspace[0].id,
+                userId: userFound.id,
+                role: MemberRole.Admin,
+              })
+              .returning();
+            await tx
+              .update(user)
+              .set({
+                lastWorkspaceId: newWorkspace[0].id,
+              })
+              .where(eq(user.id, userFound.id));
+            return {
+              newWorkspace: newWorkspace[0],
+              newWorkspaceMember: newWorkspaceMember[0],
+            };
+          },
+          {
+            isolationLevel: "serializable",
+            accessMode: "read write",
+          }
+        );
         return c.json(
           {
-            error: "InternalServerError",
-            message: "Failed to create workspace",
+            data: {
+              workspace: result.newWorkspace,
+              member: result.newWorkspaceMember,
+            },
+            message: "Workspace created successfully",
           },
-          500
+          201
+        );
+      } catch (error) {
+        console.error("Error while creating workspace:", error);
+        return c.json(
+          {
+            error: "FailedToCreateProject",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to create project",
+          },
+          error instanceof Error &&
+            error.message.includes("Workspace with this name already exists")
+            ? 409
+            : 500
         );
       }
     }
   )
   .patch(
     "/",
-    zValidator("form", createWorkspaceSchema),
+    zValidator("form", updateWorkspaceSchema),
     sessionMiddleware,
     async (c) => {
-      const { name, image, description, id } = c.req.valid("form");
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
-        return c.json({
-          error: "Unauthorized",
-          message: "User not authenticated",
-        });
-      }
-
-      // Process the image
-      let uploadedImage: string | "";
-      if (image instanceof File) {
-        try {
-          const fileReader = await image.arrayBuffer();
-          uploadedImage = `data:${image.type};base64,${Buffer.from(
-            fileReader
-          ).toString("base64")}`;
-        } catch (err) {
-          console.error("Error while processing image file", err);
-          return c.json(
-            {
-              error: "InvalidImage",
-              message: "Failed to process the image file",
-            },
-            400
-          );
-        }
-      } else {
-        uploadedImage = image || "";
-      }
       try {
-        const workspaceFound = await db
-          .select()
-          .from(workspace)
-          .where(eq(workspace.id, id!))
-          .then((results) => results[0]);
-
-        if (!workspace) {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        const session = c.get("session") as
+          | typeof auth.$Infer.Session.session
+          | null;
+        if (!userFound || !session) {
           return c.json(
             {
-              error: "NotFound",
-              message: "Workspace not found",
+              error: "Unauthorized",
+              message: "User not authenticated",
             },
-            404
+            401
           );
         }
+        const { name, image, description, id } = c.req.valid("form");
+        const currentUserPermission = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, id),
+              eq(workspaceMember.userId, userFound.id),
+              eq(workspaceMember.role, MemberRole.Admin)
+            )
+          );
 
-        if (workspaceFound.creatorId !== user.id) {
+        if (currentUserPermission.length === 0) {
           return c.json(
             {
               error: "Forbidden",
-              message: "You are not authorized to update this workspace",
+              message: "You do not have permission to update this workspace",
             },
             403
           );
         }
-
-        // Update the workspace
         const updatedWorkspace = await db
           .update(workspace)
           .set({
             name: name.trim(),
             description: description.trim(),
-            image: uploadedImage,
+            image: image,
           })
-          .where(eq(workspace.id, id!))
-          .returning()
-          .then((results) => results[0]);
+          .where(eq(workspace.id, id))
+          .returning();
 
-        if (!updatedWorkspace) {
-          return c.json(
-            {
-              error: "InternalServerError",
-              message: "Failed to update the workspace",
-            },
-            500
-          );
-        }
-
-        return c.json({ data: updatedWorkspace });
+        return c.json({
+          data: updatedWorkspace[0],
+          message: "Workspace updated successfully",
+        });
       } catch (err) {
         console.error("Error while updating workspace", err);
         return c.json(
@@ -334,299 +304,224 @@ const app = new Hono()
     }
   )
   .delete("/:workspaceId", sessionMiddleware, async (c) => {
-    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-    if (!user) {
-      return c.json(
-        { error: "Unauthorized", message: "User not authenticated" },
-        401
-      );
-    }
-    const workSpaceId = c.req.param("workspaceId") as string;
-    // Fetch the members
-    let membersFound: insertMemberSchemaType[] = [];
     try {
-      const members = await db
-        .select()
-        .from(workspaceMember)
-        .where(eq(workspaceMember.workspaceId, workSpaceId));
-      if (members.length === 0) {
-        return c.json(
-          {
-            error: "Forbidden",
-            message: "You are not a member of this workspace",
-          },
-          403
-        );
-      }
-      membersFound = members;
-    } catch (error) {
-      console.log("Error while deleting", error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    //select the workspace
-    try {
-      const workspaceFound = await db
-        .select()
-        .from(workspace)
-        .where(eq(workspace.id, workSpaceId));
-      if (workspaceFound.length === 0) {
-        return c.json(
-          {
-            error: "NotFound",
-            message: "Workspace not found",
-          },
-          404
-        );
-      }
-      const currentWorkSpaceFromMembersFound = membersFound.find(
-        (member) => member.workspaceId === workSpaceId
-      );
-      if (
-        workspaceFound[0].creatorId !== user.id ||
-        currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
-      ) {
-        return c.json(
-          {
-            error: "Unauthorized",
-            message: "You can not delete others",
-          },
-          403
-        );
-      }
-    } catch (error) {
-      console.log(error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    //delete workspace
-    try {
-      await db.delete(workspace).where(eq(workspace.id, workSpaceId));
-    } catch (error) {
-      console.log(error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    //delete all members
-    try {
-      await db
-        .delete(workspaceMember)
-        .where(eq(workspaceMember.workspaceId, workSpaceId));
-    } catch (error) {
-      console.log(error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    return c.json({ data: "Workspace deleted" });
-  })
-  .patch("/:workspaceId/invite-code", sessionMiddleware, async (c) => {
-    const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-    if (!user) {
-      return c.json(
-        { error: "Unauthorized", message: "User not authenticated" },
-        401
-      );
-    }
-    const workSpaceId = c.req.param("workspaceId") as string;
-    // Fetch the members
-    let membersFound: insertMemberSchemaType[] = [];
-    try {
-      const members = await db
-        .select()
-        .from(workspaceMember)
-        .where(eq(workspaceMember.workspaceId, workSpaceId));
-      if (members.length === 0) {
-        return c.json(
-          {
-            error: "Forbidden",
-            message: "You are not a member of this workspace",
-          },
-          403
-        );
-      }
-      membersFound = members;
-    } catch (error) {
-      console.log("Error while deleting", error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    //select the workspace
-    try {
-      const workspaceFound = await db
-        .select()
-        .from(workspace)
-        .where(eq(workspace.id, workSpaceId));
-      if (workspaceFound.length === 0) {
-        return c.json(
-          {
-            error: "NotFound",
-            message: "Workspace not found",
-          },
-          404
-        );
-      }
-      const currentWorkSpaceFromMembersFound = membersFound.find(
-        (member) => member.workspaceId === workSpaceId
-      );
-      if (
-        workspaceFound[0].creatorId !== user.id ||
-        currentWorkSpaceFromMembersFound?.role !== MemberRole.Admin
-      ) {
-        return c.json(
-          {
-            error: "Unauthorized",
-            message: "You can not delete others",
-          },
-          403
-        );
-      }
-    } catch (error) {
-      console.log(error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "",
-        },
-        500
-      );
-    }
-    //update the workspace invite code
-    let inviteCode: string;
-    try {
-      inviteCode = generateInviteCode(10);
-      await db
-        .update(workspace)
-        .set({
-          inviteCode,
-          inviteCodeExpire: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-        })
-        .where(eq(workspace.id, workSpaceId));
-    } catch (error) {
-      console.log(error);
-      return c.json(
-        {
-          error: "InternalServerError",
-          message: "Internal server error",
-        },
-        500
-      );
-    }
-    return c.json({ data: inviteCode }, 200);
-  })
-  .post(
-    "/:workspaceId/join",
-    zValidator(
-      "json",
-      z.object({ inviteCode: z.string().nonempty("invite code required") })
-    ),
-    sessionMiddleware,
-    async (c) => {
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
         return c.json(
           { error: "Unauthorized", message: "User not authenticated" },
           401
         );
       }
-      const { inviteCode } = c.req.valid("json");
-      const workspaceId = c.req.param("workspaceId") as string;
-      //check the invite code is correct
-      let workspaceFound;
+      const workSpaceId = c.req.param("workspaceId") as string;
+      const currentMemberPersmission = await db
+        .select()
+        .from(workspaceMember)
+        .where(
+          and(
+            eq(workspaceMember.userId, userFound.id),
+            eq(workspaceMember.workspaceId, workSpaceId),
+            eq(workspaceMember.role, MemberRole.Admin)
+          )
+        );
+      if (currentMemberPersmission.length === 0) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "You do not have permission to delete this workspace",
+          },
+          403
+        );
+      }
+      const deletedWorkspace = await db
+        .delete(workspace)
+        .where(eq(workspace.id, workSpaceId))
+        .returning();
+      return c.json(
+        {
+          data: deletedWorkspace[0],
+          message: "Workspace deleted successfully",
+        },
+        200
+      );
+    } catch (error) {
+      console.error("Error while deleting workspace", error);
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "Failed to delete the workspace",
+        },
+        500
+      );
+    }
+  })
+  .patch("/:workspaceId/invite-code", sessionMiddleware, async (c) => {
+    try {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+
+      const workSpaceId = c.req.param("workspaceId") as string;
+      const currentMemberPersmission = await db
+        .select()
+        .from(workspaceMember)
+        .where(
+          and(
+            eq(workspaceMember.userId, userFound.id),
+            eq(workspaceMember.workspaceId, workSpaceId),
+            eq(workspaceMember.role, MemberRole.Admin)
+          )
+        );
+
+      if (currentMemberPersmission.length === 0) {
+        return c.json(
+          {
+            error: "Forbidden",
+            message: "You do not have permission to update this workspace",
+          },
+          403
+        );
+      }
+      const updatedWorkspace = await db
+        .update(workspace)
+        .set({
+          inviteCode: generateInviteCode(10),
+          inviteCodeExpire: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        })
+        .where(eq(workspace.id, workSpaceId))
+        .returning();
+      return c.json(
+        {
+          data: updatedWorkspace[0],
+          message: "Workspace invite code updated successfully",
+        },
+        200
+      );
+    } catch (error) {
+      console.error("Error while updating workspace invite code", error);
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "Failed to update the workspace invite code",
+        },
+        500
+      );
+    }
+  })
+  .post(
+    "/workspace/join",
+    zValidator("json", joinWorkspaceSchema),
+    sessionMiddleware,
+    async (c) => {
       try {
-        workspaceFound = await db
-          .select()
-          .from(workspace)
-          .where(
-            eq(workspace.id, workspaceId) &&
-              eq(workspace.inviteCode, inviteCode)
-          );
-        if (workspaceFound.length === 0) {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        const session = c.get("session") as
+          | typeof auth.$Infer.Session.session
+          | null;
+        if (!userFound || !session) {
           return c.json(
-            {
-              error: "NotFound",
-              message: "Workspace not found",
-            },
-            404
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
           );
         }
-        const { inviteCodeExpire } = workspaceFound[0];
-        if (
-          inviteCodeExpire &&
-          isBefore(new Date(inviteCodeExpire), new Date())
-        ) {
-          return c.json(
-            { error: "Expired", message: "Invitation link has expired" },
-            410
-          );
-        }
-        //check if the user is already a member else add the user
-        const membersFound = await db
-          .select()
-          .from(workspaceMember)
-          .where(
-            eq(workspaceMember.workspaceId, workspaceId) &&
-              eq(workspaceMember.userId, user.id)
-          );
-        if (membersFound.length > 0) {
-          return c.json(
-            {
-              error: "Conflict",
-              message: "You are allready a member of this workspace",
-            },
-            409
-          );
-        }
-        try {
-          await db.insert(workspaceMember).values({
-            workspaceId,
-            userId: user.id,
-            role: MemberRole.Member,
-            id: crypto.randomUUID(),
-          });
-        } catch (error) {
-          console.log("Error while adding member", error);
-          return c.json(
-            {
-              error: "InternalServerError",
-              message: "Error failed to join workspace",
-            },
-            500
-          );
-        }
-        return c.json({ data: "User joined workspace" });
+        const { inviteCode, workspaceId } = c.req.valid("json");
+        const response = await db.transaction(
+          async (tx) => {
+            const currentWorkspace = await tx
+              .select()
+              .from(workspace)
+              .where(
+                and(
+                  eq(workspace.id, workspaceId),
+                  eq(workspace.inviteCode, inviteCode),
+                  gt(workspace.inviteCodeExpire, new Date())
+                )
+              );
+            if (currentWorkspace.length === 0) {
+              throw new Error("Workspace not found or invite code is invalid");
+            }
+            const userAlreadyMember = await tx
+              .select()
+              .from(workspaceMember)
+              .where(
+                and(
+                  eq(workspaceMember.workspaceId, workspaceId),
+                  eq(workspaceMember.userId, userFound.id)
+                )
+              );
+            if (userAlreadyMember.length > 0) {
+              throw new Error("You are already a member of this workspace");
+            }
+            const newWorkspaceMember = await tx
+              .insert(workspaceMember)
+              .values({
+                workspaceId,
+                userId: userFound.id,
+                role: MemberRole.Member,
+                id: crypto.randomUUID(),
+              })
+              .returning();
+            await tx
+              .update(user)
+              .set({
+                lastWorkspaceId: workspaceId,
+              })
+              .where(eq(user.id, userFound.id));
+            return {
+              newWorkspaceMember: newWorkspaceMember[0],
+            };
+          },
+          {
+            accessMode: "read write",
+            isolationLevel: "serializable",
+          }
+        );
+        return c.json({
+          data: {
+            newWorkspaceMember: response.newWorkspaceMember,
+          },
+          message: "User joined workspace successfully",
+        });
       } catch (error) {
-        console.log("Error while checking the workspace", error);
+        console.error("Error while joining workspace", error);
         return c.json(
           {
             error: "InternalServerError",
-            message: "Error failed to join workspace",
+            message:
+              error instanceof Error &&
+              error.message.includes(
+                "Workspace not found or invite code is invalid"
+              )
+                ? "Workspace not found or invite code is invalid"
+                : error instanceof Error &&
+                    error.message.includes(
+                      "You are already a member of this workspace"
+                    )
+                  ? "You are already a member of this workspace"
+                  : "Failed to join workspace",
           },
-          500
+          error instanceof Error &&
+            error.message.includes(
+              "Workspace not found or invite code is invalid"
+            )
+            ? 404
+            : error instanceof Error &&
+                error.message.includes(
+                  "You are already a member of this workspace"
+                )
+              ? 409
+              : 500
         );
       }
     }

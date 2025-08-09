@@ -3,9 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 
 interface UseUserProjectChannelsProps {
   projectId: string;
+  queryOptions?: {
+    enabled?: boolean;
+    staleTime?: number;
+  };
 }
 export const useUserProjectChannels = ({
   projectId,
+  queryOptions,
 }: UseUserProjectChannelsProps) => {
   const query = useQuery({
     queryKey: ["getUserProjectChannel", projectId],
@@ -19,6 +24,7 @@ export const useUserProjectChannels = ({
       const { data } = await response.json();
       return data;
     },
+    ...queryOptions,
   });
   return query;
 };

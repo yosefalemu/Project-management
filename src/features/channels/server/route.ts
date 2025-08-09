@@ -97,40 +97,51 @@ const app = new Hono()
             400
           );
         }
-        const newChannel = await db
-          .insert(channel)
-          .values({
-            id: crypto.randomUUID(),
-            name,
-            description,
-            projectId,
-            creatorId: userFound.id,
-          })
-          .returning();
-        try {
-          await db.insert(channelMember).values({
-            id: crypto.randomUUID(),
-            userId: userFound.id,
-            channelId: newChannel[0].id,
-          });
-        } catch (error) {
-          await db.delete(channel).where(eq(channel.id, newChannel[0].id));
-          console.error("Error creating channel:", error);
+
+        const newChannel = await db.transaction(async (tx) => {
+          const exstingChannel = await tx
+            .select()
+            .from(channel)
+            .where(
+              and(eq(channel.name, name), eq(channel.projectId, projectId))
+            );
+          if (exstingChannel.length > 0) {
+            return c.json(
+              {
+                error: "Channel already exists",
+                message:
+                  "Channel with this name already exists in this project",
+              },
+              409
+            );
+          }
+          const newChannel = await tx
+            .insert(channel)
+            .values({
+              id: crypto.randomUUID(),
+              name,
+              description,
+              projectId,
+              creatorId: userFound.id,
+            })
+            .returning();
+          await tx
+            .insert(channelMember)
+            .values({
+              id: crypto.randomUUID(),
+              userId: "12345",
+              channelId: newChannel[0].id,
+            })
+            .returning();
+
           return c.json(
             {
-              error: "Internal Server Error",
-              message: "Failed to create channel",
+              message: "Channel created successfully",
             },
-            500
+            200
           );
-        }
-        return c.json(
-          {
-            data: newChannel[0],
-            message: "Channel created successfully",
-          },
-          201
-        );
+        });
+        return newChannel;
       } catch (error) {
         console.error("Error creating channel:", error);
         return c.json(

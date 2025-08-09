@@ -3,46 +3,34 @@ import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
 
-type ZodErrorDetail = {
-  name: string;
-  issues: { message: string }[];
-};
-type ErrorResponse = {
-  error?: ZodErrorDetail | string;
-  message?: string;
-};
-
 type ResponseType = InferResponseType<
-  (typeof client.api.workspace)["$post"],
+  (typeof client.api.workspace)["$patch"],
   200
 >;
-type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
+type RequestType = InferRequestType<(typeof client.api.workspace)["$patch"]>;
+
+type ErrorResponse = InferResponseType<
+  (typeof client.api.workspace)["$patch"],
+  500
+>;
 
 export const useUpdateWorkspace = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
+  const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
     mutationFn: async ({ form }): Promise<ResponseType> => {
       const response = await client.api.workspace["$patch"]({ form });
       if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE UPDATING WORKSPACES", errorData);
-        if (
-          typeof errorData.error === "object" &&
-          "name" in errorData.error &&
-          errorData.error.name === "ZodError"
-        ) {
-          const errorDataDetail =
-            errorData.error.issues[0]?.message || "Validation error occurred";
-          throw new Error(errorDataDetail);
-        }
+        const error = await response.json();
         throw new Error(
-          errorData.message || "An error occurred while updating workspace"
+          error.message || "An error occurred while updating workspace"
         );
       }
-      return (await response.json()) as ResponseType;
+      const data = await response.json();
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      queryClient.invalidateQueries({ queryKey: ["workspace", data.id] });
     },
   });
   return mutation;

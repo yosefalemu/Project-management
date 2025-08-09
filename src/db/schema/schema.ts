@@ -8,6 +8,7 @@ import {
   unique,
   varchar,
   boolean,
+  AnyPgColumn,
 } from "drizzle-orm/pg-core";
 import { relations, sql } from "drizzle-orm";
 
@@ -36,8 +37,12 @@ export const user = pgTable("user", {
     .notNull(),
   image: text("image"),
   phoneNumber: text("phone_number"),
-  lastWorkspaceId: text("last_workspace_id"),
-  lastProjectId: text("last_project_id"),
+  lastWorkspaceId: text("last_workspace_id").references(
+    (): AnyPgColumn => workspace.id
+  ),
+  lastProjectId: text("last_project_id").references(
+    (): AnyPgColumn => project.id
+  ),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),

@@ -21,8 +21,6 @@ export const sessionMiddleware = createMiddleware<CustomEnv>(
         c.set("session", null);
         return next();
       }
-
-      // Attach the userId to the context
       c.set("user", session.user);
       c.set("session", session.session);
       return next();

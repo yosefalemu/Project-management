@@ -36,6 +36,41 @@
       "when": 1754575364622,
       "tag": "0004_equal_hardball",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1754745962099,
+      "tag": "0005_sharp_bug",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1754747111274,
+      "tag": "0006_dizzy_khan",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1754747588019,
+      "tag": "0007_condemned_prowler",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1754749271874,
+      "tag": "0008_zippy_paibok",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1754749394576,
+      "tag": "0009_soft_raider",
+      "breakpoints": true
     }
   ]
 }

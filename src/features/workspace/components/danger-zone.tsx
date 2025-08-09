@@ -47,7 +47,6 @@ export default function DangerZone({
         onSuccess: () => {
           setIsDeleteLoading(false);
           toast.success("Workspace deleted successfully");
-          // window.location.href = "/";
           router.push("/");
         },
         onError: () => {
