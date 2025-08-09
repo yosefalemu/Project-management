@@ -1,48 +1,42 @@
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
+import { useRouter } from "next/navigation";
 
 import { client } from "@/lib/rpc";
-
-type ZodErrorDetail = {
-  name: string;
-  issues: { message: string }[];
-};
-type ErrorResponse = {
-  error?: ZodErrorDetail | string;
-  message?: string;
-};
+import { toast } from "sonner";
 
 type ResponseType = InferResponseType<
   (typeof client.api.workspace)["$post"],
-  200
+  201
 >;
 type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
 
+type ErrorResponse = InferResponseType<
+  (typeof client.api.workspace)["$post"],
+  500
+>;
+
 export const useCreateWorkspace = () => {
+  const router = useRouter();
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
+  const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
     mutationFn: async ({ form }): Promise<ResponseType> => {
       const response = await client.api.workspace["$post"]({ form });
       if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE CREATING WORKSPACE", errorData);
-        if (
-          typeof errorData.error === "object" &&
-          "name" in errorData.error &&
-          errorData.error.name === "ZodError"
-        ) {
-          const errorDataDetail =
-            errorData.error.issues[0]?.message || "Validation error occurred";
-          throw new Error(errorDataDetail);
-        }
+        const error = await response.json();
         throw new Error(
-          errorData.message || "An error occurred while registering"
+          error.message || "An error occurred while creating workspace"
         );
       }
-      return (await response.json()) as ResponseType;
+      const data = await response.json();
+      return data;
     },
-    onSuccess: async () => {
+    onSuccess: async ({ data }) => {
       await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
+      router.push(data.workspace.id);
+    },
+    onError: ({ message }) => {
+      toast.error(message || "An error occurred while creating workspace");
     },
   });
   return mutation;

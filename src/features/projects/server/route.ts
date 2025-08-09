@@ -107,101 +107,119 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("form", createProjectSchema),
     async (c) => {
-      const { name, description, workspaceId, image } = c.req.valid("form");
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
-        return c.json(
-          { error: "Unauthorized", message: "User not authenticated" },
-          401
-        );
-      }
-      let uploadedImage: string | undefined;
-      if (image instanceof File) {
-        try {
-          const fileReader = await image.arrayBuffer();
-          uploadedImage = `data:${image.type};base64,${Buffer.from(
-            fileReader
-          ).toString("base64")}`;
-        } catch (err) {
-          console.error("Error while processing image file", err);
+      try {
+        const user = c.get("user") as typeof auth.$Infer.Session.user | null;
+        if (!user) {
           return c.json(
-            {
-              error: "InvalidImage",
-              message: "Failed to process the image file",
-            },
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
+        const { name, description, workspaceId, image } = c.req.valid("form");
+        if (!name || !description || !workspaceId) {
+          return c.json(
+            { error: "Bad Request", message: "All fields are required" },
             400
           );
         }
-      } else {
-        uploadedImage = image || "";
-      }
-      const workspaceMembersFound = await db
-        .select()
-        .from(workspaceMember)
-        .where(
-          and(
-            eq(workspaceMember.workspaceId, workspaceId),
-            eq(workspaceMember.role, "admin")
-          )
+
+        let uploadedImage: string | undefined;
+        if (image instanceof File) {
+          try {
+            const fileReader = await image.arrayBuffer();
+            uploadedImage = `data:${image.type};base64,${Buffer.from(
+              fileReader
+            ).toString("base64")}`;
+          } catch (err) {
+            console.error("Error while processing image file", err);
+            return c.json(
+              {
+                error: "InvalidImage",
+                message: "Failed to process the image file",
+              },
+              400
+            );
+          }
+        }
+
+        const result = await db.transaction(
+          async (tx) => {
+            // Check if user is an admin in the workspace
+            const workspaceMemberFound = await tx
+              .select()
+              .from(workspaceMember)
+              .where(
+                and(
+                  eq(workspaceMember.workspaceId, workspaceId),
+                  eq(workspaceMember.userId, user.id),
+                  eq(workspaceMember.role, "admin")
+                )
+              );
+
+            if (workspaceMemberFound.length === 0) {
+              throw new Error("User is not an admin of this workspace");
+            }
+
+            // Insert new project
+            const newProject = await tx
+              .insert(project)
+              .values({
+                id: crypto.randomUUID(),
+                name,
+                description,
+                workspaceId,
+                image: uploadedImage,
+                creatorId: user.id,
+                inviteCode: Math.random().toString(36).substring(2, 8),
+              })
+              .returning();
+
+            // Insert project member
+            const newProjectMember = await tx
+              .insert(projectMember)
+              .values({
+                id: crypto.randomUUID(),
+                projectId: newProject[0].id,
+                role: "admin",
+                userId: user.id,
+              })
+              .returning();
+
+            return {
+              project: newProject[0],
+              projectMember: newProjectMember[0],
+            };
+          },
+          {
+            isolationLevel: "serializable",
+            accessMode: "read write",
+          }
         );
-      if (workspaceMembersFound.length === 0) {
+
         return c.json(
           {
-            error: "Unauthorized",
-            message: "Unauthorized, you can't create project in this workspace",
+            message: "Project created successfully",
+            data: {
+              project: result.project,
+              projectMember: result.projectMember,
+            },
           },
-          401
+          201
         );
-      }
-      try {
-        const [newProject] = await db
-          .insert(project)
-          .values({
-            id: crypto.randomUUID(),
-            name,
-            description,
-            workspaceId,
-            image: uploadedImage,
-            creatorId: user.id,
-            inviteCode: Math.random().toString(36).substring(2, 8),
-          })
-          .returning();
-        if (!newProject) {
-          return c.json(
-            {
-              error: "FailedToCreateProject",
-              message: "Failed to create project",
-            },
-            400
-          );
-        }
-        try {
-          await db.insert(projectMember).values({
-            id: crypto.randomUUID(),
-            projectId: newProject.id,
-            role: "admin",
-            userId: user.id,
-          });
-        } catch (error) {
-          console.error("Error while adding project member", error);
-          await db.delete(project).where(eq(project.id, newProject.id));
-          return c.json(
-            {
-              error: "FailedToAddProjectMember",
-              message: "Failed to add project member",
-            },
-            500
-          );
-        }
-        return c.json({ data: newProject }, 200);
       } catch (error) {
-        console.log("Error while creating project", error);
+        console.error("Error while creating project:", error);
         return c.json(
           {
             error: "FailedToCreateProject",
-            message: "Failed to create project",
+            message:
+              error instanceof Error
+                ? error.message
+                : "Failed to create project",
           },
-          500
+          error instanceof Error &&
+            error.message.includes("User is not an admin")
+            ? 401
+            : 500
         );
       }
     }
@@ -294,14 +312,14 @@ const app = new Hono()
           );
         }
 
-        //Get all project members for the project
+        // Get all project members for the project
         const projectMembers = await db
           .select({ userId: projectMember.userId })
           .from(projectMember)
           .where(eq(projectMember.projectId, projectId));
 
         const projectMembersIds = projectMembers.map((member) => member.userId);
-        //Get workspace members which are not in the project members
+        // Get workspace members which are not in the project members
         const validWorkspaceMembersToBeInvited = await db
           .select()
           .from(workspaceMember)
@@ -413,7 +431,7 @@ const app = new Hono()
           401
         );
       }
-      // Extract user IDS for validations
+      // Extract user IDs for validations
       const addUserIds = addMembers.map((user) => user.userId);
       // Verify all invited users are workspace members
       const workspaceMembers = await db

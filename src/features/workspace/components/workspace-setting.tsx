@@ -71,6 +71,7 @@ export default function WorkspaceSettingComponent() {
     createdAt: new Date(workspace.createdAt!),
     updatedAt: new Date(workspace.updatedAt!),
     inviteCodeExpire: new Date(workspace.inviteCodeExpire!),
+    image: workspace.image === null ? undefined : workspace.image,
   };
 
   return (

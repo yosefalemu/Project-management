@@ -79,6 +79,7 @@ export default function InviteCode({
               variant="ghost"
               className="size-12"
               disabled={loadingState}
+              type="button"
             >
               <CopyIcon className="size-5" />
             </Button>

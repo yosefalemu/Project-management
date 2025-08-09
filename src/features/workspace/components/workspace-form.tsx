@@ -7,7 +7,8 @@ import { Form } from "@/components/ui/form";
 import {
   createWorkspaceSchema,
   createWorkspaceSchemaType,
-} from "@/zod-schemas/workspace-schema";
+} from "@/features/workspace/validators/create-workspace";
+import { getWorkspaceSchemaType } from "@/features/workspace/validators/get-workspace";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Loader } from "lucide-react";
@@ -15,19 +16,21 @@ import CustomImageUploader from "@/components/inputs/custom-image-upload";
 import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { useCreateWorkspace } from "../api/create-workspace-api";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
-import { useRouter } from "next/navigation";
 import DangerZone from "./danger-zone";
 import { useMedia } from "react-use";
 import { useState } from "react";
 import InviteCode from "./invite-code";
 import { toast } from "sonner";
 import { useWorkspaceModalHook } from "../hooks/use-workspace-modal";
+import {
+  updateWorkspaceSchema,
+  updateWorkspaceSchemaType,
+} from "../validators/update-workspace";
 
 interface WorkSpaceFormProps {
-  workspace?: createWorkspaceSchemaType;
+  workspace?: getWorkspaceSchemaType;
 }
 export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
-  const router = useRouter();
   const { close } = useWorkspaceModalHook();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
@@ -36,10 +39,19 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   const [isResetInviteCodeLoading, setIsResetInviteCodeLoading] =
     useState<boolean>(false);
 
-  const form = useForm<createWorkspaceSchemaType>({
+  const createWorkspaceForm = useForm<createWorkspaceSchemaType>({
     resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
-      id: workspace?.id ?? undefined,
+      name: workspace?.name ?? "",
+      image: workspace?.image ?? "",
+      description: workspace?.description ?? "",
+    },
+  });
+
+  const updateWorkspaceForm = useForm<updateWorkspaceSchemaType>({
+    resolver: zodResolver(updateWorkspaceSchema),
+    defaultValues: {
+      id: workspace?.id ?? "",
       name: workspace?.name ?? "",
       image: workspace?.image ?? "",
       description: workspace?.description ?? "",
@@ -47,59 +59,36 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   });
 
   const handleCreateWorkspace = (values: createWorkspaceSchemaType) => {
-    if (workspace) {
-      const finalValues = {
-        id: workspace.id ?? undefined,
-        name: values.name,
-        description: values.description,
-        image: values.image instanceof File ? values.image : "",
-      };
-      updateWorkspaceMutation.mutate(
-        { form: finalValues },
-        {
-          onSuccess: () => {
-            toast.success("Workspace updated successfully");
-            // if (data) {
-            //   router.push(`/workspaces/${data.data.id}`);
-            // }
-          },
-          onError: () => {
-            toast.error(
-              updateWorkspaceMutation.error
-                ? updateWorkspaceMutation.error.message
-                : "An error occured"
-            );
-          },
-        }
-      );
-    } else {
-      const finalValues = {
-        name: values.name,
-        description: values.description,
-        image: values.image instanceof File ? values.image : "",
-        creatorId: "hghgh",
-        id: "hghgh",
-      };
-      createWorkspaceMutation.mutate(
-        { form: finalValues },
-        {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          onSuccess: (data: any) => {
-            toast.success("Workspace created successfully");
-            if (data) {
-              router.push(`/${data.data.id}`);
-            }
-          },
-          onError: () => {
-            toast.error(
-              createWorkspaceMutation.error
-                ? createWorkspaceMutation.error.message
-                : "An error occured"
-            );
-          },
-        }
-      );
-    }
+    const finalValues = {
+      name: values.name,
+      description: values.description,
+      image: values.image,
+    };
+    createWorkspaceMutation.mutate({ form: finalValues });
+  };
+
+  const handleUpdateWorkspace = (value: updateWorkspaceSchemaType) => {
+    const finalValues = {
+      id: value.id,
+      name: value.name,
+      description: value.description,
+      image: value.image,
+    };
+    updateWorkspaceMutation.mutate(
+      { form: finalValues },
+      {
+        onSuccess: () => {
+          toast.success("Workspace updated successfully");
+        },
+        onError: () => {
+          toast.error(
+            updateWorkspaceMutation.error
+              ? updateWorkspaceMutation.error.message
+              : "An error occured"
+          );
+        },
+      }
+    );
   };
 
   return (
@@ -111,108 +100,177 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleCreateWorkspace)}>
-              <div className="flex  items-start gap-4">
-                <div className="flex flex-col gap-y-4 w-full">
-                  <CustomInputLabel
-                    fieldTitle="Workspace Name"
-                    nameInSchema="name"
-                    placeHolder="Enter workspace name"
+          {workspace ? (
+            <Form {...updateWorkspaceForm}>
+              <form
+                onSubmit={updateWorkspaceForm.handleSubmit(
+                  handleUpdateWorkspace
+                )}
+              >
+                <div className="flex items-start gap-4">
+                  <div className="flex flex-col gap-y-4 w-full">
+                    <CustomInputLabel
+                      fieldTitle="Workspace Name"
+                      nameInSchema="name"
+                      placeHolder="Enter workspace name"
+                      className=""
+                      maxCharLength={15}
+                    />
+                    <CustomTextareaLabel
+                      fieldTitle="Workspace Description"
+                      nameInSchema="description"
+                      placeHolder="Enter workspace description"
+                      maxCharLength={500}
+                      rows={8}
+                      className=""
+                    />
+                    <CustomImageUploader
+                      fieldTitle="Image"
+                      nameInSchema="image"
+                      isPending={
+                        createWorkspaceMutation.isPending ||
+                        updateWorkspaceMutation.isPending ||
+                        isDeleteLoading
+                      }
+                      className=""
+                    />
+                  </div>
+                  <DootedSeparator className="block xl:hidden py-7" />
+                  <div className="flex flex-col gap-y-4 w-full">Column Two</div>
+                </div>
+                <div className="flex items-center justify-end gap-x-4">
+                  <Button
+                    type="button"
+                    size={isDesktop ? "lg" : "sm"}
+                    variant="secondary"
+                    onClick={() => {
+                      updateWorkspaceForm.reset();
+                      close();
+                    }}
+                    disabled={
+                      updateWorkspaceMutation.isPending ||
+                      isDeleteLoading ||
+                      isResetInviteCodeLoading
+                    }
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size={isDesktop ? "lg" : "sm"}
                     className=""
-                    maxCharLength={15}
-                  />
-                  <CustomTextareaLabel
-                    fieldTitle="Workspace Description"
-                    nameInSchema="description"
-                    placeHolder="Enter workspace description"
-                    maxCharLength={500}
-                    rows={8}
-                    className=""
-                  />
-                  <CustomImageUploader
-                    fieldTitle="Image"
-                    nameInSchema="image"
-                    isPending={
+                    disabled={
+                      updateWorkspaceMutation.isPending ||
+                      isDeleteLoading ||
+                      isResetInviteCodeLoading
+                    }
+                  >
+                    {updateWorkspaceMutation.isPending ? (
+                      <span className="flex items-center justify-center">
+                        <Loader className="animate-spin" />
+                      </span>
+                    ) : (
+                      <p>Save Changes</p>
+                    )}
+                  </Button>
+                </div>
+                <div className="flex flex-col gap-y-4 mt-6">
+                  <InviteCode
+                    workspaceId={workspace.id!}
+                    inviteCode={workspace.inviteCode!}
+                    loadingState={
                       createWorkspaceMutation.isPending ||
                       updateWorkspaceMutation.isPending ||
-                      isDeleteLoading
+                      isDeleteLoading ||
+                      isResetInviteCodeLoading
                     }
-                    className=""
+                    setIsResetInviteCodeLoading={setIsResetInviteCodeLoading}
+                  />
+                  <DangerZone
+                    workspaceId={workspace.id!}
+                    loadingState={
+                      createWorkspaceMutation.isPending ||
+                      updateWorkspaceMutation.isPending ||
+                      isDeleteLoading ||
+                      isResetInviteCodeLoading
+                    }
+                    setIsDeleteLoading={setIsDeleteLoading}
                   />
                 </div>
-                <DootedSeparator className="block xl:hidden py-7" />
-                <div className="flex flex-col gap-y-4 w-full">Column Two</div>
-              </div>
-              <DootedSeparator className="py-7" />
-              <div className="flex items-center justify-end gap-x-4">
-                <Button
-                  type="button"
-                  size={isDesktop ? "lg" : "sm"}
-                  variant="secondary"
-                  onClick={() => {
-                    form.reset();
-                    close();
-                  }}
-                  disabled={
-                    createWorkspaceMutation.isPending ||
-                    updateWorkspaceMutation.isPending ||
-                    isDeleteLoading ||
-                    isResetInviteCodeLoading
-                  }
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  size={isDesktop ? "lg" : "sm"}
-                  className=""
-                  disabled={
-                    createWorkspaceMutation.isPending ||
-                    updateWorkspaceMutation.isPending ||
-                    isDeleteLoading ||
-                    isResetInviteCodeLoading
-                  }
-                >
-                  {createWorkspaceMutation.isPending ||
-                  updateWorkspaceMutation.isPending ? (
-                    <span className="flex items-center justify-center">
-                      <Loader className="animate-spin" />
-                    </span>
-                  ) : (
-                    <p>{workspace ? "Save Changes" : "Create Workspace"}</p>
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Form>
+              </form>
+            </Form>
+          ) : (
+            <Form {...createWorkspaceForm}>
+              <form
+                onSubmit={createWorkspaceForm.handleSubmit(
+                  handleCreateWorkspace
+                )}
+              >
+                <div className="flex  items-start gap-4">
+                  <div className="flex flex-col gap-y-4 w-full">
+                    <CustomInputLabel
+                      fieldTitle="Workspace Name"
+                      nameInSchema="name"
+                      placeHolder="Enter workspace name"
+                      className=""
+                      maxCharLength={15}
+                    />
+                    <CustomTextareaLabel
+                      fieldTitle="Workspace Description"
+                      nameInSchema="description"
+                      placeHolder="Enter workspace description"
+                      maxCharLength={500}
+                      rows={8}
+                      className=""
+                    />
+                    <CustomImageUploader
+                      fieldTitle="Image"
+                      nameInSchema="image"
+                      isPending={
+                        createWorkspaceMutation.isPending ||
+                        updateWorkspaceMutation.isPending ||
+                        isDeleteLoading
+                      }
+                      className=""
+                    />
+                  </div>
+                  <DootedSeparator className="block xl:hidden py-7" />
+                  <div className="flex flex-col gap-y-4 w-full">Column Two</div>
+                </div>
+                <DootedSeparator className="py-7" />
+                <div className="flex items-center justify-end gap-x-4">
+                  <Button
+                    type="button"
+                    size={isDesktop ? "lg" : "sm"}
+                    variant="secondary"
+                    onClick={() => {
+                      createWorkspaceForm.reset();
+                      close();
+                    }}
+                    disabled={createWorkspaceMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    size={isDesktop ? "lg" : "sm"}
+                    className=""
+                    disabled={createWorkspaceMutation.isPending}
+                  >
+                    {createWorkspaceMutation.isPending ? (
+                      <span className="flex items-center justify-center">
+                        <Loader className="animate-spin" />
+                      </span>
+                    ) : (
+                      <p>Create Workspace</p>
+                    )}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
         </CardContent>
       </Card>
-      {workspace && (
-        <div className="flex flex-col gap-y-4 p-6">
-          <InviteCode
-            workspaceId={workspace.id!}
-            inviteCode={workspace.inviteCode!}
-            loadingState={
-              createWorkspaceMutation.isPending ||
-              updateWorkspaceMutation.isPending ||
-              isDeleteLoading ||
-              isResetInviteCodeLoading
-            }
-            setIsResetInviteCodeLoading={setIsResetInviteCodeLoading}
-          />
-          <DangerZone
-            workspaceId={workspace.id!}
-            loadingState={
-              createWorkspaceMutation.isPending ||
-              updateWorkspaceMutation.isPending ||
-              isDeleteLoading ||
-              isResetInviteCodeLoading
-            }
-            setIsDeleteLoading={setIsDeleteLoading}
-          />
-        </div>
-      )}
     </div>
   );
 }

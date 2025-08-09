@@ -22,7 +22,6 @@ import { Loader } from "lucide-react";
 import { useProjectModalHook } from "../hooks/use-project-modal";
 import DangerZone from "./danger-zone";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface ProjectFormProps {
   onModal?: boolean;
@@ -30,7 +29,6 @@ interface ProjectFormProps {
 }
 export default function ProjectForm({ onModal, project }: ProjectFormProps) {
   const params = useParams();
-  const router = useRouter();
   const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const { close } = useProjectModalHook();
@@ -93,16 +91,9 @@ export default function ProjectForm({ onModal, project }: ProjectFormProps) {
       createProjectMutation.mutate(
         { form: finalValues },
         {
-          onSuccess: ({ data }) => {
-            if (!data?.id) {
-              toast.error("Project created but no ID returned");
-              return;
-            }
+          onSuccess: () => {
             toast.success("Project created successfully");
             form.reset();
-            setTimeout(() => {
-              router.push(`/${params.workspaceId}/projects/${data.id}`);
-            }, 100);
             close();
           },
 

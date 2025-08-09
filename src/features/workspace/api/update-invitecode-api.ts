@@ -3,15 +3,6 @@ import { InferRequestType, InferResponseType } from "hono";
 
 import { client } from "@/lib/rpc";
 
-type ZodErrorDetail = {
-  name: string;
-  issues: { message: string }[];
-};
-type ErrorResponse = {
-  error?: ZodErrorDetail | string;
-  message?: string;
-};
-
 type ResponseType = InferResponseType<
   (typeof client.api.workspace)[":workspaceId"]["invite-code"]["$patch"],
   200
@@ -20,9 +11,14 @@ type RequestType = InferRequestType<
   (typeof client.api.workspace)[":workspaceId"]["invite-code"]["$patch"]
 >;
 
+type ErrorResponseType = InferResponseType<
+  (typeof client.api.workspace)[":workspaceId"]["invite-code"]["$patch"],
+  500
+>;
+
 export const useUpdateInviteCodeWorkspace = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
+  const mutation = useMutation<ResponseType, ErrorResponseType, RequestType>({
     mutationFn: async ({ param }): Promise<ResponseType> => {
       const response = await client.api.workspace[":workspaceId"][
         "invite-code"
@@ -30,30 +26,18 @@ export const useUpdateInviteCodeWorkspace = () => {
         param,
       });
       if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE UPDATING INVITECODE", errorData);
-        if (
-          typeof errorData.error === "object" &&
-          "name" in errorData.error &&
-          errorData.error.name === "ZodError"
-        ) {
-          const errorDataDetail =
-            errorData.error.issues[0]?.message || "Validation error occurred";
-          throw new Error(errorDataDetail);
-        }
+        const { message } = await response.json();
         throw new Error(
-          errorData.message || "An error occurred while updating invite code"
+          message || "An error occurred while updating invite code"
         );
       }
-      return (await response.json()) as ResponseType;
+      const data = await response.json();
+      return data;
     },
-    onSettled: async (_, error, variables) => {
-      if (error) {
-        return;
-      }
+    onSuccess: async ({ data }) => {
       await queryClient.invalidateQueries({ queryKey: ["workspaces"] });
       await queryClient.invalidateQueries({
-        queryKey: ["workspace", { workspaceId: variables.param.workspaceId }],
+        queryKey: ["workspace", { workspaceId: data.id }],
       });
     },
   });

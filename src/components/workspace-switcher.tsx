@@ -36,6 +36,7 @@ export default function WorkspaceSwitcher({
       },
     });
     router.push(`/${value}`);
+    closeWorkspaceSwitcher(false);
   };
 
   return (

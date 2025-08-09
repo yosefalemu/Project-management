@@ -26,6 +26,9 @@ import { toast } from "sonner";
 import AddIcon from "./icons/add-icon";
 import { useChannelModalHook } from "@/features/channels/hooks/use-channel-modal";
 import { Skeleton } from "./ui/skeleton";
+import { useGetWorkspace } from "@/features/workspace/api/get-workspace-api";
+import { Plus } from "lucide-react";
+import { Card } from "./ui/card";
 
 interface Project {
   id: string;
@@ -52,6 +55,13 @@ export default function Projects() {
     isLoading: isLoadingUser,
     error: userError,
   } = useBetterAuthGetUser();
+
+  const {
+    data: workspace,
+    isLoading: isLoadingWorkspace,
+    error: workspaceError,
+  } = useGetWorkspace(params.workspaceId as string);
+
   const {
     data: projects,
     isLoading: isLoadingProjects,
@@ -66,6 +76,10 @@ export default function Projects() {
     error: channelsError,
   } = useUserProjectChannels({
     projectId: selectedProject?.id || "",
+    queryOptions: {
+      enabled: !!selectedProject,
+      staleTime: 1000 * 60 * 5,
+    },
   });
 
   // Set default project
@@ -113,39 +127,34 @@ export default function Projects() {
     isLoadingProjects ||
     isLoadingChannels ||
     isLoadingUser ||
-    updateUserMutation.isPending ||
-    !selectedProject
+    isLoadingWorkspace ||
+    updateUserMutation.isPending
   ) {
     return (
       <div className="flex flex-col gap-y-4 p-2 min-w-full">
-        {/* Skeleton for SelectTrigger */}
         <Skeleton className="h-12 w-full rounded-md" />
-        {/* Skeleton for Accordion */}
         <div className="flex flex-col gap-y-4">
-          {/* Skeleton for Channels Accordion */}
           <div>
-            <Skeleton className="h-8 w-1/2" /> {/* Accordion Trigger */}
+            <Skeleton className="h-8 w-1/2" />
             <div className="flex flex-col gap-y-1 mt-2">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
           </div>
-          {/* Skeleton for Direct Messages Accordion */}
           <div>
-            <Skeleton className="h-8 w-1/2" /> {/* Accordion Trigger */}
+            <Skeleton className="h-8 w-1/2" />
             <div className="flex flex-col gap-y-1 mt-2">
               <Skeleton className="h-6 w-full" />
               <Skeleton className="h-6 w-full" />
             </div>
           </div>
-          {/* Skeleton for Tasks Link */}
           <Skeleton className="h-8 w-1/3" />
         </div>
       </div>
     );
   }
-  if (userError || projectsError || channelsError) {
+  if (userError || projectsError || channelsError || workspaceError) {
     return (
       <div className="flex items-start justify-center h-full">
         <p>Error</p>
@@ -153,10 +162,20 @@ export default function Projects() {
     );
   }
 
-  if (!projects || projects.length === 0) {
+  if (!selectedProject || !projects || projects.length === 0) {
     return (
-      <div className="flex items-start justify-center h-full">
-        No projects found
+      <div className="h-full">
+        {workspace?.member[0].role === "admin" ? (
+          <Card
+            className="flex items-center justify-between cursor-pointer rounded-md hover:bg-muted h-12 px-2"
+            onClick={() => openProjectModal()}
+          >
+            <p className="text-sm">Create Project</p>
+            <Plus className="size-5" />
+          </Card>
+        ) : (
+          <div>No projects found</div>
+        )}
       </div>
     );
   }
@@ -294,7 +313,6 @@ export default function Projects() {
       >
         Tasks
       </Link>
-
     </div>
   );
 }

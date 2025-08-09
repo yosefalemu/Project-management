@@ -12,8 +12,8 @@ export const useCreateProjectChannel = () => {
       if (!response.ok) {
         throw new Error("An error occurred while creating the channel");
       }
-      const { data: channelData } = await response.json();
-      return channelData;
+      const { message } = await response.json();
+      return message;
     },
   });
 

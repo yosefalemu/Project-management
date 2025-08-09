@@ -11,7 +11,6 @@ import { useJoinWorkspace } from "../api/join-method-api";
 import { Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { toast } from "sonner";
 
 interface JoinWorkspaceFormProps {
   workspaceFound: { name: string; image?: string };
@@ -24,26 +23,18 @@ export default function JoinWorkspaceForm({
   inviteCode,
 }: JoinWorkspaceFormProps) {
   const router = useRouter();
-  const { mutate, isPending, error } = useJoinWorkspace();
+  const { mutate, isPending } = useJoinWorkspace();
   const handleJoinWorkspace = () => {
-    mutate(
-      { json: { inviteCode }, param: { workspaceId } },
-      {
-        onSuccess: () => {
-          router.push(`/${workspaceId}`);
-          toast.success(
-            `You have successfully joined the ${workspaceFound.name}`
-          );
-        },
-        onError: () => {
-          toast.error(error ? error.message : "An error occured while joining");
-        },
-      }
-    );
+    mutate({
+      json: {
+        inviteCode,
+        workspaceId,
+      },
+    });
   };
   return (
-    <Card className="w-full border-none shadow-none text-center">
-      <CardHeader className="p-7">
+    <Card>
+      <CardHeader className="p-7 text-center">
         {workspaceFound.image && (
           <div className="flex justify-center">
             <div className="relative w-20 h-20 rounded-full overflow-hidden">
