@@ -11,7 +11,7 @@ export const useGetProjects = ({ workspaceId }: UseGetProjectsProps) => {
       if (!workspaceId) {
         throw new Error("Workspace ID is required");
       }
-      const response = await client.api.projects[":workspaceId"].$get({
+      const response = await client.api.projects["user-projects"].$get({
         param: { workspaceId },
       });
       if (!response.ok) {

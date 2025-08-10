@@ -5,71 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1753429258537,
-      "tag": "0000_nice_scarecrow",
+      "when": 1754822532821,
+      "tag": "0000_lucky_frank_castle",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1753886082244,
-      "tag": "0001_cynical_jazinda",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1754203887863,
-      "tag": "0002_lucky_blue_shield",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1754488143649,
-      "tag": "0003_lyrical_rage",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1754575364622,
-      "tag": "0004_equal_hardball",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1754745962099,
-      "tag": "0005_sharp_bug",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1754747111274,
-      "tag": "0006_dizzy_khan",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1754747588019,
-      "tag": "0007_condemned_prowler",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1754749271874,
-      "tag": "0008_zippy_paibok",
-      "breakpoints": true
-    },
-    {
-      "idx": 9,
-      "version": "7",
-      "when": 1754749394576,
-      "tag": "0009_soft_raider",
+      "when": 1754830571622,
+      "tag": "0001_heavy_shatterstar",
       "breakpoints": true
     }
   ]

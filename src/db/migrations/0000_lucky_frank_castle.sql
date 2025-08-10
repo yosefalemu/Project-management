@@ -7,13 +7,32 @@ CREATE TABLE "account" (
 	"user_id" text NOT NULL,
 	"access_token" text,
 	"refresh_token" text,
-	"id_token" uuid,
+	"id_token" text,
 	"access_token_expires_at" timestamp,
 	"refresh_token_expires_at" timestamp,
 	"scope" text,
 	"password" text,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "channel" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" varchar NOT NULL,
+	"description" text NOT NULL,
+	"project_id" text NOT NULL,
+	"creator_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "channel_members" (
+	"id" text PRIMARY KEY NOT NULL,
+	"channel_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "channel_members_channel_id_user_id_unique" UNIQUE("channel_id","user_id")
 );
 --> statement-breakpoint
 CREATE TABLE "project" (
@@ -80,6 +99,8 @@ CREATE TABLE "user" (
 	"email_verified" boolean NOT NULL,
 	"image" text,
 	"phone_number" text,
+	"last_workspace_id" text,
+	"last_project_id" text,
 	"created_at" timestamp NOT NULL,
 	"updated_at" timestamp NOT NULL,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
@@ -120,6 +141,10 @@ CREATE TABLE "workspace_members" (
 );
 --> statement-breakpoint
 ALTER TABLE "account" ADD CONSTRAINT "account_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "channel" ADD CONSTRAINT "channel_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "channel" ADD CONSTRAINT "channel_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "channel_members" ADD CONSTRAINT "channel_members_channel_id_channel_id_fk" FOREIGN KEY ("channel_id") REFERENCES "public"."channel"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "channel_members" ADD CONSTRAINT "channel_members_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project" ADD CONSTRAINT "project_workspace_id_work_spaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."work_spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project" ADD CONSTRAINT "project_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "project_members" ADD CONSTRAINT "project_members_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -128,9 +153,13 @@ ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("
 ALTER TABLE "start_date" ADD CONSTRAINT "start_date_workspace_id_work_spaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."work_spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_project_id_project_id_fk" FOREIGN KEY ("project_id") REFERENCES "public"."project"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "task" ADD CONSTRAINT "task_assigned_id_user_id_fk" FOREIGN KEY ("assigned_id") REFERENCES "public"."user"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_last_workspace_id_work_spaces_id_fk" FOREIGN KEY ("last_workspace_id") REFERENCES "public"."work_spaces"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_last_project_id_project_id_fk" FOREIGN KEY ("last_project_id") REFERENCES "public"."project"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "work_spaces" ADD CONSTRAINT "work_spaces_creator_id_user_id_fk" FOREIGN KEY ("creator_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_workspace_id_work_spaces_id_fk" FOREIGN KEY ("workspace_id") REFERENCES "public"."work_spaces"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "workspace_members" ADD CONSTRAINT "workspace_members_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+CREATE INDEX "cm_channel_id_idx" ON "channel_members" USING btree ("channel_id");--> statement-breakpoint
+CREATE INDEX "cm_user_id_idx" ON "channel_members" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "pm_project_id_idx" ON "project_members" USING btree ("project_id");--> statement-breakpoint
 CREATE INDEX "pm_user_id_idx" ON "project_members" USING btree ("user_id");--> statement-breakpoint
 CREATE INDEX "wm_workspace_id_idx" ON "workspace_members" USING btree ("workspace_id");--> statement-breakpoint

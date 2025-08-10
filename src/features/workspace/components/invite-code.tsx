@@ -16,14 +16,10 @@ import { useUpdateInviteCodeWorkspace } from "../api/update-invitecode-api";
 interface InvitecodeProps {
   inviteCode: string;
   workspaceId: string;
-  loadingState: boolean;
-  setIsResetInviteCodeLoading: (status: boolean) => void;
 }
 export default function InviteCode({
   inviteCode,
   workspaceId,
-  loadingState,
-  setIsResetInviteCodeLoading,
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const fullInviteCode = `${window.location.origin}/join/${workspaceId}/${inviteCode}`;
@@ -39,19 +35,14 @@ export default function InviteCode({
   );
   const handleDeleteWorkspace = async () => {
     const ok = await confirmReset();
-    if (!ok) {
-      return;
-    }
-    setIsResetInviteCodeLoading(true);
+    if (!ok) return;
     mutate(
       { param: { workspaceId: workspaceId } },
       {
         onSuccess: () => {
-          setIsResetInviteCodeLoading(false);
           toast.success("Invite code reset successfully");
         },
         onError: () => {
-          setIsResetInviteCodeLoading(false);
           toast.error("An error occurred while resetting invite code");
         },
       }
@@ -78,7 +69,7 @@ export default function InviteCode({
               }
               variant="ghost"
               className="size-12"
-              disabled={loadingState}
+              disabled={isPending}
               type="button"
             >
               <CopyIcon className="size-5" />
@@ -91,7 +82,7 @@ export default function InviteCode({
               variant="destructive"
               type="button"
               onClick={handleDeleteWorkspace}
-              disabled={loadingState || isPending}
+              disabled={isPending}
             >
               {isPending ? (
                 <div className="flex items-center justify-center">

@@ -19,8 +19,8 @@ type RequestType = InferRequestType<(typeof client.api.projects)["$patch"]>;
 const queryClient = new QueryClient();
 export const useUpdateProject = () => {
   const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form }) => {
-      const response = await client.api.projects["$patch"]({ form });
+    mutationFn: async ({ json }) => {
+      const response = await client.api.projects["$patch"]({ json });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
         console.log("ERROR WHILE UPDATING WORKSPACES", errorData);

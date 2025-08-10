@@ -18,9 +18,7 @@ import { useCreateWorkspace } from "../api/create-workspace-api";
 import { useUpdateWorkspace } from "../api/update-workspace-api";
 import DangerZone from "./danger-zone";
 import { useMedia } from "react-use";
-import { useState } from "react";
 import InviteCode from "./invite-code";
-import { toast } from "sonner";
 import { useWorkspaceModalHook } from "../hooks/use-workspace-modal";
 import {
   updateWorkspaceSchema,
@@ -35,9 +33,6 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
   const updateWorkspaceMutation = useUpdateWorkspace();
-  const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
-  const [isResetInviteCodeLoading, setIsResetInviteCodeLoading] =
-    useState<boolean>(false);
 
   const createWorkspaceForm = useForm<createWorkspaceSchemaType>({
     resolver: zodResolver(createWorkspaceSchema),
@@ -59,36 +54,11 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
   });
 
   const handleCreateWorkspace = (values: createWorkspaceSchemaType) => {
-    const finalValues = {
-      name: values.name,
-      description: values.description,
-      image: values.image,
-    };
-    createWorkspaceMutation.mutate({ form: finalValues });
+    createWorkspaceMutation.mutate({ json: values });
   };
 
-  const handleUpdateWorkspace = (value: updateWorkspaceSchemaType) => {
-    const finalValues = {
-      id: value.id,
-      name: value.name,
-      description: value.description,
-      image: value.image,
-    };
-    updateWorkspaceMutation.mutate(
-      { form: finalValues },
-      {
-        onSuccess: () => {
-          toast.success("Workspace updated successfully");
-        },
-        onError: () => {
-          toast.error(
-            updateWorkspaceMutation.error
-              ? updateWorkspaceMutation.error.message
-              : "An error occured"
-          );
-        },
-      }
-    );
+  const handleUpdateWorkspace = (values: updateWorkspaceSchemaType) => {
+    updateWorkspaceMutation.mutate({ json: values });
   };
 
   return (
@@ -114,7 +84,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                       nameInSchema="name"
                       placeHolder="Enter workspace name"
                       className=""
-                      maxCharLength={15}
+                      maxCharLength={50}
                     />
                     <CustomTextareaLabel
                       fieldTitle="Workspace Description"
@@ -127,11 +97,6 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                     <CustomImageUploader
                       fieldTitle="Image"
                       nameInSchema="image"
-                      isPending={
-                        createWorkspaceMutation.isPending ||
-                        updateWorkspaceMutation.isPending ||
-                        isDeleteLoading
-                      }
                       className=""
                     />
                   </div>
@@ -147,11 +112,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                       updateWorkspaceForm.reset();
                       close();
                     }}
-                    disabled={
-                      updateWorkspaceMutation.isPending ||
-                      isDeleteLoading ||
-                      isResetInviteCodeLoading
-                    }
+                    disabled={updateWorkspaceMutation.isPending}
                   >
                     Cancel
                   </Button>
@@ -161,8 +122,7 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                     className=""
                     disabled={
                       updateWorkspaceMutation.isPending ||
-                      isDeleteLoading ||
-                      isResetInviteCodeLoading
+                      !updateWorkspaceForm.formState.isDirty
                     }
                   >
                     {updateWorkspaceMutation.isPending ? (
@@ -178,24 +138,8 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                   <InviteCode
                     workspaceId={workspace.id!}
                     inviteCode={workspace.inviteCode!}
-                    loadingState={
-                      createWorkspaceMutation.isPending ||
-                      updateWorkspaceMutation.isPending ||
-                      isDeleteLoading ||
-                      isResetInviteCodeLoading
-                    }
-                    setIsResetInviteCodeLoading={setIsResetInviteCodeLoading}
                   />
-                  <DangerZone
-                    workspaceId={workspace.id!}
-                    loadingState={
-                      createWorkspaceMutation.isPending ||
-                      updateWorkspaceMutation.isPending ||
-                      isDeleteLoading ||
-                      isResetInviteCodeLoading
-                    }
-                    setIsDeleteLoading={setIsDeleteLoading}
-                  />
+                  <DangerZone workspaceId={workspace.id!} />
                 </div>
               </form>
             </Form>
@@ -206,14 +150,14 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                   handleCreateWorkspace
                 )}
               >
-                <div className="flex  items-start gap-4">
+                <div className="flex flex-col xl:flex-row items-start gap-4">
                   <div className="flex flex-col gap-y-4 w-full">
                     <CustomInputLabel
                       fieldTitle="Workspace Name"
                       nameInSchema="name"
                       placeHolder="Enter workspace name"
                       className=""
-                      maxCharLength={15}
+                      maxCharLength={50}
                     />
                     <CustomTextareaLabel
                       fieldTitle="Workspace Description"
@@ -226,11 +170,6 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                     <CustomImageUploader
                       fieldTitle="Image"
                       nameInSchema="image"
-                      isPending={
-                        createWorkspaceMutation.isPending ||
-                        updateWorkspaceMutation.isPending ||
-                        isDeleteLoading
-                      }
                       className=""
                     />
                   </div>

@@ -1,1 +1,0 @@
-ALTER TABLE "user" ADD COLUMN "last_project_id" text;
