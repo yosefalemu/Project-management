@@ -13,39 +13,58 @@ import { joinWorkspaceSchema } from "../validators/join-workspace";
 
 const app = new Hono()
   .get("/user-workspaces", sessionMiddleware, async (c) => {
-    const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
-    const session = c.get("session") as
-      | typeof auth.$Infer.Session.session
-      | null;
-    if (!userFound || !session) {
+    try {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+      const userWorkspaces = await db
+        .select()
+        .from(workspaceMember)
+        .where(eq(workspaceMember.userId, userFound.id));
+      if (userWorkspaces.length === 0) {
+        return c.json(
+          { error: "NotFound", message: "No workspaces found with the user" },
+          404
+        );
+      }
+      const workspacesIds = userWorkspaces.map((member) => member.workspaceId);
+      const workspacesFound = await db
+        .select()
+        .from(workspace)
+        .where(inArray(workspace.id, workspacesIds));
+      const workspacesWithUserInfo = workspacesFound.map((workspace) => {
+        const member = userWorkspaces.find(
+          (m) => m.workspaceId === workspace.id
+        );
+        return {
+          ...workspace,
+          member: member,
+        };
+      });
       return c.json(
-        { error: "Unauthorized", message: "User not authenticated" },
-        401
+        {
+          data: workspacesWithUserInfo,
+          message: "Workspaces fetched successfully",
+        },
+        200
+      );
+    } catch (error) {
+      console.log("Error in user-workspaces route:", error);
+      return c.json(
+        {
+          error: "InternalServerError",
+          message: "An error occurred while processing your request",
+        },
+        500
       );
     }
-    const userWorkspaces = await db
-      .select()
-      .from(workspaceMember)
-      .where(eq(workspaceMember.userId, userFound.id));
-    if (userWorkspaces.length === 0) {
-      return c.json(
-        { error: "NotFound", message: "No workspaces found with the user" },
-        404
-      );
-    }
-    const workspacesIds = userWorkspaces.map((member) => member.workspaceId);
-    const workspacesFound = await db
-      .select()
-      .from(workspace)
-      .where(inArray(workspace.id, workspacesIds));
-    const workspacesWithUserInfo = workspacesFound.map((workspace) => {
-      const member = userWorkspaces.find((m) => m.workspaceId === workspace.id);
-      return {
-        ...workspace,
-        member: member,
-      };
-    });
-    return c.json({ data: workspacesWithUserInfo });
   })
   .get("/:workspaceId", sessionMiddleware, async (c: Context) => {
     try {
@@ -86,7 +105,13 @@ const app = new Hono()
         ...workspaceFound[0],
         member: userWorkspace,
       };
-      return c.json({ data: workspaceWithMemberInfo }, 200);
+      return c.json(
+        {
+          data: workspaceWithMemberInfo,
+          message: "Workspace fetched successfully",
+        },
+        200
+      );
     } catch (error) {
       console.error("Error in workspace route:", error);
       return c.json(
@@ -141,7 +166,7 @@ const app = new Hono()
   })
   .post(
     "/",
-    zValidator("form", createWorkspaceSchema),
+    zValidator("json", createWorkspaceSchema),
     sessionMiddleware,
     async (c) => {
       try {
@@ -160,7 +185,7 @@ const app = new Hono()
             401
           );
         }
-        const { name, image, description } = c.req.valid("form");
+        const { name, image, description } = c.req.valid("json");
 
         const result = await db.transaction(
           async (tx) => {
@@ -223,8 +248,9 @@ const app = new Hono()
           {
             error: "FailedToCreateProject",
             message:
-              error instanceof Error
-                ? error.message
+              error instanceof Error &&
+              error.message.includes("Workspace with this name already exists")
+                ? "Workspace with this name already exists"
                 : "Failed to create project",
           },
           error instanceof Error &&
@@ -237,7 +263,7 @@ const app = new Hono()
   )
   .patch(
     "/",
-    zValidator("form", updateWorkspaceSchema),
+    zValidator("json", updateWorkspaceSchema),
     sessionMiddleware,
     async (c) => {
       try {
@@ -256,7 +282,7 @@ const app = new Hono()
             401
           );
         }
-        const { name, image, description, id } = c.req.valid("form");
+        const { name, image, description, id } = c.req.valid("json");
         const currentUserPermission = await db
           .select()
           .from(workspaceMember)
@@ -287,10 +313,13 @@ const app = new Hono()
           .where(eq(workspace.id, id))
           .returning();
 
-        return c.json({
-          data: updatedWorkspace[0],
-          message: "Workspace updated successfully",
-        });
+        return c.json(
+          {
+            data: updatedWorkspace[0],
+            message: "Workspace updated successfully",
+          },
+          200
+        );
       } catch (err) {
         console.error("Error while updating workspace", err);
         return c.json(
@@ -315,14 +344,14 @@ const app = new Hono()
           401
         );
       }
-      const workSpaceId = c.req.param("workspaceId") as string;
+      const workspaceId = c.req.param("workspaceId") as string;
       const currentMemberPersmission = await db
         .select()
         .from(workspaceMember)
         .where(
           and(
             eq(workspaceMember.userId, userFound.id),
-            eq(workspaceMember.workspaceId, workSpaceId),
+            eq(workspaceMember.workspaceId, workspaceId),
             eq(workspaceMember.role, MemberRole.Admin)
           )
         );
@@ -335,13 +364,31 @@ const app = new Hono()
           403
         );
       }
-      const deletedWorkspace = await db
-        .delete(workspace)
-        .where(eq(workspace.id, workSpaceId))
-        .returning();
+      const result = await db.transaction(
+        async (tx) => {
+          await tx
+            .update(user)
+            .set({
+              lastWorkspaceId: null,
+              lastProjectId: null,
+            })
+            .where(eq(user.id, userFound.id));
+          const deletedWorkspace = await tx
+            .delete(workspace)
+            .where(eq(workspace.id, workspaceId))
+            .returning();
+          return {
+            deletedWorkspace: deletedWorkspace[0],
+          };
+        },
+        {
+          isolationLevel: "serializable",
+          accessMode: "read write",
+        }
+      );
       return c.json(
         {
-          data: deletedWorkspace[0],
+          data: result.deletedWorkspace,
           message: "Workspace deleted successfully",
         },
         200

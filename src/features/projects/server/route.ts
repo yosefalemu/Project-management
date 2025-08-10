@@ -7,71 +7,92 @@ import {
 } from "@/db/schema/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { createProjectSchema } from "@/zod-schemas/project-schema";
+
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
+import { createProjectSchema } from "../validators/create-project";
+import { MemberRole } from "@/features/members/types/type";
+import { updateProjectSchema } from "../validators/update-project";
 
 const app = new Hono()
-  .get(
-    "/:workspaceId",
-    sessionMiddleware,
-    zValidator("param", z.object({ workspaceId: z.string() })),
-    async (c) => {
-      try {
-        const workspaceId = c.req.param("workspaceId");
-        const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-        if (!user) {
-          return c.json(
-            { error: "Unauthorized", message: "User not authenticated" },
-            401
-          );
-        }
-        const workspaceMembersFound = await db
-          .select()
-          .from(workspaceMember)
-          .where(
-            and(
-              eq(workspaceMember.workspaceId, workspaceId),
-              eq(workspaceMember.userId, user.id)
-            )
-          );
-        if (workspaceMembersFound.length === 0) {
-          return c.json({
-            error: "Unauthorized",
-            message: "Unauthorized, you can't access this workspace",
-          });
-        }
-        const projectMemberFound = await db
-          .select()
-          .from(projectMember)
-          .where(eq(projectMember.userId, user.id));
-        const projectMemberIds = projectMemberFound.map(
-          (projectMember) => projectMember.projectId
-        );
-        const projectFound = await db
-          .select()
-          .from(project)
-          .where(
-            and(
-              eq(project.workspaceId, workspaceId),
-              inArray(project.id, projectMemberIds)
-            )
-          );
-        return c.json({ data: projectFound }, 200);
-      } catch (error) {
-        console.error("Error while fetching projects", error);
+  .get("/user-projects", sessionMiddleware, async (c) => {
+    try {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as typeof auth.$Infer.Session | null;
+      if (!userFound || !session) {
         return c.json(
-          {
-            error: "FailedToFetchProjects",
-            message: "Failed to fetch projects",
-          },
-          500
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
         );
       }
+      const workspaceMembersFound = await db
+        .select()
+        .from(workspaceMember)
+        .where(
+          and(
+            eq(workspaceMember.workspaceId, userFound.lastWorkspaceId),
+            eq(workspaceMember.userId, userFound.id)
+          )
+        );
+      if (workspaceMembersFound.length === 0) {
+        return c.json({
+          error: "Unauthorized",
+          message: "Unauthorized, you can't access this workspace",
+        });
+      }
+      const projectMemberFound = await db
+        .select()
+        .from(projectMember)
+        .where(eq(projectMember.userId, userFound.id));
+
+      if (projectMemberFound.length === 0) {
+        return c.json(
+          {
+            error: "BadRequest",
+            message: "User is not a member of any project",
+          },
+          400
+        );
+      }
+      const projectMemberIds = projectMemberFound.map(
+        (projectMember) => projectMember.projectId
+      );
+
+      const projectFound = await db
+        .select()
+        .from(project)
+        .where(
+          and(
+            eq(project.workspaceId, userFound.lastWorkspaceId),
+            inArray(project.id, projectMemberIds)
+          )
+        );
+
+      const dataSend = projectFound.map((project) => {
+        return {
+          project,
+          member: projectMemberFound.find(
+            (member) => member.projectId === project.id
+          ),
+        };
+      });
+      return c.json(
+        { data: dataSend, message: "Projects fetched successfully" },
+        200
+      );
+    } catch (error) {
+      console.error("Error while fetching projects", error);
+      return c.json(
+        {
+          error: "FailedToFetchProjects",
+          message: "Failed to fetch projects",
+        },
+        500
+      );
     }
-  )
+  })
   .get(
     "/single/:projectId",
     sessionMiddleware,
@@ -105,59 +126,51 @@ const app = new Hono()
   .post(
     "/",
     sessionMiddleware,
-    zValidator("form", createProjectSchema),
+    zValidator("json", createProjectSchema),
     async (c) => {
       try {
-        const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-        if (!user) {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+
+        const session = c.get("session") as typeof auth.$Infer.Session | null;
+        if (!userFound || !session) {
           return c.json(
             { error: "Unauthorized", message: "User not authenticated" },
             401
           );
         }
-        const { name, description, workspaceId, image } = c.req.valid("form");
-        if (!name || !description || !workspaceId) {
+        const { name, description, image, isPrivate } = c.req.valid("json");
+        if (!name || !description) {
           return c.json(
-            { error: "Bad Request", message: "All fields are required" },
+            {
+              error: "Bad Request",
+              message: "Name and description are required",
+            },
             400
           );
         }
 
-        let uploadedImage: string | undefined;
-        if (image instanceof File) {
-          try {
-            const fileReader = await image.arrayBuffer();
-            uploadedImage = `data:${image.type};base64,${Buffer.from(
-              fileReader
-            ).toString("base64")}`;
-          } catch (err) {
-            console.error("Error while processing image file", err);
-            return c.json(
-              {
-                error: "InvalidImage",
-                message: "Failed to process the image file",
-              },
-              400
-            );
-          }
-        }
-
         const result = await db.transaction(
           async (tx) => {
-            // Check if user is an admin in the workspace
             const workspaceMemberFound = await tx
               .select()
               .from(workspaceMember)
               .where(
                 and(
-                  eq(workspaceMember.workspaceId, workspaceId),
-                  eq(workspaceMember.userId, user.id),
-                  eq(workspaceMember.role, "admin")
+                  eq(workspaceMember.workspaceId, userFound.lastWorkspaceId),
+                  eq(workspaceMember.userId, userFound.id),
+                  eq(workspaceMember.role, MemberRole.Admin)
                 )
               );
 
             if (workspaceMemberFound.length === 0) {
               throw new Error("User is not an admin of this workspace");
+            }
+
+            let inviteCode;
+            if (isPrivate) {
+              inviteCode = Math.random().toString(36).substring(2, 8);
             }
 
             // Insert new project
@@ -167,21 +180,28 @@ const app = new Hono()
                 id: crypto.randomUUID(),
                 name,
                 description,
-                workspaceId,
-                image: uploadedImage,
-                creatorId: user.id,
-                inviteCode: Math.random().toString(36).substring(2, 8),
+                workspaceId: userFound.lastWorkspaceId,
+                image: image,
+                creatorId: userFound.id,
+                isPrivate,
+                inviteCode,
               })
               .returning();
-
+            // Update user's last project ID
+            await tx
+              .update(user)
+              .set({
+                lastProjectId: newProject[0].id,
+              })
+              .where(eq(user.id, userFound.id));
             // Insert project member
             const newProjectMember = await tx
               .insert(projectMember)
               .values({
                 id: crypto.randomUUID(),
                 projectId: newProject[0].id,
-                role: "admin",
-                userId: user.id,
+                role: MemberRole.Admin,
+                userId: userFound.id,
               })
               .returning();
 
@@ -227,10 +247,106 @@ const app = new Hono()
   .patch(
     "/",
     sessionMiddleware,
-    zValidator("form", createProjectSchema),
-    (c) => {
-      const { name, description, workspaceId, image } = c.req.valid("form");
-      return c.json({ name, description, workspaceId, image }, 200);
+    zValidator("json", updateProjectSchema),
+    async (c) => {
+      try {
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        const session = c.get("session") as typeof auth.$Infer.Session | null;
+        if (!userFound || !session) {
+          return c.json(
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
+        const { name, description, image, isPrivate } = c.req.valid("json");
+        if (!name || !description) {
+          return c.json(
+            {
+              error: "BadRequest",
+              message: "Name, description, and ID are required",
+            },
+            400
+          );
+        }
+        let inviteCode: string;
+        if (isPrivate) {
+          inviteCode = Math.random().toString(36).substring(2, 8);
+        }
+        const result = await db.transaction(
+          async (tx) => {
+            const workspaceMemberFound = await tx
+              .select()
+              .from(projectMember)
+              .where(
+                and(
+                  eq(projectMember.projectId, userFound.lastProjectId),
+                  eq(projectMember.userId, userFound.id),
+                  eq(projectMember.role, MemberRole.Admin)
+                )
+              );
+            if (workspaceMemberFound.length === 0) {
+              throw new Error(
+                "You dont have permission to update this project"
+              );
+            }
+            const currentProject = await tx
+              .select()
+              .from(project)
+              .where(eq(project.id, userFound.lastProjectId));
+
+            if (currentProject.length === 0) {
+              throw new Error("Project not found");
+            }
+            const updatedProject = await tx
+              .update(project)
+              .set({
+                name,
+                description,
+                image,
+                creatorId: userFound.id,
+                inviteCode,
+                isPrivate,
+              })
+              .where(eq(project.id, userFound.lastProjectId))
+              .returning();
+            return {
+              project: updatedProject[0],
+            };
+          },
+          {
+            isolationLevel: "serializable",
+            accessMode: "read write",
+          }
+        );
+        return c.json(
+          { data: result.project, message: "Project updated successfully" },
+          200
+        );
+      } catch (error) {
+        console.error("Error while updating project:", error);
+        return c.json(
+          {
+            error: "FailedToUpdateProject",
+            message:
+              error instanceof Error &&
+              error.message ===
+                "You dont have permission to update this project"
+                ? "You dont have permission to update this project"
+                : error instanceof Error &&
+                    error.message === "Project not found"
+                  ? "Project not found"
+                  : "Failed to update project",
+          },
+          error instanceof Error &&
+            error.message === "You dont have permission to update this project"
+            ? 401
+            : error instanceof Error && error.message === "Project not found"
+              ? 404
+              : 500
+        );
+      }
     }
   )
   .delete(

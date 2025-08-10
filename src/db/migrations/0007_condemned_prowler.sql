@@ -1,2 +1,0 @@
-ALTER TABLE "user" ADD CONSTRAINT "user_last_workspace_id_work_spaces_id_fk" FOREIGN KEY ("last_workspace_id") REFERENCES "public"."work_spaces"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user" ADD CONSTRAINT "user_last_project_id_project_id_fk" FOREIGN KEY ("last_project_id") REFERENCES "public"."project"("id") ON DELETE set null ON UPDATE no action;

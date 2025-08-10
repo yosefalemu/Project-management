@@ -15,14 +15,8 @@ import { useRouter } from "next/navigation";
 
 interface DangerZoneProps {
   workspaceId: string;
-  loadingState: boolean;
-  setIsDeleteLoading: (status: boolean) => void;
 }
-export default function DangerZone({
-  workspaceId,
-  loadingState,
-  setIsDeleteLoading,
-}: DangerZoneProps) {
+export default function DangerZone({ workspaceId }: DangerZoneProps) {
   const router = useRouter();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const [DeleteDialog, confirmDelete] = useConfirm(
@@ -40,17 +34,14 @@ export default function DangerZone({
     if (!ok) {
       return;
     }
-    setIsDeleteLoading(true);
     mutate(
       { param: { workspaceId: workspaceId } },
       {
         onSuccess: () => {
-          setIsDeleteLoading(false);
           toast.success("Workspace deleted successfully");
           router.push("/");
         },
         onError: () => {
-          setIsDeleteLoading(false);
           toast.error("An error occurred while deleting workspace");
         },
       }
@@ -74,7 +65,7 @@ export default function DangerZone({
             variant="destructive"
             type="button"
             onClick={handleDeleteWorkspace}
-            disabled={loadingState}
+            disabled={isPending}
           >
             {isPending ? (
               <div className="flex items-center justify-center">

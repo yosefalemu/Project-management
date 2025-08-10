@@ -115,7 +115,7 @@ export const workspace = pgTable("work_spaces", {
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
   image: text("image").default(""),
-  inviteCode: varchar("invite_code").notNull().unique(),
+  inviteCode: varchar("invite_code").notNull(),
   inviteCodeExpire: timestamp("invite_code_expire", {
     withTimezone: true,
   }).default(sql`NOW() + INTERVAL '7 days'`),
@@ -139,8 +139,9 @@ export const project = pgTable("project", {
   creatorId: text("creator_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  inviteCode: varchar("invite_code").notNull().unique(),
+  inviteCode: varchar("invite_code"),
   image: text("image").default(""),
+  isPrivate: boolean("is_private").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

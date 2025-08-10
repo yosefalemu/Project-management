@@ -27,13 +27,16 @@ import AddIcon from "./icons/add-icon";
 import { useChannelModalHook } from "@/features/channels/hooks/use-channel-modal";
 import { Skeleton } from "./ui/skeleton";
 import { useGetWorkspace } from "@/features/workspace/api/get-workspace-api";
-import { Plus } from "lucide-react";
+import { PencilIcon, Plus } from "lucide-react";
 import { Card } from "./ui/card";
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog";
+import ProjectForm from "@/features/projects/components/project-form";
 
 interface Project {
   id: string;
   name: string;
   image?: string | null;
+  role: "admin" | "member" | "viewer";
 }
 
 export default function Projects() {
@@ -70,6 +73,8 @@ export default function Projects() {
     workspaceId: params.workspaceId! as string,
   });
 
+  console.log("PROJECTS FOUND", projects);
+
   const {
     data: channels,
     isLoading: isLoadingChannels,
@@ -88,23 +93,32 @@ export default function Projects() {
 
     const lastProjectId = user[0]?.lastProjectId;
     const foundProject = projects.find(
-      (project) => project.id === lastProjectId
+      (project) => project.project.id === lastProjectId
     );
-    setSelectedProject(foundProject || projects[0]);
+    setSelectedProject(
+      foundProject && foundProject.member
+        ? { ...foundProject.project, role: foundProject.member.role }
+        : projects[0].member
+          ? { ...projects[0].project, role: projects[0].member.role }
+          : { ...projects[0].project, role: "member" }
+    );
   }, [projects, user, selectedProject]);
 
   const handleProjectChange = (projectId: string) => {
-    const project = projects?.find((p) => p.id === projectId);
+    const project = projects?.find((p) => p.project.inviteCode === projectId);
     if (!project) return;
     updateUserMutation.mutate(
       {
         json: {
-          lastProjectId: project.id,
+          lastProjectId: project.project.id,
         },
       },
       {
         onSuccess: () => {
-          setSelectedProject(project);
+          setSelectedProject({
+            ...project.project,
+            role: project.member?.role ?? "member",
+          });
           setIsSelectOpen(false);
           router.push(`/${params.workspaceId}`);
         },
@@ -206,42 +220,74 @@ export default function Projects() {
         </SelectTrigger>
         <SelectContent>
           {projects.map((project) => (
-            <SelectItem key={project.id} value={project.id}>
+            <SelectItem key={project.project.id} value={project.project.id}>
               <div className="flex items-center gap-2 w-full">
                 <ProjectAvatar
-                  name={project.name}
-                  image={project.image ?? undefined}
+                  name={project.project.name}
+                  image={project.project.image ?? undefined}
                   className="size-8 rounded-none"
                 />
-                <span>{project.name}</span>
+                <span>{project.project.name}</span>
               </div>
             </SelectItem>
           ))}
           <div className="flex flex-col gap-y-1 mt-2">
-            <div
-              className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-muted"
-              onClick={() => {
-                openChannelModal();
-                setIsSelectOpen(false);
-              }}
-            >
-              <div className="size-6 flex items-center justify-center border-2 border-primary rounded-md">
-                <AddIcon />
+            {selectedProject.role === "admin" && (
+              <div className="flex flex-col gap-2">
+                <Dialog>
+                  <DialogTrigger>Edit</DialogTrigger>
+                  <DialogContent className="max-w-5xl">
+                    <DialogTitle>Edit Project</DialogTitle>
+                    <ProjectForm
+                      project={
+                        projects.find(
+                          (p) => p.project.id === selectedProject.id
+                        )?.project
+                      }
+                    />
+                  </DialogContent>
+                </Dialog>
+                <div
+                  className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-muted"
+                  onClick={() => {
+                    openChannelModal();
+                    setIsSelectOpen(false);
+                  }}
+                >
+                  <div className="size-6 flex items-center justify-center border-2 border-primary rounded-md">
+                    <PencilIcon className="size-1" />
+                  </div>
+                  <h1 className="font-semibold text-sm">Edit Project</h1>
+                </div>
+                <div
+                  className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-muted"
+                  onClick={() => {
+                    openChannelModal();
+                    setIsSelectOpen(false);
+                  }}
+                >
+                  <div className="size-6 flex items-center justify-center border-2 border-primary rounded-md">
+                    <AddIcon />
+                  </div>
+                  <h1 className="font-semibold text-sm">Add Channel</h1>
+                </div>
               </div>
-              <h1 className="font-semibold text-sm">Add Channel</h1>
-            </div>
-            <div
-              className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-muted"
-              onClick={() => {
-                openProjectModal();
-                setIsSelectOpen(false);
-              }}
-            >
-              <div className="size-6 flex items-center justify-center border-2 border-primary rounded-md">
-                <AddIcon />
+            )}
+            <div className="border-b border-muted my-2" />
+            {workspace?.member[0].role === "admin" && (
+              <div
+                className="flex items-center gap-2 cursor-pointer p-2 rounded-md hover:bg-muted"
+                onClick={() => {
+                  openProjectModal();
+                  setIsSelectOpen(false);
+                }}
+              >
+                <div className="size-6 flex items-center justify-center border-2 border-primary rounded-md">
+                  <AddIcon />
+                </div>
+                <h1 className="font-semibold text-sm">Add Project</h1>
               </div>
-              <h1 className="font-semibold text-sm">Add Project</h1>
-            </div>
+            )}
           </div>
         </SelectContent>
       </Select>

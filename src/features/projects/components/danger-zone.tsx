@@ -52,7 +52,7 @@ export default function DangerZone({
     );
   };
   return (
-    <div>
+    <div className="w-full">
       <DeleteDialog />
       <Card className="shadow-none border-none bg-neutral-50 col-span-1">
         <CardContent className="p-7">

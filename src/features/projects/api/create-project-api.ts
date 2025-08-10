@@ -2,47 +2,49 @@ import { client } from "@/lib/rpc";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 
-type ZodErrorDetail = {
+type ResponseType = InferResponseType<
+  (typeof client.api.projects)["$post"],
+  201
+>;
+
+type RequestType = InferRequestType<(typeof client.api.projects)["$post"]>;
+
+type ZodError = {
   name: string;
   issues: { message: string }[];
 };
+
 type ErrorResponse = {
-  error?: ZodErrorDetail | string;
+  error: ZodError | string;
   message?: string;
 };
-type RequestType = InferRequestType<(typeof client.api.projects)["$post"]>;
-type ResponseType = InferResponseType<
-  (typeof client.api.projects)["$post"],
-  200
->;
 
 export const useCreateProject = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ form }) => {
-      const response = await client.api.projects["$post"]({ form });
+  const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
+    mutationFn: async ({ json }) => {
+      const response = await client.api.projects["$post"]({ json });
       if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE CREATING PROJECT", errorData);
+        const error = (await response.json()) as ErrorResponse;
         if (
-          typeof errorData.error === "object" &&
-          "name" in errorData.error &&
-          errorData.error.name === "ZodError"
+          typeof error.error === "object" &&
+          "name" in error.error &&
+          error.error.name === "ZodError"
         ) {
-          const errorDataDetail =
-            errorData.error.issues[0]?.message || "Validation error occurred";
-          throw new Error(errorDataDetail);
+          const erroMessages = error.error.issues.map((issue) => issue.message);
+          throw new Error(erroMessages.join(", "));
         }
         throw new Error(
-          errorData.message || "An error occurred while creating project"
+          error.message || "An error occurred while creating project"
         );
       }
-      return (await response.json()) as ResponseType;
+      const data = await response.json();
+      return data;
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async ({ data }) => {
       await queryClient.invalidateQueries({ queryKey: ["projects"] });
       await queryClient.invalidateQueries({
-        queryKey: ["projects", variables.form.workspaceId],
+        queryKey: ["projects", data.project.id],
       });
     },
   });

@@ -11,19 +11,35 @@ type ResponseType = InferResponseType<
 >;
 type RequestType = InferRequestType<(typeof client.api.workspace)["$post"]>;
 
-type ErrorResponse = InferResponseType<
-  (typeof client.api.workspace)["$post"],
-  500
->;
+type ZodError = {
+  name: string;
+  issues: { message: string }[];
+};
+type ErrorResponse = {
+  error: string | ZodError;
+  message: string;
+};
 
 export const useCreateWorkspace = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
-    mutationFn: async ({ form }): Promise<ResponseType> => {
-      const response = await client.api.workspace["$post"]({ form });
+    mutationFn: async ({ json }): Promise<ResponseType> => {
+      const response = await client.api.workspace["$post"]({ json });
       if (!response.ok) {
-        const error = await response.json();
+        console.log("ERROR RESPONSE WHILE CREATING WORKSPACES", response);
+        const error = (await response.json()) as ErrorResponse;
+        console.log("ERROR DETAILS:", error);
+        if (
+          typeof error.error === "object" &&
+          "name" in error.error &&
+          error.error.name === "ZodError"
+        ) {
+          const validationErrors = error.error.issues.map(
+            (issue) => issue.message
+          );
+          throw new Error(validationErrors.join(", "));
+        }
         throw new Error(
           error.message || "An error occurred while creating workspace"
         );
@@ -36,7 +52,12 @@ export const useCreateWorkspace = () => {
       router.push(data.workspace.id);
     },
     onError: ({ message }) => {
-      toast.error(message || "An error occurred while creating workspace");
+      const messages = message.split(", ");
+      messages.forEach((msg, index) =>
+        setTimeout(() => {
+          toast.error(msg || "An error occurred while creating workspace");
+        }, index * 3000)
+      );
     },
   });
   return mutation;

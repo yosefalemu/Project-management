@@ -10,14 +10,12 @@ import { cn } from "@/lib/utils";
 interface CustomImageUploaderProps {
   fieldTitle: string;
   nameInSchema: string;
-  isPending?: boolean;
   className?: string;
 }
 
 export default function CustomImageUploader({
   fieldTitle,
   nameInSchema,
-  isPending,
   className,
 }: CustomImageUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,7 +58,9 @@ export default function CustomImageUploader({
   };
 
   const handleRemoveImage = () => {
-    form.setValue(nameInSchema, "");
+    form.setValue(nameInSchema, "", {
+      shouldDirty: true,
+    });
     setImagePreview(null);
     if (inputRef.current) {
       inputRef.current.value = "";
@@ -99,7 +99,6 @@ export default function CustomImageUploader({
                 type="file"
                 className="hidden"
                 ref={inputRef}
-                disabled={isPending}
                 onChange={handleImageChange}
                 accept=".jpg,.png,.jpeg,.svg"
               />
@@ -107,7 +106,6 @@ export default function CustomImageUploader({
                 <Button
                   type="button"
                   variant="secondary"
-                  disabled={isPending}
                   size="sm"
                   className="w-fit mt-2"
                   onClick={handleRemoveImage}
@@ -118,7 +116,6 @@ export default function CustomImageUploader({
                 <Button
                   type="button"
                   variant="secondary"
-                  disabled={isPending}
                   size="sm"
                   className="w-fit mt-2"
                   onClick={() => inputRef.current?.click()}
