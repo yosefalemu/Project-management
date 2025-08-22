@@ -25,6 +25,7 @@ export default function CustomCheckBox({
                   {...props}
                   {...field}
                   onCheckedChange={field.onChange}
+                  checked={field.value}
                 />
               </FormControl>
               <FormLabel>{fieldTitle}</FormLabel>

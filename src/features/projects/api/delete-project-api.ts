@@ -1,15 +1,8 @@
 import { client } from "@/lib/rpc";
-import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
-
-type ZodErrorDetail = {
-  name: string;
-  issues: { message: string }[];
-};
-type ErrorResponse = {
-  error?: ZodErrorDetail | string;
-  message?: string;
-};
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 type RequestType = InferRequestType<
   (typeof client.api.projects)[":projectId"]["$delete"]
@@ -19,34 +12,37 @@ type ResponseType = InferResponseType<
   200
 >;
 
-const queryClient = new QueryClient();
+type ZodError = {
+  name: string;
+  issues: { message: string }[];
+};
+
+type ErrorResponse = {
+  error: ZodError | string;
+  message: string;
+};
 
 export const useDeleteProject = () => {
-  const mutation = useMutation<ResponseType, Error, RequestType>({
+  const router = useRouter();
+  const queryClient = useQueryClient();
+  const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
     mutationFn: async ({ param }) => {
       const response = await client.api.projects[":projectId"]["$delete"]({
         param,
       });
       if (!response.ok) {
-        const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE DELETING WORKSPACE", errorData);
-        if (
-          typeof errorData.error === "object" &&
-          "name" in errorData.error &&
-          errorData.error.name === "ZodError"
-        ) {
-          const errorDataDetail =
-            errorData.error.issues[0]?.message || "Validation error occurred";
-          throw new Error(errorDataDetail);
-        }
-        throw new Error(
-          errorData.message || "An error occurred while deleting workspace"
-        );
+        const { error, message } = (await response.json()) as ErrorResponse;
+        console.log("ERROR WHILE DELETING PROJECT", { error, message });
+        throw new Error(message || "An error occurred while deleting project");
       }
-      return (await response.json()) as ResponseType;
+      const data = await response.json();
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: ({ data }) => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
+      toast.success("Project deleted successfully");
+      router.push(`/${data.workspaceId}`);
+      window.location.reload();
     },
   });
   return mutation;

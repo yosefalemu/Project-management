@@ -3,18 +3,14 @@ import CustomImageUploader from "@/components/inputs/custom-image-upload";
 import CustomInputLabel from "@/components/inputs/custom-input-label";
 import CustomTextareaLabel from "@/components/inputs/custom-textarea-label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
-import { insertProjectType } from "@/zod-schemas/project-schema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useMedia } from "react-use";
 import { useCreateProject } from "../api/create-project-api";
-import { useParams } from "next/navigation";
 import { useUpdateProject } from "../api/update-project-api";
 import { Loader } from "lucide-react";
 import DangerZone from "./danger-zone";
-import { useState } from "react";
 import {
   createProjectSchemaType,
   createProjectSchema,
@@ -24,14 +20,38 @@ import {
   updateProjectSchemaType,
 } from "../validators/update-project";
 import CustomCheckBox from "@/components/inputs/custom-checkbox";
+import { useEffect } from "react";
+
+interface Project {
+  id: string;
+  name: string;
+  image?: string | null;
+  role: "admin" | "member" | "viewer";
+}
 
 interface ProjectFormProps {
-  onModal?: boolean;
-  project?: insertProjectType;
+  project?: {
+    image: string | null;
+    id: string;
+    name: string;
+    createdAt: string;
+    updatedAt: string;
+    description: string;
+    creatorId: string;
+    inviteCode: string | null;
+    workspaceId: string;
+    isPrivate: boolean;
+  };
+  role?: "admin" | "member" | "viewer";
+  setSelectedProject?: (project: Project | null) => void;
+  setIsModalOpen: (open: boolean) => void;
 }
-export default function ProjectForm({ project }: ProjectFormProps) {
-  const params = useParams();
-  const [isDeleteLoading, setIsDeleteLoading] = useState<boolean>(false);
+export default function ProjectForm({
+  project,
+  setSelectedProject,
+  role,
+  setIsModalOpen,
+}: ProjectFormProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
 
   const createProjectMutation = useCreateProject();
@@ -57,6 +77,17 @@ export default function ProjectForm({ project }: ProjectFormProps) {
     },
   });
 
+  useEffect(() => {
+    if (project) {
+      updateProjectForm.reset({
+        name: project.name,
+        description: project.description,
+        image: project.image || "",
+        isPrivate: project.isPrivate,
+      });
+    }
+  }, [project, updateProjectForm]);
+
   const handleCreateProject = (values: createProjectSchemaType) => {
     createProjectMutation.mutate({
       json: values,
@@ -64,23 +95,37 @@ export default function ProjectForm({ project }: ProjectFormProps) {
   };
 
   const handleUpdateProject = (values: updateProjectSchemaType) => {
-    updateProjectMutation.mutate({
-      json: values,
-    });
+    updateProjectMutation.mutate(
+      {
+        json: values,
+      },
+      {
+        onSuccess: ({ data }) => {
+          if (setSelectedProject && role) {
+            setSelectedProject({
+              id: data.id,
+              name: data.name,
+              image: data.image,
+              role: role,
+            });
+          }
+        },
+      }
+    );
   };
 
   return (
     <div className="h-full w-full flex flex-col gap-y-4">
       {project ? (
-        <Card className="shadow-none border-none w-full">
-          {/* <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
-            <CardTitle className="text-xl font-bold">Edit Project</CardTitle>
-          </CardHeader> */}
-          <CardContent>
+        <div className="w-full p-5">
+          <div className="text-xl font-bold">
+            Update Project - {project.name}
+          </div>
+          <div>
             <Form {...updateProjectForm}>
               <form
                 onSubmit={updateProjectForm.handleSubmit(handleUpdateProject)}
-                className="grid grid-cols-2 gap-4 overflow-y-auto hide-scrollbar max-h-[540px]"
+                className="grid grid-cols-2 gap-4"
               >
                 <div className="col-span-2 xl:col-span-1 gap-2">
                   <CustomInputLabel
@@ -108,17 +153,30 @@ export default function ProjectForm({ project }: ProjectFormProps) {
                   />
                 </div>
                 <div className="col-span-2 flex items-center justify-end gap-x-4">
-                  <Button
-                    type="button"
-                    size={isDesktop ? "lg" : "sm"}
-                    variant="secondary"
-                    onClick={() => {
-                      updateProjectForm.reset();
-                    }}
-                    disabled={updateProjectMutation.isPending}
-                  >
-                    Cancel
-                  </Button>
+                  {!updateProjectForm.formState.isDirty ? (
+                    <Button
+                      type="button"
+                      size={isDesktop ? "lg" : "sm"}
+                      variant="secondary"
+                      onClick={() => {
+                        setIsModalOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      size={isDesktop ? "lg" : "sm"}
+                      variant="secondary"
+                      onClick={() => {
+                        updateProjectForm.reset();
+                      }}
+                      disabled={updateProjectMutation.isPending}
+                    >
+                      Reset
+                    </Button>
+                  )}
                   <Button
                     type="submit"
                     size={isDesktop ? "lg" : "sm"}
@@ -137,26 +195,15 @@ export default function ProjectForm({ project }: ProjectFormProps) {
                     )}
                   </Button>
                 </div>
-                <DangerZone
-                  projectId={project.id!}
-                  workspaceId={params.workspaceId as string}
-                  loadingState={
-                    createProjectMutation.isPending ||
-                    updateProjectMutation.isPending ||
-                    isDeleteLoading
-                  }
-                  setIsDeleteLoading={setIsDeleteLoading}
-                />
+                <DangerZone projectId={project.id!} />
               </form>
             </Form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       ) : (
-        <Card className="shadow-none border-none w-full">
-          <CardHeader className="flex flex-row items-baseline gap-x-4 p-7">
-            <CardTitle className="text-xl font-bold">Create Project</CardTitle>
-          </CardHeader>
-          <CardContent>
+        <div className="w-full p-4">
+          <div className="text-xl font-bold">Create Project</div>
+          <div>
             <Form {...createProjectForm}>
               <form
                 onSubmit={createProjectForm.handleSubmit(handleCreateProject)}
@@ -194,6 +241,7 @@ export default function ProjectForm({ project }: ProjectFormProps) {
                     variant="secondary"
                     onClick={() => {
                       createProjectForm.reset();
+                      setIsModalOpen(false);
                     }}
                     disabled={createProjectMutation.isPending}
                   >
@@ -216,8 +264,8 @@ export default function ProjectForm({ project }: ProjectFormProps) {
                 </div>
               </form>
             </Form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

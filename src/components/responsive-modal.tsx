@@ -19,13 +19,13 @@ export default function ResponsiveModal({
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogTitle className="hidden" />
         <DialogContent
           className={cn(
-            "w-full  border-none overflow-y-auto max-h-[85vh] hide-scrollbar",
+            "w-full border-none overflow-y-auto max-h-[85vh] hide-scrollbar",
             className
           )}
         >
+          <DialogTitle className="hidden" />
           {children}
         </DialogContent>
       </Dialog>
@@ -34,9 +34,9 @@ export default function ResponsiveModal({
 
   return (
     <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerTitle className="hidden" />
       <DrawerContent>
         <div className="overflow-y-auto hide-scrollbar max-h-[85vh]">
+          <DrawerTitle className="hidden" />
           {children}
         </div>
       </DrawerContent>
