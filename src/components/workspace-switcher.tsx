@@ -4,7 +4,7 @@ import WorkspaceAvatar from "@/features/workspace/components/workspace-avatar";
 import { useRouter } from "next/navigation";
 import { useWorkspaceModalHook } from "@/features/workspace/hooks/use-workspace-modal";
 import { useBetterAuthUpdateUser } from "@/features/auth/api/better-update-user";
-import HomeIcon from "./icons/add-icon";
+import { Plus } from "lucide-react";
 
 type WorkspaceSwitcherProps = {
   workspaces?: Array<{
@@ -43,7 +43,7 @@ export default function WorkspaceSwitcher({
     <div className="flex flex-col gap-y-2">
       {workspaces?.map((workspace, index) => (
         <div
-          className="flex items-center justify-between gap-6 cursor-pointer p-2 rounded-md"
+          className="flex items-center justify-between gap-6 cursor-pointer p-2 hover:bg-muted"
           key={workspace.id}
           onClick={() => handleWorkspaceChange(workspace.id)}
         >
@@ -64,14 +64,14 @@ export default function WorkspaceSwitcher({
         </div>
       ))}
       <div
-        className="flex items-center gap-2 cursor-pointer p-2 rounded-md"
+        className="flex items-center gap-2 cursor-pointer px-2 py-4 hover:bg-muted"
         onClick={() => {
           open();
           closeWorkspaceSwitcher(false);
         }}
       >
-        <div className="size-10 flex items-center justify-center border-2 border-primary rounded-md">
-          <HomeIcon />
+        <div className="size-8 flex items-center justify-center border-2 border-primary rounded-md ">
+          <Plus />
         </div>
         <h1 className="font-semibold text-sm">Add Workspace</h1>
       </div>

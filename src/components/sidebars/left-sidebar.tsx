@@ -31,12 +31,12 @@ import AccountSetting from "@/components/sidebars/account-settings/account-setti
 import { fonts } from "@/lib/font";
 import { fontProfile } from "@/states/font/font-state";
 import { cn } from "@/lib/utils";
-import { DMIcon, HomeIcon, SettingsIcon } from "./sidebar-svg";
 import WorkspaceSettingComponent from "@/features/workspace/components/workspace-setting";
 import { Button } from "../ui/button";
 import { useMedia } from "react-use";
+import { House, MessageCircleMore, Settings } from "lucide-react";
 
-export default function RightSidebar() {
+export default function LeftSidebar() {
   const params = useParams();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const workspaceRef = useRef<HTMLDivElement>(null);
@@ -170,7 +170,7 @@ export default function RightSidebar() {
             </div>
           </TooltipTrigger>
           <TooltipContent
-            className="rounded-sm"
+            className="rounded-sm border-r-2 border-b-2 border-t border-l p-0"
             side="bottom"
             align="start"
             ref={workspaceRef}
@@ -184,7 +184,7 @@ export default function RightSidebar() {
         </Tooltip>
         <div className="flex flex-col gap-2 items-center justify-center">
           <div className="hover:bg-primary-foreground/15 p-2 rounded-md cursor-pointer">
-            <HomeIcon />
+            <House />
           </div>
           <p className="text-xs">Home</p>
         </div>
@@ -195,7 +195,7 @@ export default function RightSidebar() {
                 className="hover:bg-primary-foreground/15 p-2 rounded-md"
                 onClick={() => setDmsTooltipOpen((prev) => !prev)}
               >
-                <DMIcon />
+                <MessageCircleMore />
               </div>
             </TooltipTrigger>
             <TooltipContent
@@ -233,7 +233,7 @@ export default function RightSidebar() {
                     }}
                     variant="ghost"
                   >
-                    <SettingsIcon />
+                    <Settings />
                   </Button>
                 </DialogTrigger>
                 <DialogContent

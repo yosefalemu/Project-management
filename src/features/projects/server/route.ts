@@ -37,10 +37,13 @@ const app = new Hono()
           )
         );
       if (workspaceMembersFound.length === 0) {
-        return c.json({
-          error: "Unauthorized",
-          message: "Unauthorized, you can't access this workspace",
-        });
+        return c.json(
+          {
+            error: "Unauthorized",
+            message: "Unauthorized, you can't access this workspace",
+          },
+          403
+        );
       }
       const projectMemberFound = await db
         .select()
@@ -354,18 +357,86 @@ const app = new Hono()
     sessionMiddleware,
     zValidator("param", z.object({ projectId: z.string() })),
     async (c) => {
-      const projectId = c.req.param("projectId");
       try {
-        await db.delete(project).where(eq(project.id, projectId));
-        return c.json({ data: "Project deleted successfully" }, 200);
+        const projectId = c.req.param("projectId");
+        const userFound = c.get("user") as
+          | typeof auth.$Infer.Session.user
+          | null;
+        const session = c.get("session") as typeof auth.$Infer.Session | null;
+        if (!userFound || !session) {
+          return c.json(
+            { error: "Unauthorized", message: "User not authenticated" },
+            401
+          );
+        }
+        const result = await db.transaction(
+          async (tx) => {
+            const updatedUser = await tx
+              .update(user)
+              .set({
+                lastProjectId: null,
+              })
+              .where(eq(user.id, userFound.id))
+              .returning();
+            if (updatedUser.length === 0) {
+              throw new Error("User not found");
+            }
+            const projectMemberFound = await tx
+              .select()
+              .from(projectMember)
+              .where(
+                and(
+                  eq(projectMember.projectId, projectId),
+                  eq(projectMember.userId, userFound.id),
+                  eq(projectMember.role, MemberRole.Admin)
+                )
+              );
+
+            if (projectMemberFound.length === 0) {
+              throw new Error(
+                "You dont have permission to delete this project"
+              );
+            }
+            const deletedProject = await tx
+              .delete(project)
+              .where(eq(project.id, projectId))
+              .returning();
+            return {
+              project: deletedProject[0],
+            };
+          },
+          {
+            isolationLevel: "serializable",
+            accessMode: "read write",
+          }
+        );
+        return c.json(
+          { data: result.project, message: "Project deleted successfully" },
+          200
+        );
       } catch (error) {
-        console.error("Error while deleting project", error);
+        console.log("Error while deleting project:", error);
         return c.json(
           {
             error: "FailedToDeleteProject",
-            message: "Failed to delete project",
+            message:
+              error instanceof Error && error.message.includes("User not found")
+                ? "User not found"
+                : error instanceof Error &&
+                    error.message.includes(
+                      "You dont have permission to delete this project"
+                    )
+                  ? "You dont have permission to delete this project"
+                  : "Failed to delete project",
           },
-          500
+          error instanceof Error && error.message.includes("User not found")
+            ? 404
+            : error instanceof Error &&
+                error.message.includes(
+                  "You dont have permission to delete this project"
+                )
+              ? 403
+              : 500
         );
       }
     }

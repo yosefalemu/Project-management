@@ -1,6 +1,8 @@
 import { client } from "@/lib/rpc";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
+import { useProjectModalHook } from "../hooks/use-project-modal";
+import { toast } from "sonner";
 
 type ResponseType = InferResponseType<
   (typeof client.api.projects)["$post"],
@@ -20,6 +22,7 @@ type ErrorResponse = {
 };
 
 export const useCreateProject = () => {
+  const { close } = useProjectModalHook();
   const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
     mutationFn: async ({ json }) => {
@@ -46,6 +49,8 @@ export const useCreateProject = () => {
       await queryClient.invalidateQueries({
         queryKey: ["projects", data.project.id],
       });
+      close();
+      toast.success("Project created successfully");
     },
   });
   return mutation;

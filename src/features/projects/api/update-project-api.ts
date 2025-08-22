@@ -1,6 +1,7 @@
 import { client } from "@/lib/rpc";
-import { QueryClient, useMutation } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
+import { toast } from "sonner";
 
 type ZodErrorDetail = {
   name: string;
@@ -16,8 +17,9 @@ type ResponseType = InferResponseType<
   200
 >;
 type RequestType = InferRequestType<(typeof client.api.projects)["$patch"]>;
-const queryClient = new QueryClient();
+
 export const useUpdateProject = () => {
+  const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async ({ json }) => {
       const response = await client.api.projects["$patch"]({ json });
@@ -39,8 +41,11 @@ export const useUpdateProject = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["projects"] });
+    onSuccess: async ({ data }) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["projects", data.workspaceId],
+      });
+      toast.success("Project updated successfully");
     },
   });
   return mutation;
