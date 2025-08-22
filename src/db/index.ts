@@ -1,4 +1,4 @@
-// Comment out when using Neon with drizzle-orm/neon-http
+// Comment out when using Neon with drizzle-orm/neon-http to help with debugging  
 import { drizzle } from "drizzle-orm/neon-http";
 import { neon } from "@neondatabase/serverless";
 import { config } from "dotenv";
