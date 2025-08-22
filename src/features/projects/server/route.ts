@@ -50,15 +50,6 @@ const app = new Hono()
         .from(projectMember)
         .where(eq(projectMember.userId, userFound.id));
 
-      if (projectMemberFound.length === 0) {
-        return c.json(
-          {
-            error: "BadRequest",
-            message: "User is not a member of any project",
-          },
-          400
-        );
-      }
       const projectMemberIds = projectMemberFound.map(
         (projectMember) => projectMember.projectId
       );
