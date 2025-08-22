@@ -15,6 +15,7 @@ const app = new Hono().basePath("/api").use(
     origin: [
       "http://localhost:3000",
       "https://project-management-sandy-one.vercel.app",
+      "https://project-management-phi-ivory.vercel.app"
     ],
     allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
     allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],
