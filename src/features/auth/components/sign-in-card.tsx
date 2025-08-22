@@ -60,6 +60,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           router.push(redirects ?? "/");
         },
         onError: ({ error }) => {
+          console.log("Error while logging in:", error);
           setSignInEmailLoading(false);
           toast.error(error.message || "Failed to log in");
         },
