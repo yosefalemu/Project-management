@@ -27,9 +27,7 @@ export const useCreateWorkspace = () => {
     mutationFn: async ({ json }): Promise<ResponseType> => {
       const response = await client.api.workspace["$post"]({ json });
       if (!response.ok) {
-        console.log("ERROR RESPONSE WHILE CREATING WORKSPACES", response);
         const error = (await response.json()) as ErrorResponse;
-        console.log("ERROR DETAILS:", error);
         if (
           typeof error.error === "object" &&
           "name" in error.error &&
