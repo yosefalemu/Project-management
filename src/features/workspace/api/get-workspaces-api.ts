@@ -6,7 +6,6 @@ export const useGetUserWorkspaces = () => {
     queryKey: ["workspaces"],
     queryFn: async () => {
       const response = await client.api.workspace["user-workspaces"]["$get"]();
-      console.log("Response from getUserWorkspaces:", response);
       if (!response.ok) {
         throw new Error("An error occurred while fetching workspaces");
       }

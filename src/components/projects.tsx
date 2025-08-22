@@ -73,8 +73,6 @@ export default function Projects() {
     workspaceId: params.workspaceId! as string,
   });
 
-  console.log("PROJECTS FOUND", projects);
-
   const {
     data: channels,
     isLoading: isLoadingChannels,

@@ -42,7 +42,6 @@ export const sendChangeEmail = async (
       console.error("Email sending failed:", info.rejected);
       throw new Error("Failed to send change email request.");
     }
-    console.log("Change email request sent successfully:", info.response);
   } catch (error) {
     console.log("Error sending change email request:", error);
   }

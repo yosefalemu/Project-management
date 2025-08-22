@@ -60,8 +60,6 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           router.push(redirects ?? "/");
         },
         onError: ({ error }) => {
-          console.log("Error while sign in using email", error);
-          console.log("Error while logging in:", error);
           setSignInEmailLoading(false);
           toast.error(error.message || "Failed to log in");
         },
@@ -83,7 +81,6 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           setSignInGoogleLoading(false);
         },
         onError: ({ error }) => {
-          console.log("Error while signup using google", error);
           setSignInGoogleLoading(false);
           toast.error(error.message || "Failed to log in with Google");
         },
@@ -103,7 +100,6 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           setSignInGithubLoading(false);
         },
         onError: ({ error }) => {
-          console.log("Error while signin using github", error);
           setSignInGithubLoading(false);
           toast.error(error.message || "Failed to log in with Github");
         },
