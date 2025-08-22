@@ -25,6 +25,7 @@ const app = new Hono().basePath("/api").use(
 );
 // Handle authentication routes using better-auth
 app.on(["POST", "GET"], "/auth/*", (c) => {
+  console.log("Handling auth request using better-auth");
   return auth.handler(c.req.raw);
 });
 

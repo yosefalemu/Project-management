@@ -54,6 +54,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
           router.push(`/confirm-signup/${data.user.email}`);
         },
         onError: ({ error }) => {
+          console.log("Error while sign up", error);
           toast.error(error.message || "Sign up failed");
           setSignUpLoading(false);
         },
