@@ -41,11 +41,11 @@ CREATE TABLE "project" (
 	"description" varchar NOT NULL,
 	"workspace_id" text NOT NULL,
 	"creator_id" text NOT NULL,
-	"invite_code" varchar NOT NULL,
+	"invite_code" varchar,
 	"image" text DEFAULT '',
+	"is_private" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "project_invite_code_unique" UNIQUE("invite_code")
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "project_members" (
@@ -125,8 +125,7 @@ CREATE TABLE "work_spaces" (
 	"invite_code_expire" timestamp with time zone DEFAULT NOW() + INTERVAL '7 days',
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
-	CONSTRAINT "work_spaces_name_unique" UNIQUE("name"),
-	CONSTRAINT "work_spaces_invite_code_unique" UNIQUE("invite_code")
+	CONSTRAINT "work_spaces_name_unique" UNIQUE("name")
 );
 --> statement-breakpoint
 CREATE TABLE "workspace_members" (
