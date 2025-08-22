@@ -14,7 +14,7 @@ const app = new Hono().basePath("/api").use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://project-management-beryl-five.vercel.app",
+      "https://project-management-sandy-one.vercel.app",
     ],
     allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
     allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],

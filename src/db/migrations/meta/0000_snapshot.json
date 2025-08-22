@@ -1,5 +1,5 @@
 {
-  "id": "0451ccb0-8efd-4e4f-9b92-23c0804c1088",
+  "id": "5702339e-d2e6-46a7-9c9c-f8b0302b0a08",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -343,7 +343,7 @@
           "name": "invite_code",
           "type": "varchar",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "image": {
           "name": "image",
@@ -351,6 +351,13 @@
           "primaryKey": false,
           "notNull": false,
           "default": "''"
+        },
+        "is_private": {
+          "name": "is_private",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
         },
         "created_at": {
           "name": "created_at",
@@ -397,15 +404,7 @@
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "project_invite_code_unique": {
-          "name": "project_invite_code_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "invite_code"
-          ]
-        }
-      },
+      "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -1022,13 +1021,6 @@
           "nullsNotDistinct": false,
           "columns": [
             "name"
-          ]
-        },
-        "work_spaces_invite_code_unique": {
-          "name": "work_spaces_invite_code_unique",
-          "nullsNotDistinct": false,
-          "columns": [
-            "invite_code"
           ]
         }
       },
