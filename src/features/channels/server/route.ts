@@ -1,4 +1,3 @@
-import { db } from "../../..";
 import { channel, channelMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
@@ -6,6 +5,7 @@ import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { createProjectChannelSchema } from "../validators/create-channel";
+import { db } from "@/index";
 
 const app = new Hono()
   .get("/:projectId", sessionMiddleware, async (c) => {
@@ -97,51 +97,59 @@ const app = new Hono()
             400
           );
         }
+        const existingChannel = await db
+          .select()
+          .from(channel)
+          .where(and(eq(channel.name, name), eq(channel.projectId, projectId)));
 
-        const newChannel = await db.transaction(async (tx) => {
-          const exstingChannel = await tx
-            .select()
-            .from(channel)
-            .where(
-              and(eq(channel.name, name), eq(channel.projectId, projectId))
-            );
-          if (exstingChannel.length > 0) {
-            return c.json(
-              {
-                error: "Channel already exists",
-                message:
-                  "Channel with this name already exists in this project",
-              },
-              409
-            );
-          }
-          const newChannel = await tx
-            .insert(channel)
-            .values({
-              id: crypto.randomUUID(),
-              name,
-              description,
-              projectId,
-              creatorId: userFound.id,
-            })
-            .returning();
-          await tx
-            .insert(channelMember)
-            .values({
-              id: crypto.randomUUID(),
-              userId: "12345",
-              channelId: newChannel[0].id,
-            })
-            .returning();
-
+        if (existingChannel.length > 0) {
           return c.json(
             {
-              message: "Channel created successfully",
+              error: "Channel already exists",
+              message: "Channel with this name already exists in this project",
             },
-            200
+            409
           );
-        });
-        return newChannel;
+        }
+
+        const newChannel = await db
+          .insert(channel)
+          .values({
+            id: crypto.randomUUID(),
+            name,
+            description,
+            projectId,
+            creatorId: userFound.id,
+          })
+          .returning();
+
+        const newChannelMember = await db
+          .insert(channelMember)
+          .values({
+            id: crypto.randomUUID(),
+            userId: userFound.id,
+            channelId: newChannel[0].id,
+          })
+          .returning();
+
+        if (!newChannelMember.length) {
+          await db.delete(channel).where(eq(channel.id, newChannel[0].id));
+          return c.json(
+            {
+              error: "Failed to add channel member",
+              message: "Could not add creator as a member of the channel",
+            },
+            500
+          );
+        }
+
+        return c.json(
+          {
+            data: newChannel[0],
+            message: "Channel created successfully",
+          },
+          200
+        );
       } catch (error) {
         console.error("Error creating channel:", error);
         return c.json(

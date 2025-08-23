@@ -2,12 +2,12 @@ import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq } from "drizzle-orm";
 
-import { db } from "../../..";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { startDate, user } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import z, { string } from "zod";
 import { updateUserInfoSchema } from "../validators/update-user";
+import { db } from "@/index";
 
 const app = new Hono()
   .get("/get-user", sessionMiddleware, async (c) => {
