@@ -149,7 +149,6 @@ const app = new Hono()
           404
         );
       }
-      // TODO:: DISPLAY THE COUNT OF MEMBERS AND SOME USERS INFO
       return c.json({
         data: { name: workspaceFound[0].name, image: workspaceFound[0].image },
       });
@@ -187,56 +186,54 @@ const app = new Hono()
         }
         const { name, image, description } = c.req.valid("json");
 
-        const result = await db.transaction(
-          async (tx) => {
-            const existingWorkspace = await tx
-              .select()
-              .from(workspace)
-              .where(eq(workspace.name, name.trim()));
-            if (existingWorkspace.length > 0) {
-              throw new Error("Workspace with this name already exists");
-            }
-            const newWorkspace = await tx
-              .insert(workspace)
-              .values({
-                id: crypto.randomUUID(),
-                name: name.trim(),
-                description: description.trim(),
-                image: image,
-                creatorId: userFound.id,
-                inviteCode: generateInviteCode(10),
-              })
-              .returning();
-            const newWorkspaceMember = await tx
-              .insert(workspaceMember)
-              .values({
-                id: crypto.randomUUID(),
-                workspaceId: newWorkspace[0].id,
-                userId: userFound.id,
-                role: MemberRole.Admin,
-              })
-              .returning();
-            await tx
-              .update(user)
-              .set({
-                lastWorkspaceId: newWorkspace[0].id,
-              })
-              .where(eq(user.id, userFound.id));
-            return {
-              newWorkspace: newWorkspace[0],
-              newWorkspaceMember: newWorkspaceMember[0],
-            };
-          },
-          {
-            isolationLevel: "serializable",
-            accessMode: "read write",
-          }
-        );
+        const existingWorkspace = await db
+          .select()
+          .from(workspace)
+          .where(eq(workspace.name, name.trim()));
+        if (existingWorkspace.length > 0) {
+          return c.json(
+            {
+              error: "Conflict",
+              message: "Workspace with this name already exists",
+            },
+            409
+          );
+        }
+
+        const newWorkspace = await db
+          .insert(workspace)
+          .values({
+            id: crypto.randomUUID(),
+            name: name.trim(),
+            description: description.trim(),
+            image: image,
+            creatorId: userFound.id,
+            inviteCode: generateInviteCode(10),
+          })
+          .returning();
+
+        const newWorkspaceMember = await db
+          .insert(workspaceMember)
+          .values({
+            id: crypto.randomUUID(),
+            workspaceId: newWorkspace[0].id,
+            userId: userFound.id,
+            role: MemberRole.Admin,
+          })
+          .returning();
+
+        await db
+          .update(user)
+          .set({
+            lastWorkspaceId: newWorkspace[0].id,
+          })
+          .where(eq(user.id, userFound.id));
+
         return c.json(
           {
             data: {
-              workspace: result.newWorkspace,
-              member: result.newWorkspaceMember,
+              workspace: newWorkspace[0],
+              member: newWorkspaceMember[0],
             },
             message: "Workspace created successfully",
           },
@@ -246,17 +243,10 @@ const app = new Hono()
         console.error("Error while creating workspace:", error);
         return c.json(
           {
-            error: "FailedToCreateProject",
-            message:
-              error instanceof Error &&
-              error.message.includes("Workspace with this name already exists")
-                ? "Workspace with this name already exists"
-                : "Failed to create project",
+            error: "InternalServerError",
+            message: "Failed to create workspace",
           },
-          error instanceof Error &&
-            error.message.includes("Workspace with this name already exists")
-            ? 409
-            : 500
+          500
         );
       }
     }
@@ -303,6 +293,7 @@ const app = new Hono()
             403
           );
         }
+
         const updatedWorkspace = await db
           .update(workspace)
           .set({
@@ -320,8 +311,8 @@ const app = new Hono()
           },
           200
         );
-      } catch (err) {
-        console.error("Error while updating workspace", err);
+      } catch (error) {
+        console.error("Error while updating workspace", error);
         return c.json(
           {
             error: "InternalServerError",
@@ -345,17 +336,18 @@ const app = new Hono()
         );
       }
       const workspaceId = c.req.param("workspaceId") as string;
-      const currentMemberPersmission = await db
+      const currentMemberPermission = await db
         .select()
         .from(workspaceMember)
         .where(
           and(
             eq(workspaceMember.userId, userFound.id),
-            eq(workspaceMember.workspaceId, workspaceId),
-            eq(workspaceMember.role, MemberRole.Admin)
+            (eq(workspaceMember.workspaceId, workspaceId),
+            eq(workspaceMember.role, MemberRole.Admin))
           )
         );
-      if (currentMemberPersmission.length === 0) {
+
+      if (currentMemberPermission.length === 0) {
         return c.json(
           {
             error: "Forbidden",
@@ -364,31 +356,23 @@ const app = new Hono()
           403
         );
       }
-      const result = await db.transaction(
-        async (tx) => {
-          await tx
-            .update(user)
-            .set({
-              lastWorkspaceId: null,
-              lastProjectId: null,
-            })
-            .where(eq(user.id, userFound.id));
-          const deletedWorkspace = await tx
-            .delete(workspace)
-            .where(eq(workspace.id, workspaceId))
-            .returning();
-          return {
-            deletedWorkspace: deletedWorkspace[0],
-          };
-        },
-        {
-          isolationLevel: "serializable",
-          accessMode: "read write",
-        }
-      );
+
+      await db
+        .update(user)
+        .set({
+          lastWorkspaceId: null,
+          lastProjectId: null,
+        })
+        .where(eq(user.id, userFound.id));
+
+      const deletedWorkspace = await db
+        .delete(workspace)
+        .where(eq(workspace.id, workspaceId))
+        .returning();
+
       return c.json(
         {
-          data: result.deletedWorkspace,
+          data: deletedWorkspace[0],
           message: "Workspace deleted successfully",
         },
         200
@@ -418,7 +402,7 @@ const app = new Hono()
       }
 
       const workSpaceId = c.req.param("workspaceId") as string;
-      const currentMemberPersmission = await db
+      const currentMemberPermission = await db
         .select()
         .from(workspaceMember)
         .where(
@@ -429,7 +413,7 @@ const app = new Hono()
           )
         );
 
-      if (currentMemberPersmission.length === 0) {
+      if (currentMemberPermission.length === 0) {
         return c.json(
           {
             error: "Forbidden",
@@ -438,6 +422,7 @@ const app = new Hono()
           403
         );
       }
+
       const updatedWorkspace = await db
         .update(workspace)
         .set({
@@ -446,6 +431,7 @@ const app = new Hono()
         })
         .where(eq(workspace.id, workSpaceId))
         .returning();
+
       return c.json(
         {
           data: updatedWorkspace[0],
@@ -483,92 +469,80 @@ const app = new Hono()
           );
         }
         const { inviteCode, workspaceId } = c.req.valid("json");
-        const response = await db.transaction(
-          async (tx) => {
-            const currentWorkspace = await tx
-              .select()
-              .from(workspace)
-              .where(
-                and(
-                  eq(workspace.id, workspaceId),
-                  eq(workspace.inviteCode, inviteCode),
-                  gt(workspace.inviteCodeExpire, new Date())
-                )
-              );
-            if (currentWorkspace.length === 0) {
-              throw new Error("Workspace not found or invite code is invalid");
-            }
-            const userAlreadyMember = await tx
-              .select()
-              .from(workspaceMember)
-              .where(
-                and(
-                  eq(workspaceMember.workspaceId, workspaceId),
-                  eq(workspaceMember.userId, userFound.id)
-                )
-              );
-            if (userAlreadyMember.length > 0) {
-              throw new Error("You are already a member of this workspace");
-            }
-            const newWorkspaceMember = await tx
-              .insert(workspaceMember)
-              .values({
-                workspaceId,
-                userId: userFound.id,
-                role: MemberRole.Member,
-                id: crypto.randomUUID(),
-              })
-              .returning();
-            await tx
-              .update(user)
-              .set({
-                lastWorkspaceId: workspaceId,
-              })
-              .where(eq(user.id, userFound.id));
-            return {
-              newWorkspaceMember: newWorkspaceMember[0],
-            };
-          },
+
+        const currentWorkspace = await db
+          .select()
+          .from(workspace)
+          .where(
+            and(
+              eq(workspace.id, workspaceId),
+              eq(workspace.inviteCode, inviteCode),
+              gt(workspace.inviteCodeExpire, new Date())
+            )
+          );
+        if (currentWorkspace.length === 0) {
+          return c.json(
+            {
+              error: "NotFound",
+              message: "Workspace not found or invite code is invalid",
+            },
+            404
+          );
+        }
+
+        const userAlreadyMember = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, workspaceId),
+              eq(workspaceMember.userId, userFound.id)
+            )
+          );
+        if (userAlreadyMember.length > 0) {
+          return c.json(
+            {
+              error: "Conflict",
+              message: "You are already a member of this workspace",
+            },
+            409
+          );
+        }
+
+        const newWorkspaceMember = await db
+          .insert(workspaceMember)
+          .values({
+            workspaceId,
+            userId: userFound.id,
+            role: MemberRole.Member,
+            id: crypto.randomUUID(),
+          })
+          .returning();
+
+        await db
+          .update(user)
+          .set({
+            lastWorkspaceId: workspaceId,
+          })
+          .where(eq(user.id, userFound.id));
+
+        return c.json(
           {
-            accessMode: "read write",
-            isolationLevel: "serializable",
-          }
-        );
-        return c.json({
-          data: {
-            newWorkspaceMember: response.newWorkspaceMember,
+            data: {
+              newWorkspaceMember: newWorkspaceMember[0],
+            },
+            message: "User joined workspace successfully",
           },
-          message: "User joined workspace successfully",
-        });
+          200
+        );
       } catch (error) {
         console.error("Error while joining workspace", error);
         return c.json(
           {
             error: "InternalServerError",
-            message:
-              error instanceof Error &&
-              error.message.includes(
-                "Workspace not found or invite code is invalid"
-              )
-                ? "Workspace not found or invite code is invalid"
-                : error instanceof Error &&
-                    error.message.includes(
-                      "You are already a member of this workspace"
-                    )
-                  ? "You are already a member of this workspace"
-                  : "Failed to join workspace",
+            message: "Failed to join workspace",
           },
-          error instanceof Error &&
-            error.message.includes(
-              "Workspace not found or invite code is invalid"
-            )
-            ? 404
-            : error instanceof Error &&
-                error.message.includes(
-                  "You are already a member of this workspace"
-                )
-              ? 409
-              : 500
+          500
         );
       }
     }

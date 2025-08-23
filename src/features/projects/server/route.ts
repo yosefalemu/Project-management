@@ -7,7 +7,6 @@ import {
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
-
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray, notInArray } from "drizzle-orm";
 import { Hono } from "hono";
@@ -123,10 +122,7 @@ const app = new Hono()
     zValidator("json", createProjectSchema),
     async (c) => {
       try {
-        const userFound = c.get("user") as
-          | typeof auth.$Infer.Session.user
-          | null;
-
+        const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
         const session = c.get("session") as typeof auth.$Infer.Session | null;
         if (!userFound || !session) {
           return c.json(
@@ -145,77 +141,69 @@ const app = new Hono()
           );
         }
 
-        const result = await db.transaction(
-          async (tx) => {
-            const workspaceMemberFound = await tx
-              .select()
-              .from(workspaceMember)
-              .where(
-                and(
-                  eq(workspaceMember.workspaceId, userFound.lastWorkspaceId),
-                  eq(workspaceMember.userId, userFound.id),
-                  eq(workspaceMember.role, MemberRole.Admin)
-                )
-              );
+        const workspaceMemberFound = await db
+          .select()
+          .from(workspaceMember)
+          .where(
+            and(
+              eq(workspaceMember.workspaceId, userFound.lastWorkspaceId),
+              eq(workspaceMember.userId, userFound.id),
+              eq(workspaceMember.role, MemberRole.Admin)
+            )
+          );
 
-            if (workspaceMemberFound.length === 0) {
-              throw new Error("User is not an admin of this workspace");
-            }
+        if (workspaceMemberFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "User is not an admin of this workspace",
+            },
+            401
+          );
+        }
 
-            let inviteCode;
-            if (isPrivate) {
-              inviteCode = Math.random().toString(36).substring(2, 8);
-            }
+        let inviteCode;
+        if (isPrivate) {
+          inviteCode = Math.random().toString(36).substring(2, 8);
+        }
 
-            // Insert new project
-            const newProject = await tx
-              .insert(project)
-              .values({
-                id: crypto.randomUUID(),
-                name,
-                description,
-                workspaceId: userFound.lastWorkspaceId,
-                image: image,
-                creatorId: userFound.id,
-                isPrivate,
-                inviteCode,
-              })
-              .returning();
-            // Update user's last project ID
-            await tx
-              .update(user)
-              .set({
-                lastProjectId: newProject[0].id,
-              })
-              .where(eq(user.id, userFound.id));
-            // Insert project member
-            const newProjectMember = await tx
-              .insert(projectMember)
-              .values({
-                id: crypto.randomUUID(),
-                projectId: newProject[0].id,
-                role: MemberRole.Admin,
-                userId: userFound.id,
-              })
-              .returning();
+        const newProject = await db
+          .insert(project)
+          .values({
+            id: crypto.randomUUID(),
+            name,
+            description,
+            workspaceId: userFound.lastWorkspaceId,
+            image: image,
+            creatorId: userFound.id,
+            isPrivate,
+            inviteCode,
+          })
+          .returning();
 
-            return {
-              project: newProject[0],
-              projectMember: newProjectMember[0],
-            };
-          },
-          {
-            isolationLevel: "serializable",
-            accessMode: "read write",
-          }
-        );
+        await db
+          .update(user)
+          .set({
+            lastProjectId: newProject[0].id,
+          })
+          .where(eq(user.id, userFound.id));
+
+        const newProjectMember = await db
+          .insert(projectMember)
+          .values({
+            id: crypto.randomUUID(),
+            projectId: newProject[0].id,
+            role: MemberRole.Admin,
+            userId: userFound.id,
+          })
+          .returning();
 
         return c.json(
           {
             message: "Project created successfully",
             data: {
-              project: result.project,
-              projectMember: result.projectMember,
+              project: newProject[0],
+              projectMember: newProjectMember[0],
             },
           },
           201
@@ -225,15 +213,9 @@ const app = new Hono()
         return c.json(
           {
             error: "FailedToCreateProject",
-            message:
-              error instanceof Error
-                ? error.message
-                : "Failed to create project",
+            message: "Failed to create project",
           },
-          error instanceof Error &&
-            error.message.includes("User is not an admin")
-            ? 401
-            : 500
+          500
         );
       }
     }
@@ -244,9 +226,7 @@ const app = new Hono()
     zValidator("json", updateProjectSchema),
     async (c) => {
       try {
-        const userFound = c.get("user") as
-          | typeof auth.$Infer.Session.user
-          | null;
+        const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
         const session = c.get("session") as typeof auth.$Infer.Session | null;
         if (!userFound || !session) {
           return c.json(
@@ -259,63 +239,64 @@ const app = new Hono()
           return c.json(
             {
               error: "BadRequest",
-              message: "Name, description, and ID are required",
+              message: "Name and description are required",
             },
             400
           );
         }
-        let inviteCode: string;
+
+        const projectMemberFound = await db
+          .select()
+          .from(projectMember)
+          .where(
+            and(
+              eq(projectMember.projectId, userFound.lastProjectId),
+              eq(projectMember.userId, userFound.id),
+              eq(projectMember.role, MemberRole.Admin)
+            )
+          );
+        if (projectMemberFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "You don't have permission to update this project",
+            },
+            401
+          );
+        }
+
+        const currentProject = await db
+          .select()
+          .from(project)
+          .where(eq(project.id, userFound.lastProjectId));
+
+        if (currentProject.length === 0) {
+          return c.json(
+            { error: "ProjectNotFound", message: "Project not found" },
+            404
+          );
+        }
+
+        let inviteCode;
         if (isPrivate) {
           inviteCode = Math.random().toString(36).substring(2, 8);
         }
-        const result = await db.transaction(
-          async (tx) => {
-            const workspaceMemberFound = await tx
-              .select()
-              .from(projectMember)
-              .where(
-                and(
-                  eq(projectMember.projectId, userFound.lastProjectId),
-                  eq(projectMember.userId, userFound.id),
-                  eq(projectMember.role, MemberRole.Admin)
-                )
-              );
-            if (workspaceMemberFound.length === 0) {
-              throw new Error(
-                "You dont have permission to update this project"
-              );
-            }
-            const currentProject = await tx
-              .select()
-              .from(project)
-              .where(eq(project.id, userFound.lastProjectId));
 
-            if (currentProject.length === 0) {
-              throw new Error("Project not found");
-            }
-            const updatedProject = await tx
-              .update(project)
-              .set({
-                name,
-                description,
-                image,
-                creatorId: userFound.id,
-                inviteCode,
-                isPrivate,
-              })
-              .where(eq(project.id, userFound.lastProjectId))
-              .returning();
-            return {
-              project: updatedProject[0],
-            };
-          },
-          {
-            isolationLevel: "serializable",
-            accessMode: "read write",
-          }
-        );
+        const updatedProject = await db
+          .update(project)
+          .set({
+            name,
+            description,
+            image,
+            creatorId: userFound.id,
+            inviteCode,
+            isPrivate,
+          })
+          .where(eq(project.id, userFound.lastProjectId))
+          .returning();
+
         return c.json(
-          { data: result.project, message: "Project updated successfully" },
+          { data: updatedProject[0], message: "Project updated successfully" },
           200
         );
       } catch (error) {
@@ -323,22 +304,9 @@ const app = new Hono()
         return c.json(
           {
             error: "FailedToUpdateProject",
-            message:
-              error instanceof Error &&
-              error.message ===
-                "You dont have permission to update this project"
-                ? "You dont have permission to update this project"
-                : error instanceof Error &&
-                    error.message === "Project not found"
-                  ? "Project not found"
-                  : "Failed to update project",
+            message: "Failed to update project",
           },
-          error instanceof Error &&
-            error.message === "You dont have permission to update this project"
-            ? 401
-            : error instanceof Error && error.message === "Project not found"
-              ? 404
-              : 500
+          500
         );
       }
     }
@@ -350,9 +318,7 @@ const app = new Hono()
     async (c) => {
       try {
         const projectId = c.req.param("projectId");
-        const userFound = c.get("user") as
-          | typeof auth.$Infer.Session.user
-          | null;
+        const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
         const session = c.get("session") as typeof auth.$Infer.Session | null;
         if (!userFound || !session) {
           return c.json(
@@ -360,49 +326,50 @@ const app = new Hono()
             401
           );
         }
-        const result = await db.transaction(
-          async (tx) => {
-            const updatedUser = await tx
-              .update(user)
-              .set({
-                lastProjectId: null,
-              })
-              .where(eq(user.id, userFound.id))
-              .returning();
-            if (updatedUser.length === 0) {
-              throw new Error("User not found");
-            }
-            const projectMemberFound = await tx
-              .select()
-              .from(projectMember)
-              .where(
-                and(
-                  eq(projectMember.projectId, projectId),
-                  eq(projectMember.userId, userFound.id),
-                  eq(projectMember.role, MemberRole.Admin)
-                )
-              );
 
-            if (projectMemberFound.length === 0) {
-              throw new Error(
-                "You dont have permission to delete this project"
-              );
-            }
-            const deletedProject = await tx
-              .delete(project)
-              .where(eq(project.id, projectId))
-              .returning();
-            return {
-              project: deletedProject[0],
-            };
-          },
-          {
-            isolationLevel: "serializable",
-            accessMode: "read write",
-          }
-        );
+        const projectMemberFound = await db
+          .select()
+          .from(projectMember)
+          .where(
+            and(
+              eq(projectMember.projectId, projectId),
+              eq(projectMember.userId, userFound.id),
+              eq(projectMember.role, MemberRole.Admin)
+            )
+          );
+
+        if (projectMemberFound.length === 0) {
+          return c.json(
+            {
+              error: "Unauthorized",
+              message: "You don't have permission to delete this project",
+            },
+            403
+          );
+        }
+
+        const updatedUser = await db
+          .update(user)
+          .set({
+            lastProjectId: null,
+          })
+          .where(eq(user.id, userFound.id))
+          .returning();
+
+        if (updatedUser.length === 0) {
+          return c.json(
+            { error: "UserNotFound", message: "User not found" },
+            404
+          );
+        }
+
+        const deletedProject = await db
+          .delete(project)
+          .where(eq(project.id, projectId))
+          .returning();
+
         return c.json(
-          { data: result.project, message: "Project deleted successfully" },
+          { data: deletedProject[0], message: "Project deleted successfully" },
           200
         );
       } catch (error) {
@@ -410,24 +377,9 @@ const app = new Hono()
         return c.json(
           {
             error: "FailedToDeleteProject",
-            message:
-              error instanceof Error && error.message.includes("User not found")
-                ? "User not found"
-                : error instanceof Error &&
-                    error.message.includes(
-                      "You dont have permission to delete this project"
-                    )
-                  ? "You dont have permission to delete this project"
-                  : "Failed to delete project",
+            message: "Failed to delete project",
           },
-          error instanceof Error && error.message.includes("User not found")
-            ? 404
-            : error instanceof Error &&
-                error.message.includes(
-                  "You dont have permission to delete this project"
-                )
-              ? 403
-              : 500
+          500
         );
       }
     }
@@ -464,8 +416,7 @@ const app = new Hono()
           return c.json(
             {
               error: "Unauthorized",
-              message:
-                "Unauthorized, you should be a member of this workspace to add project member",
+              message: "Unauthorized, you should be a member of this workspace to add project member",
             },
             401
           );
@@ -490,14 +441,12 @@ const app = new Hono()
           );
         }
 
-        // Get all project members for the project
         const projectMembers = await db
           .select({ userId: projectMember.userId })
           .from(projectMember)
           .where(eq(projectMember.projectId, projectId));
 
         const projectMembersIds = projectMembers.map((member) => member.userId);
-        // Get workspace members which are not in the project members
         const validWorkspaceMembersToBeInvited = await db
           .select()
           .from(workspaceMember)
@@ -570,7 +519,7 @@ const app = new Hono()
           401
         );
       }
-      // Check if the current user is a workspace member
+
       const workspaceMemberFound = await db
         .select()
         .from(workspaceMember)
@@ -589,7 +538,7 @@ const app = new Hono()
           401
         );
       }
-      // Check if the current user is a project admin or in the project
+
       const projectMemberFound = await db
         .select()
         .from(projectMember)
@@ -609,9 +558,8 @@ const app = new Hono()
           401
         );
       }
-      // Extract user IDs for validations
+
       const addUserIds = addMembers.map((user) => user.userId);
-      // Verify all invited users are workspace members
       const workspaceMembers = await db
         .select({ userId: workspaceMember.userId })
         .from(workspaceMember)
@@ -628,7 +576,7 @@ const app = new Hono()
           message: "Some invited users are not workspace members",
         });
       }
-      // Check if any invited users are already project members
+
       const existingProjectMembers = await db
         .select({ userId: projectMember.userId })
         .from(projectMember)
@@ -651,6 +599,7 @@ const app = new Hono()
           400
         );
       }
+
       const newProjectMembers = addMembers.map((user) => ({
         projectId,
         userId: user.userId,
@@ -659,7 +608,9 @@ const app = new Hono()
       }));
       const insertMembers = await db
         .insert(projectMember)
-        .values(newProjectMembers);
+        .values(newProjectMembers)
+        .returning();
+
       return c.json({ data: insertMembers }, 200);
     }
   )
