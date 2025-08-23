@@ -1,4 +1,4 @@
-import { db } from "@/db";
+import { db } from "../../..";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertTaskSchema } from "@/zod-schemas/task-schema";
 import { zValidator } from "@hono/zod-validator";
@@ -6,7 +6,7 @@ import { and, eq, asc, desc, inArray } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { TaskStatus } from "../constant/types";
-import { task, user, projectMember, workspaceMember } from "@/db/schema/schema";
+import { task, user, projectMember, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 
 const app = new Hono()

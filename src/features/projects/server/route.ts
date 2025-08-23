@@ -1,10 +1,10 @@
-import { db } from "@/db";
+import { db } from "../../..";
 import {
   project,
   projectMember,
   user,
   workspaceMember,
-} from "@/db/schema/schema";
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 
