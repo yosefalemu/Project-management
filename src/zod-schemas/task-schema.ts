@@ -1,4 +1,4 @@
-import { task } from "@/db/schema/schema";
+import { task } from "@/db/schema";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 

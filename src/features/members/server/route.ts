@@ -1,5 +1,5 @@
-import { db } from "@/db";
-import { user, workspaceMember } from "@/db/schema/schema";
+import { db } from "../../..";
+import { user, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { insertMemberSchema } from "@/zod-schemas/member-schema";

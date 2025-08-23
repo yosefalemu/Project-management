@@ -1,4 +1,4 @@
-import { workspaceMember } from "@/db/schema/schema";
+import { workspaceMember } from "@/db/schema";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 

@@ -1,5 +1,5 @@
-import { db } from "@/db";
-import { channel, channelMember } from "@/db/schema/schema";
+import { db } from "../../..";
+import { channel, channelMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { zValidator } from "@hono/zod-validator";

@@ -1,5 +1,5 @@
-import { db } from "@/db";
-import { workspaceMember, workspace, user } from "@/db/schema/schema";
+import { db } from "../../..";
+import { workspaceMember, workspace, user } from "@/db/schema";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { createWorkspaceSchema } from "@/features/workspace/validators/create-workspace";
 import { zValidator } from "@hono/zod-validator";
