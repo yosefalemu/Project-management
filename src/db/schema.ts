@@ -171,6 +171,24 @@ export const channel = pgTable("channel", {
     .$onUpdate(() => new Date()),
 });
 
+export const channelMessages = pgTable("channel_messages", {
+  id: text("id").primaryKey(),
+  channelId: text("channel_id")
+    .notNull()
+    .references(() => channel.id, { onDelete: "cascade" }),
+  senderId: text("sender_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true })
+    .notNull()
+    .defaultNow()
+    .$onUpdate(() => new Date()),
+});
+
 // Tasks table
 export const task = pgTable("task", {
   id: text("id").primaryKey(),
