@@ -171,6 +171,25 @@ export const channel = pgTable("channel", {
     .$onUpdate(() => new Date()),
 });
 
+export const channelDefaultReceiver = pgTable(
+  "channel_default_receivers",
+  {
+    id: text("id").primaryKey(),
+    channelId: text("channel_id")
+      .notNull()
+      .references(() => channel.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => ({
+    pk: unique().on(table.channelId, table.userId),
+  })
+);
+
 export const channelMessages = pgTable("channel_messages", {
   id: text("id").primaryKey(),
   channelId: text("channel_id")

@@ -1,5 +1,5 @@
 "use client";
-import { useUserProjectChannels } from "@/features/channels/api/get-user-project-channels";
+import { useGetUserChannels } from "@/features/channels/api/get-user-project-channels";
 import { useGetProjects } from "@/features/projects/api/get-projects-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
 import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal";
@@ -77,7 +77,7 @@ export default function Projects() {
     data: channels,
     isLoading: isLoadingChannels,
     error: channelsError,
-  } = useUserProjectChannels({
+  } = useGetUserChannels({
     projectId: selectedProject?.id || "",
     queryOptions: {
       enabled: !!selectedProject,
