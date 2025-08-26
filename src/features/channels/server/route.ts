@@ -1,10 +1,15 @@
-import { channel, channelMember } from "@/db/schema";
+import {
+  channel,
+  channelDefaultReceiver,
+  channelMember,
+  projectMember,
+} from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, inArray } from "drizzle-orm";
 import { Hono } from "hono";
-import { createProjectChannelSchema } from "../validators/create-channel";
+import { createChannelSchema } from "@/features/channels/validators/create-channel";
 import { db } from "@/index";
 
 const app = new Hono()
@@ -75,7 +80,7 @@ const app = new Hono()
   .post(
     "/create",
     sessionMiddleware,
-    zValidator("json", createProjectChannelSchema),
+    zValidator("json", createChannelSchema),
     async (c) => {
       try {
         const userFound = c.get("user") as
@@ -90,17 +95,52 @@ const app = new Hono()
             401
           );
         }
-        const { name, description, projectId } = c.req.valid("json");
-        if (!name || !description || !projectId) {
+        if (!userFound.lastProjectId) {
+          return c.json(
+            {
+              error: "Bad Request",
+              message: "Project ID is required",
+            },
+            400
+          );
+        }
+        const { name, description, defaultReceiver } = c.req.valid("json");
+        if (!name || !description) {
           return c.json(
             { error: "Bad Request", message: "All fields are required" },
             400
           );
         }
+        if (defaultReceiver) {
+          const isRecieverProjectMember = await db
+            .select()
+            .from(projectMember)
+            .where(
+              and(
+                eq(projectMember.projectId, userFound.lastProjectId),
+                eq(projectMember.userId, defaultReceiver)
+              )
+            );
+          if (!isRecieverProjectMember.length) {
+            return c.json(
+              {
+                error: "Bad Request",
+                message: "Default receiver must be a member of the project",
+              },
+              400
+            );
+          }
+        }
+
         const existingChannel = await db
           .select()
           .from(channel)
-          .where(and(eq(channel.name, name), eq(channel.projectId, projectId)));
+          .where(
+            and(
+              eq(channel.name, name),
+              eq(channel.projectId, userFound.lastProjectId)
+            )
+          );
 
         if (existingChannel.length > 0) {
           return c.json(
@@ -118,7 +158,7 @@ const app = new Hono()
             id: crypto.randomUUID(),
             name,
             description,
-            projectId,
+            projectId: userFound.lastProjectId,
             creatorId: userFound.id,
           })
           .returning();
@@ -132,6 +172,14 @@ const app = new Hono()
           })
           .returning();
 
+        if (defaultReceiver) {
+          await db.insert(channelDefaultReceiver).values({
+            id: crypto.randomUUID(),
+            userId: defaultReceiver,
+            channelId: newChannel[0].id,
+          });
+        }
+
         if (!newChannelMember.length) {
           await db.delete(channel).where(eq(channel.id, newChannel[0].id));
           return c.json(
@@ -142,13 +190,12 @@ const app = new Hono()
             500
           );
         }
-
         return c.json(
           {
             data: newChannel[0],
             message: "Channel created successfully",
           },
-          200
+          201
         );
       } catch (error) {
         console.error("Error creating channel:", error);

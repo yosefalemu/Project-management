@@ -1,19 +1,19 @@
 import { client } from "@/lib/rpc";
 import { useQuery } from "@tanstack/react-query";
 
-interface UseUserProjectChannelsProps {
+interface UseGetUserChannelsProps {
   projectId: string;
   queryOptions?: {
     enabled?: boolean;
     staleTime?: number;
   };
 }
-export const useUserProjectChannels = ({
+export const useGetUserChannels = ({
   projectId,
   queryOptions,
-}: UseUserProjectChannelsProps) => {
+}: UseGetUserChannelsProps) => {
   const query = useQuery({
-    queryKey: ["getUserProjectChannel", projectId],
+    queryKey: ["getChannel", projectId],
     queryFn: async () => {
       const response = await client.api.channels[":projectId"].$get({
         param: { projectId },

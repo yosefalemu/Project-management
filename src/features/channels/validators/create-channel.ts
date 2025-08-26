@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const createProjectChannelSchema = z.object({
+export const createChannelSchema = z.object({
   name: z
     .string()
     .nonempty("Channel name is required")
@@ -9,9 +9,7 @@ export const createProjectChannelSchema = z.object({
     .string()
     .nonempty("Description is required")
     .max(500, "Description must be at most 500 characters long"),
-  projectId: z.string().nonempty("Project ID is required"),
+  defaultReceiver: z.string(),
 });
 
-export type createProjectChannelSchemaType = z.infer<
-  typeof createProjectChannelSchema
->;
+export type createChannelSchemaType = z.infer<typeof createChannelSchema>;
