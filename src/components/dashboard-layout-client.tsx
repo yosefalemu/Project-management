@@ -18,8 +18,10 @@ export default function DashboardLayoutClient({
   const selectedFont = fonts[font] || fonts["Inter"];
 
   return (
-    <div className={cn("flex flex-1", selectedFont.className)}>
-      <div className="flex-1">{children}</div>
+    <div
+      className={cn("flex flex-1 h-[calc(100vh-3rem)]", selectedFont.className)}
+    >
+      <div className="flex-1 h-full">{children}</div>
       {isOpen && <UserProfileInfo />}
     </div>
   );

@@ -56,7 +56,7 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
 
   if (isLoadingMembers) return null;
   return (
-    <div className="flex flex-col lg:flex-row gap-2">
+    <div className="flex flex-col lg:flex-row gap-2 py-2">
       <Select
         value={status ?? undefined}
         onValueChange={(value) => onStatusChange(value)}

@@ -1,5 +1,4 @@
 "use client";
-import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader, PlusIcon } from "lucide-react";
@@ -58,60 +57,58 @@ export default function TaskViewSwitcher() {
   );
 
   return (
-    <Tabs className="flex-1 overflow-auto" value={view} onValueChange={setView}>
-      <div className="h-full flex flex-col">
-        <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
-          <TabsList className="w-full lg:w-auto h-8 bg-primary/75 rounded-sm">
-            <TabsTrigger
-              value="table"
-              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
-            >
-              Table
-            </TabsTrigger>
-            <TabsTrigger
-              value="kanban"
-              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
-            >
-              Kanban
-            </TabsTrigger>
-            <TabsTrigger
-              value="calendar"
-              className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
-            >
-              Calendar
-            </TabsTrigger>
-          </TabsList>
-          <Button
-            size="sm"
-            className="w-full lg:w-auto"
-            onClick={() => open(TaskStatus.BACKLOG)}
+    <Tabs
+      className="bg-green-500 h-full flex flex-col"
+      value={view}
+      onValueChange={setView}
+    >
+      <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center bg-yellow-500">
+        <TabsList className="w-full lg:w-auto h-8 bg-primary/75 rounded-sm">
+          <TabsTrigger
+            value="table"
+            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
           >
-            <PlusIcon className="size-4" />
-          </Button>
-        </div>
-        <DootedSeparator className="my-4" />
-        <DataFilters hideProjectFilter={false} />
-        <DootedSeparator className="my-4" />
-        <>
-          {isPending ? (
-            <div className="flex justify-center items-center h-64 border rounded-lg">
-              <Loader className="animate-spin" />
-            </div>
-          ) : (
-            <div className="h-[calc(100vh-240px)] max-w-[calc(100vw-255px)] overflow-auto hide-scrollbar">
-              <TabsContent value="table" className="w-full">
-                <DataTable data={data as Task[]} columns={columns} />
-              </TabsContent>
-              <TabsContent value="kanban">
-                <DataKanban data={data as Task[]} onChange={onKanbanChange} />
-              </TabsContent>
-              <TabsContent value="calendar">
-                <DataCalendar data={data as Task[]} />
-              </TabsContent>
-            </div>
-          )}
-        </>
+            Table
+          </TabsTrigger>
+          <TabsTrigger
+            value="kanban"
+            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+          >
+            Kanban
+          </TabsTrigger>
+          <TabsTrigger
+            value="calendar"
+            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+          >
+            Calendar
+          </TabsTrigger>
+        </TabsList>
+        <Button
+          size="sm"
+          className="w-full lg:w-auto"
+          onClick={() => open(TaskStatus.BACKLOG)}
+        >
+          <PlusIcon className="size-4" />
+        </Button>
       </div>
+      <DataFilters hideProjectFilter={false} />
+      {isPending ? (
+        <div className="flex justify-center items-center h-64 border rounded-lg">
+          <Loader className="animate-spin" />
+        </div>
+      ) : (
+        <div className="h-full flex-1 bg-rose-500">
+          <TabsContent value="table" className="bg-violet-500 flex-1 h-full m-0">
+            <DataTable data={data as Task[]} columns={columns} />
+          </TabsContent>
+          <TabsContent value="kanban" className="bg-violet-500 flex-1 h-full m-0">
+            <DataKanban data={data as Task[]} onChange={onKanbanChange} />
+          </TabsContent>
+          <TabsContent value="calendar" className="bg-violet-500 h-full flex-1 m-0 overflow-y-auto">
+            <DataCalendar data={data as Task[]} />
+          </TabsContent>
+        </div>
+      )}
     </Tabs>
   );
 }

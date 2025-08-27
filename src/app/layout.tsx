@@ -51,11 +51,7 @@ export default function RootLayout({
                   <InviteProjectMemberModal />
                   <TaskModal />
                   <CreateChannelModal />
-                  <TooltipProvider>
-                    <div className="h-screen w-screen overflow-hidden">
-                      {children}
-                    </div>
-                  </TooltipProvider>
+                  <TooltipProvider>{children}</TooltipProvider>
                   <ReactQueryDevtools
                     initialIsOpen={false}
                     buttonPosition="bottom-right"

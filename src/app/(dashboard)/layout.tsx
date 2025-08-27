@@ -22,13 +22,13 @@ export default async function DashboardLayout({
   }
 
   return (
-    <div className="h-screen w-full p-0.5 flex flex-col bg-red-900 text-primary relative">
+    <div className="p-0.5 flex flex-col">
       <div className="h-8 text-center">Top</div>
-      <div className="flex flex-1 p-1 gap-x-2">
+      <div className="flex p-1 relative">
         <LeftSidebar />
-        <Card className="flex flex-1 gap-x-2 border rounded-none rounded-tr-lg rounded-br-lg">
+        <Card className="flex flex-1 border rounded-sm rounded-tr-lg rounded-br-lg relative">
           <Sidebar />
-          <main className="flex-1">
+          <main className="flex-1 ml-56">
             <DashboardLayoutClient>{children}</DashboardLayoutClient>
           </main>
         </Card>

@@ -54,34 +54,36 @@ export default function DataCalendar({ data }: DataCalendarProps) {
   };
 
   return (
-    <Calendar
-      localizer={localizer}
-      date={value}
-      events={events}
-      views={["month"]}
-      defaultView="month"
-      toolbar={true}
-      showAllEvents={true}
-      className="h-full"
-      max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
-      formats={{
-        weekdayFormat: (date, culture, localizer) =>
-          localizer?.format(date, "EEEE", culture) || "",
-      }}
-      components={{
-        eventWrapper: ({ event }) => (
-          <EventCard
-            id={event.id}
-            title={event.title}
-            assignee={event.assignee!}
-            status={event.status as TaskStatus}
-            image={event.image}
-          />
-        ),
-        toolbar: () => (
-          <CustomToolbar date={value} onNavigate={handleNavigation} />
-        ),
-      }}
-    />
+    <div className="h-full w-full min-h-0">
+      <Calendar
+        localizer={localizer}
+        date={value}
+        events={events}
+        views={["month"]}
+        defaultView="month"
+        toolbar={true}
+        showAllEvents={true}
+        className="h-full"
+        max={new Date(new Date().setFullYear(new Date().getFullYear() + 1))}
+        formats={{
+          weekdayFormat: (date, culture, localizer) =>
+            localizer?.format(date, "EEEE", culture) || "",
+        }}
+        components={{
+          eventWrapper: ({ event }) => (
+            <EventCard
+              id={event.id}
+              title={event.title}
+              assignee={event.assignee!}
+              status={event.status as TaskStatus}
+              image={event.image}
+            />
+          ),
+          toolbar: () => (
+            <CustomToolbar date={value} onNavigate={handleNavigation} />
+          ),
+        }}
+      />
+    </div>
   );
 }

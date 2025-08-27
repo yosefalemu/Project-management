@@ -1,5 +1,5 @@
 "use client";
-import { useGetUserChannels } from "@/features/channels/api/get-user-project-channels";
+import { useGetUserChannels } from "@/features/channels/api/get-channels";
 import { useGetProjects } from "@/features/projects/api/get-projects-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
 import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal";
@@ -202,7 +202,7 @@ export default function Projects() {
         open={isSelectOpen}
         onOpenChange={setIsSelectOpen}
       >
-        <SelectTrigger className="h-12">
+        <SelectTrigger className="h-12 rounded-none">
           <SelectValue>
             {selectedProject && (
               <div className="flex items-center gap-2">
@@ -216,7 +216,7 @@ export default function Projects() {
             )}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent className="[&>[data-radix-select-viewport]]:p-0 border-0 border-b-2 border-r-2 border-l-2 border-t">
+        <SelectContent className="[&>[data-radix-select-viewport]]:p-0 border-0 border-b-2 border-r-2 border-l-2 border-t rounded-none">
           <div className="max-h-64 overflow-y-auto hide-scrollbar">
             {projects.map((project) => (
               <SelectItem
@@ -235,7 +235,6 @@ export default function Projects() {
               </SelectItem>
             ))}
           </div>
-
           <div className="flex flex-col">
             {selectedProject.role === "admin" && (
               <div className="flex flex-col gap-0">
@@ -303,11 +302,11 @@ export default function Projects() {
       </Select>
       <Accordion
         type="multiple"
-        className="hover:no-underline px-2"
+        className="hover:no-underline"
         value={openAccordions}
       >
         {channels && channels.length > 0 && (
-          <AccordionItem value="channels">
+          <AccordionItem value="channels" className="px-2">
             <AccordionTrigger
               className="text-sm font-semibold hover:no-underline py-2"
               onClick={() => handleAccordionChange("channels")}
@@ -337,7 +336,7 @@ export default function Projects() {
           </AccordionItem>
         )}
         {isThereDms && (
-          <AccordionItem value="direct-messages">
+          <AccordionItem value="direct-messages" className="px-2">
             <AccordionTrigger
               className="text-sm font-semibold hover:no-underline py-2"
               onClick={() => handleAccordionChange("direct-messages")}
