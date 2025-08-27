@@ -39,7 +39,7 @@ export default function ProjectPage() {
     );
   }
   return (
-    <div className="flex flex-col px-4 py-1 gap-2">
+    <div className="flex flex-col px-2 py-1 gap-1 h-full">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-x-2">
           <ProjectAvatar
@@ -57,7 +57,7 @@ export default function ProjectPage() {
           <ProjectHuddle />
         </div>
       </div>
-      <div className="flex-1">
+      <div className="flex-1 bg-red-500">
         <TaskViewSwitcher />
       </div>
     </div>

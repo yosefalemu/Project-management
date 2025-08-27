@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import { TaskStatus } from "../constant/types";
 import { useParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import Image from "next/image";
+import MemberAvatar from "@/features/members/components/member-avatar";
 
 interface EventCardProps {
   title: string;
@@ -41,19 +41,15 @@ export default function EventCard({
         onClick={onClick}
       >
         <p>{title}</p>
-        {image && (
-          <div className="absolute top-2 right-2">
-            <div className="flex items-center gap-x-2 relative h-6 w-6">
-              <Image
-                src={image}
-                alt={title}
-                className="rounded-sm object-cover"
-                fill
-              />
-            </div>
-          </div>
-        )}
-        <p>{assignee}</p>
+
+        <div className="flex items-center gap-x-2">
+          <p>{assignee}</p>
+          <MemberAvatar
+            name={assignee}
+            image={image ?? ""}
+            className="size-4 rounded-sm"
+          />
+        </div>
       </Card>
     </div>
   );

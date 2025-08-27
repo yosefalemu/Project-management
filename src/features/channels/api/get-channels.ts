@@ -15,7 +15,9 @@ export const useGetUserChannels = ({
   const query = useQuery({
     queryKey: ["getChannel", projectId],
     queryFn: async () => {
-      const response = await client.api.channels[":projectId"].$get({
+      const response = await client.api.channels["project-channels"][
+        ":projectId"
+      ].$get({
         param: { projectId },
       });
       if (!response.ok) {

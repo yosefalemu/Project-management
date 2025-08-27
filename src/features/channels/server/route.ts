@@ -3,6 +3,7 @@ import {
   channelDefaultReceiver,
   channelMember,
   projectMember,
+  user,
 } from "@/db/schema";
 import { auth } from "@/lib/auth";
 import { sessionMiddleware } from "@/lib/session-middleware";
@@ -13,7 +14,8 @@ import { createChannelSchema } from "@/features/channels/validators/create-chann
 import { db } from "@/index";
 
 const app = new Hono()
-  .get("/:projectId", sessionMiddleware, async (c) => {
+  .get("/project-channels/:projectId", sessionMiddleware, async (c) => {
+    console.log("TRYING FETCHING PROJECT");
     try {
       const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
       const session = c.get("session") as
@@ -72,6 +74,54 @@ const app = new Hono()
         {
           error: "Internal Server Error",
           message: "Failed to fetch channels",
+        },
+        500
+      );
+    }
+  })
+  .get("/single-channel/:channelId", sessionMiddleware, async (c) => {
+    try {
+      const channelId = c.req.param("channelId");
+      if (!channelId) {
+        return c.json({ error: "Channel ID is required" }, 400);
+      }
+      console.log("channel id", channelId);
+      const channelFound = await db
+        .select()
+        .from(channel)
+        .where(eq(channel.id, channelId));
+
+      if (!channelFound) {
+        return c.json({ error: "Channel not found" }, 404);
+      }
+
+      const channelMembers = await db
+        .select()
+        .from(channelMember)
+        .where(eq(channelMember.channelId, channelId));
+
+      const memberIds = channelMembers.map((member) => member.userId);
+      const members = await db
+        .select()
+        .from(user)
+        .where(inArray(user.id, memberIds));
+
+      return c.json(
+        {
+          data: {
+            channel: channelFound[0],
+            members: members || [],
+          },
+          message: "Channel fetched successfully",
+        },
+        200
+      );
+    } catch (error) {
+      console.error("Error fetching channel:", error);
+      return c.json(
+        {
+          error: "Internal Server Error",
+          message: "Failed to fetch channel",
         },
         500
       );

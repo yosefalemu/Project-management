@@ -9,8 +9,7 @@ import {
 } from "@hello-pangea/dnd";
 import KanbanColumnHeader from "./kanban-column-header";
 import KanbanCard from "./kanban-card";
-import { userProfileViewStore } from "@/states/user-profile";
-import { cn } from "@/lib/utils";
+
 
 interface DataKanbanProps {
   data: Task[];
@@ -31,7 +30,6 @@ type taskState = {
   [key in TaskStatus]: Task[];
 };
 export default function DataKanban({ data, onChange }: DataKanbanProps) {
-  const { isOpen } = userProfileViewStore();
   const [tasks, setTasks] = useState(() => {
     const initialTasks: taskState = {
       [TaskStatus.BACKLOG]: [],
@@ -144,12 +142,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div
-        className={cn(
-          "flex flex-shrink overflow-x-auto hide-scrollbar w-full",
-          isOpen && "max-w-[850px]"
-        )}
-      >
+      <div className="flex flex-1 overflow-x-auto hide-scrollbar max-w-[calc(100vw-20rem)]">
         {boards.map((board) => (
           <div
             key={board}
@@ -161,7 +154,7 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="h-[400px] overflow-y-scroll py-1.5 hide-scrollbar border-t-2"
+                  className="h-full overflow-y-scroll py-1.5 hide-scrollbar border-t-2"
                 >
                   {tasks[board].map((task, index) => (
                     <Draggable

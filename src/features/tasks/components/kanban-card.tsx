@@ -1,4 +1,4 @@
-import { MoreHorizontal } from "lucide-react";
+import { MoreVertical } from "lucide-react";
 import { Task } from "../constant/types";
 import TaskActions from "./task-actions";
 import MemberAvatar from "@/features/members/components/member-avatar";
@@ -14,7 +14,7 @@ export default function KanbanCard({ task }: KanbanCardProps) {
       <div className="flex items-start justify-between gap-x-2">
         <p className="text-sm line-clamp-2">{task.name}</p>
         <TaskActions id={task.id}>
-          <MoreHorizontal className="cursor-pointer" />
+          <MoreVertical className="cursor-pointer" />
         </TaskActions>
       </div>
       <div className="flex items-center gap-x-3">
