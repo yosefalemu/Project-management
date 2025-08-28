@@ -58,37 +58,37 @@ export default function TaskViewSwitcher() {
 
   return (
     <Tabs
-      className="bg-green-500 h-full flex flex-col"
+      className="h-full flex flex-col"
       value={view}
       onValueChange={setView}
     >
-      <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center bg-yellow-500">
-        <TabsList className="w-full lg:w-auto h-8 bg-primary/75 rounded-sm">
+      <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
+        <TabsList className="w-full lg:w-auto h-8 bg-transparent border rounded-sm">
           <TabsTrigger
             value="table"
-            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            className="w-full lg:w-auto rounded-sm"
           >
             Table
           </TabsTrigger>
           <TabsTrigger
             value="kanban"
-            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            className="w-full lg:w-auto rounded-sm"
           >
             Kanban
           </TabsTrigger>
           <TabsTrigger
             value="calendar"
-            className="w-full lg:w-auto data-[state=active]:bg-primary-foreground data-[state=active]:text-primary rounded-sm"
+            className="w-full lg:w-auto rounded-sm"
           >
             Calendar
           </TabsTrigger>
         </TabsList>
         <Button
-          size="sm"
-          className="w-full lg:w-auto"
+          className="rounded-sm h-8"
+          size="icon"
           onClick={() => open(TaskStatus.BACKLOG)}
         >
-          <PlusIcon className="size-4" />
+          <PlusIcon className="h-4 w-4" />
         </Button>
       </div>
       <DataFilters hideProjectFilter={false} />
@@ -97,14 +97,14 @@ export default function TaskViewSwitcher() {
           <Loader className="animate-spin" />
         </div>
       ) : (
-        <div className="h-full flex-1 bg-rose-500">
-          <TabsContent value="table" className="bg-violet-500 flex-1 h-full m-0">
+        <div className="h-full flex-1">
+          <TabsContent value="table" className="flex-1 h-full m-0">
             <DataTable data={data as Task[]} columns={columns} />
           </TabsContent>
-          <TabsContent value="kanban" className="bg-violet-500 flex-1 h-full m-0">
+          <TabsContent value="kanban" className="flex-1 h-full m-0">
             <DataKanban data={data as Task[]} onChange={onKanbanChange} />
           </TabsContent>
-          <TabsContent value="calendar" className="bg-violet-500 h-full flex-1 m-0 overflow-y-auto">
+          <TabsContent value="calendar" className="h-full flex-1 m-0 overflow-y-auto">
             <DataCalendar data={data as Task[]} />
           </TabsContent>
         </div>

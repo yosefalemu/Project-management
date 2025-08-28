@@ -10,7 +10,7 @@ export default function ProjectHuddle() {
   return (
     <Tooltip>
       <TooltipTrigger asChild className="h-8">
-        <Button>
+        <Button className="h-8 rounded-sm" size="icon">
           <SlEarphonesAlt className="h-4 w-4" />
         </Button>
       </TooltipTrigger>

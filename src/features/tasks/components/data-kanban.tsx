@@ -10,7 +10,6 @@ import {
 import KanbanColumnHeader from "./kanban-column-header";
 import KanbanCard from "./kanban-card";
 
-
 interface DataKanbanProps {
   data: Task[];
   onChange: (
@@ -142,19 +141,16 @@ export default function DataKanban({ data, onChange }: DataKanbanProps) {
 
   return (
     <DragDropContext onDragEnd={onDragEnd}>
-      <div className="flex flex-1 overflow-x-auto hide-scrollbar max-w-[calc(100vw-20rem)]">
+      <div className="flex flex-1 overflow-x-auto hide-scrollbar max-w-[calc(100vw-18.7rem)] h-full">
         {boards.map((board) => (
-          <div
-            key={board}
-            className="mx-2 border-2 p-1.5 rounded-md min-w-[350px]"
-          >
+          <div key={board} className="mx-2 border-2 rounded-md min-w-[350px]">
             <KanbanColumnHeader board={board} taskCount={tasks[board].length} />
             <Droppable droppableId={board}>
               {(provided) => (
                 <div
                   {...provided.droppableProps}
                   ref={provided.innerRef}
-                  className="h-full overflow-y-scroll py-1.5 hide-scrollbar border-t-2"
+                  className="overflow-y-scroll hide-scrollbar border-t-2 p-1.5 max-h-[calc(100vh-22rem)] lg:max-h-[calc(100vh-13rem)]"
                 >
                   {tasks[board].map((task, index) => (
                     <Draggable

@@ -57,7 +57,7 @@ export default function ProjectPage() {
           <ProjectHuddle />
         </div>
       </div>
-      <div className="flex-1 bg-red-500">
+      <div className="flex-1">
         <TaskViewSwitcher />
       </div>
     </div>
