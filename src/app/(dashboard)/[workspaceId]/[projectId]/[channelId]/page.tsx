@@ -23,8 +23,6 @@ export default function ChannelPage() {
     ? (params.channelId[0] ?? "")
     : (params.channelId ?? "");
 
-  console.log("Text area height", textareaHeight);
-
   return (
     <div className="w-full h-full flex flex-col">
       <ChannelTitle channelId={channelId} />

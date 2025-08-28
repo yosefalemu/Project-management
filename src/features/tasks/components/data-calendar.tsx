@@ -54,7 +54,7 @@ export default function DataCalendar({ data }: DataCalendarProps) {
   };
 
   return (
-    <div className="h-full w-full min-h-0">
+    <div className="h-full w-full max-h-[calc(100vh-22rem)] lg:max-h-[calc(100vh-11rem)] overflow-y-auto hide-scrollbar">
       <Calendar
         localizer={localizer}
         date={value}

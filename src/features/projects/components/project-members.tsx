@@ -4,6 +4,7 @@ import { IoAddSharp } from "react-icons/io5";
 import { useGetProjectMembers } from "../api/get-project-member-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface ProjectMembersProps {
   projectId: string;
@@ -20,6 +21,10 @@ export default function ProjectMembers({
     workspaceId: workspaceId ?? "",
   });
 
+  if (isLoading || !data) {
+    return <Skeleton className="h-8 w-8 rounded-full" />;
+  }
+
   const getBackgroundClass = (index: number) => {
     const bgClasses = [
       "bg-gray-900 shadow-md border border-gray-600",
@@ -30,44 +35,14 @@ export default function ProjectMembers({
     return bgClasses[index % bgClasses.length];
   };
 
-  console.log("PROJECT MEMBERS", data);
-  if (isLoading || !data) {
-    return (
-      <div className="flex items-center space-x-2">
-        <div className="flex items-center">
-          {/* Three overlapping avatar skeletons */}
-          <Skeleton
-            className="h-8 w-8 rounded-full animate-none bg-gray-900/90"
-            style={{ zIndex: 3 }}
-          />
-          <Skeleton
-            className="h-8 w-8 rounded-full animate-none bg-gray-900/70"
-            style={{ marginLeft: "-16px", zIndex: 2 }}
-          />
-          <Skeleton
-            className="h-8 w-8 rounded-full animate-none bg-gray-900/50"
-            style={{ marginLeft: "-16px", zIndex: 1 }}
-          />
-          {/* Count badge skeleton */}
-          <Skeleton className="h-8 w-8 rounded-md" />
-        </div>
-        {/* Add button skeleton */}
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    );
-  }
-
   return (
-    <div
-      className="flex items-center space-x-2 rounded-lg cursor-pointer bg-gray-800/70"
-      onClick={open}
-    >
+    <div className="flex items-center space-x-2 rounded-lg cursor-pointer">
       {data.length > 3 ? (
         <div className="flex items-center ">
           {data.slice(0, 3).map((member, index) =>
             member.image ? (
               <div
-                className="relative h-8 w-8 rounded-sm overflow-hidden"
+                className="relative h-8 w-8 rounded-full overflow-hidden"
                 style={{
                   marginLeft: index === 0 ? "0" : "-16px",
                   zIndex: data.length * 10 - index * 10,
@@ -84,7 +59,7 @@ export default function ProjectMembers({
             ) : (
               <div
                 className={cn(
-                  "relative h-8 w-8 rounded-sm overflow-hidden flex items-center justify-center",
+                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
                   getBackgroundClass(index)
                 )}
                 style={{
@@ -99,7 +74,7 @@ export default function ProjectMembers({
               </div>
             )
           )}
-          <div className="flex items-center justify-center h-8 w-8 rounded-sm bg-gray-200 cursor-pointer">
+          <div className="flex items-center justify-center h-8 w-8 rounded-full bg-gray-200 cursor-pointer">
             <p className="text-muted-foreground text-xs">{data.length - 3}</p>
           </div>
         </div>
@@ -108,7 +83,7 @@ export default function ProjectMembers({
           {data.map((member, index) =>
             member.image ? (
               <div
-                className="relative h-8 w-8 rounded-sm overflow-hidden"
+                className="relative h-8 w-8 rounded-full overflow-hidden"
                 style={{
                   marginLeft: index === 0 ? "0" : "-16px",
                   zIndex: data.length - index,
@@ -125,7 +100,7 @@ export default function ProjectMembers({
             ) : (
               <div
                 className={cn(
-                  "relative h-8 w-8 rounded-sm overflow-hidden flex items-center justify-center",
+                  "relative h-8 w-8 rounded-full overflow-hidden flex items-center justify-center",
                   getBackgroundClass(index)
                 )}
                 style={{
@@ -142,9 +117,9 @@ export default function ProjectMembers({
           )}
         </div>
       )}
-      <div className="flex items-center justify-center h-8 w-8 rounded-tr-sm rounded-br-sm rounded-bl-sm rounded-tl-sm bg-gray-200">
-        <IoAddSharp className="text-gray-600" />
-      </div>
+      <Button onClick={open} size="icon" className="h-8 w-8 rounded-full">
+        <IoAddSharp className="size-4" />
+      </Button>
     </div>
   );
 }
