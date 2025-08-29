@@ -5,8 +5,8 @@ import { Suspense } from "react";
 
 const SignUpCardWrapperComponent = () => {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || undefined;
-  return <SignUpCard redirectTo={redirectTo} />;
+  const redirect = searchParams.get("redirect") || undefined;
+  return <SignUpCard redirect={redirect} />;
 };
 export default function SignUpCardWrapper() {
   return (
