@@ -13,12 +13,17 @@ interface DashboardLayoutProps {
 export default async function DashboardLayout({
   children,
 }: DashboardLayoutProps) {
+  const headersList = await headers();
+  const requestUrl =
+    headersList.get("x-request-url") || "http://localhost:3000/";
+
   const session = await auth.api.getSession({
-    headers: await headers(),
+    headers: headersList,
   });
 
   if (!session) {
-    redirect("/sign-in");
+    const redirectUrl = `/sign-in?redirect=${encodeURIComponent(requestUrl)}`;
+    redirect(redirectUrl);
   }
 
   return (

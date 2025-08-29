@@ -100,7 +100,7 @@ export default function LeftSidebar() {
     return (
       <div
         className={cn(
-          "h-full w-12 flex flex-col justify-between items-center",
+          "h-[calc(100vh-3rem)] w-12 flex flex-col justify-between items-center",
           selectedFont.className
         )}
       >

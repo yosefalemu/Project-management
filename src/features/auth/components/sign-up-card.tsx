@@ -23,9 +23,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 interface SignUpCardProps {
-  redirectTo?: string;
+  redirect?: string;
 }
-export default function SignUpCard({ redirectTo }: SignUpCardProps) {
+export default function SignUpCard({ redirect }: SignUpCardProps) {
   const router = useRouter();
   const [signUpLoading, setSignUpLoading] = useState<boolean>(false);
   const form = useForm<SignupSchemaType>({
@@ -42,7 +42,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
       name: data.name,
       email: data.email,
       password: data.password,
-      callbackURL: "/sign-in",
+      callbackURL: redirect || "",
       fetchOptions: {
         onRequest: () => {
           setSignUpLoading(true);
@@ -51,7 +51,9 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
           console.log("Sign up successful:", data);
           setSignUpLoading(false);
           form.reset();
-          router.push(`/confirm-signup/${data.user.email}`);
+          router.push(
+            `/confirm-signup/${data.user.email}`
+          );
         },
         onError: ({ error }) => {
           toast.error(error.message || "Sign up failed");
@@ -133,9 +135,7 @@ export default function SignUpCard({ redirectTo }: SignUpCardProps) {
           <div className="w-full text-sm flex items-center justify-center">
             Already have an account?
             <Link
-              href={
-                redirectTo ? `/sign-in?redirectTo=${redirectTo}` : "/sign-in"
-              }
+              href={redirect ? `/sign-in?redirect=${redirect}` : "/sign-in"}
             >
               <span className="ml-2 text-blue-700 underline">Sign In</span>
             </Link>

@@ -5,8 +5,8 @@ import SignInCard from "./sign-in-card";
 
 const SignInCardWrapperComponent = () => {
   const searchParams = useSearchParams();
-  const redirects = searchParams.get("redirects") || undefined;
-  return <SignInCard redirects={redirects} />;
+  const redirect = searchParams.get("redirect") || undefined;
+    return <SignInCard redirect={redirect} />;
 };
 export default function SignInCardWrapper() {
   return (

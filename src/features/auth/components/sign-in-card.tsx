@@ -22,13 +22,12 @@ import CustomCheckBox from "@/components/inputs/custom-checkbox";
 import { authClient } from "@/lib/auth-client";
 import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface SignInCardProps {
-  redirects?: string;
+  redirect?: string;
 }
-export default function SignInCard({ redirects }: SignInCardProps) {
-  const router = useRouter();
+export default function SignInCard({ redirect }: SignInCardProps) {
+  console.log("redirect in sign-in component", redirect);
   const [signInEmailLoading, setSignInEmailLoading] = useState<boolean>(false);
   const [signInGoogleLoading, setSignInGoogleLoading] =
     useState<boolean>(false);
@@ -48,7 +47,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
       email: data.email,
       password: data.password,
       rememberMe: data.rememberMe,
-      callbackURL: redirects ?? "/",
+      callbackURL: redirect ?? "/",
       fetchOptions: {
         onRequest: () => {
           setSignInEmailLoading(true);
@@ -57,7 +56,6 @@ export default function SignInCard({ redirects }: SignInCardProps) {
           setSignInEmailLoading(false);
           form.reset();
           toast.success("Logged in successfully");
-          router.push(redirects ?? "/");
         },
         onError: ({ error }) => {
           setSignInEmailLoading(false);
@@ -70,7 +68,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   const signInWithGoogle = async () => {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: "/",
+      callbackURL: redirect ?? "/",
       errorCallbackURL: "/sign-in",
       requestSignUp: true,
       fetchOptions: {
@@ -90,7 +88,7 @@ export default function SignInCard({ redirects }: SignInCardProps) {
   const signInWithGithub = async () => {
     await authClient.signIn.social({
       provider: "github",
-      callbackURL: "/",
+      callbackURL: redirect ?? "/",
       errorCallbackURL: "/sign-in",
       fetchOptions: {
         onRequest: () => {
@@ -198,8 +196,8 @@ export default function SignInCard({ redirects }: SignInCardProps) {
             Don&rsquo;t have an account
             <Link
               href={
-                redirects !== undefined
-                  ? `sign-up?redirects=${redirects}`
+                redirect !== undefined
+                  ? `sign-up?redirect=${redirect}`
                   : "/sign-up"
               }
             >
