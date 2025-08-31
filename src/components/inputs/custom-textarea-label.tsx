@@ -56,12 +56,14 @@ export default function CustomTextareaLabel({
                 onChange={handleChange}
               />
             </FormControl>
-            {maxCharLength && (
-              <p className="text-xs text-neutral-500 max-w-xl text-right">
-                {field.value.length}/{maxCharLength}
-              </p>
-            )}
-            <FormMessage />
+            <div className="flex justify-between flex-row-reverse">
+              {maxCharLength && (
+                <p className="text-xs text-neutral-500 max-w-xl text-right">
+                  {field.value.length}/{maxCharLength}
+                </p>
+              )}
+              <FormMessage />
+            </div>
           </FormItem>
         );
       }}

@@ -88,9 +88,8 @@ export const columns: ColumnDef<Task>[] = [
   {
     id: "actions",
     cell: ({ row }) => {
-      const id = row.original.id;
       return (
-        <TaskActions id={id}>
+        <TaskActions task={row.original}>
           <Button variant="ghost" className="size-8 p-0">
             <MoreVertical className="size-4" />
           </Button>

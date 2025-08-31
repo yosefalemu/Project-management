@@ -9,7 +9,7 @@ export default function ProjectModal() {
     <ResponsiveModal
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="sm:max-w-xl xl:max-w-6xl lg:max"
+      className="sm:max-w-xl lg:max-w-5xl xl:max-w-6xl"
     >
       <ProjectForm setIsModalOpen={close} />
     </ResponsiveModal>

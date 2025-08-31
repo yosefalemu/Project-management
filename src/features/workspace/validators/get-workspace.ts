@@ -15,6 +15,10 @@ export const getWorkspaceSchema = z.object({
   image: z.string().optional(),
   creatorId: z.string().nonempty("Creator ID is required"),
   inviteCode: z.string().nonempty("Invite code is required"),
+  inviteCodeExpire: z.date({
+    required_error: "Invite code expiration date is required",
+    invalid_type_error: "Invite code expiration must be a valid date",
+  }),
   createdAt: z.date({
     required_error: "Created at date is required",
     invalid_type_error: "Created at must be a valid date",

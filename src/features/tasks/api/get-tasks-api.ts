@@ -19,15 +19,7 @@ export const useGetTasks = ({
   dueDate,
 }: UseGetTaskProps) => {
   const query = useQuery<Task[]>({
-    queryKey: [
-      "getTasks",
-      projectId,
-      workspaceId,
-      assigneedId,
-      status,
-      search,
-      dueDate,
-    ],
+    queryKey: ["tasks", projectId],
     queryFn: async () => {
       if (!workspaceId) {
         throw new Error("Workspace ID is required");

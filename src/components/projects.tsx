@@ -253,7 +253,7 @@ export default function Projects() {
                 <ResponsiveModal
                   open={isModalOpen}
                   onOpenChange={setIsModalOpen}
-                  className="w-full max-w-4xl"
+                  className="sm:max-w-xl lg:max-w-5xl xl:max-w-6xl"
                 >
                   {projects.find((p) => p.project.id === selectedProject.id)
                     ?.project && (

@@ -1,6 +1,5 @@
 import { db } from "../../..";
 import { sessionMiddleware } from "@/lib/session-middleware";
-import { insertTaskSchema } from "@/zod-schemas/task-schema";
 import { zValidator } from "@hono/zod-validator";
 import { and, eq, asc, desc, inArray } from "drizzle-orm";
 import { Hono } from "hono";
@@ -8,6 +7,9 @@ import { z } from "zod";
 import { TaskStatus } from "../constant/types";
 import { task, user, projectMember, workspaceMember } from "@/db/schema";
 import { auth } from "@/lib/auth";
+import { updateTaskSchema } from "../validators/update-task";
+import { createTaskSchema } from "../validators/create-task";
+import { sendAssignTaskEmail } from "../utils/assign-task-email";
 
 const app = new Hono()
   .get(
@@ -150,10 +152,10 @@ const app = new Hono()
   .post(
     "/",
     sessionMiddleware,
-    zValidator("json", insertTaskSchema),
+    zValidator("json", createTaskSchema),
     async (c) => {
-      const user = c.get("user") as typeof auth.$Infer.Session.user | null;
-      if (!user) {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      if (!userFound) {
         return c.json(
           { error: "Unauthorized", message: "User not authenticated" },
           401
@@ -169,7 +171,7 @@ const app = new Hono()
           .from(projectMember)
           .where(
             and(
-              eq(projectMember.userId, user.id),
+              eq(projectMember.userId, userFound.id),
               eq(projectMember.projectId, projectId)
             )
           );
@@ -217,12 +219,28 @@ const app = new Hono()
             description,
             projectId,
             assignedTo,
-            dueDate,
+            dueDate: new Date(dueDate),
             status: status || "BACKLOG",
             position: newPosition,
             id: crypto.randomUUID(),
           })
           .returning();
+        if (assignedTo) {
+          const [assignee] = await db
+            .select({ email: user.email, name: user.name })
+            .from(user)
+            .where(eq(user.id, assignedTo));
+          if (assignee?.email && assignee?.name) {
+            await sendAssignTaskEmail(
+              assignee.email,
+              `${process.env.FRONTEND_URL}/tasks/${newTask.id}`,
+              name,
+              assignee.name
+            );
+          } else {
+            console.warn(`No email found for user ID ${assignedTo}`);
+          }
+        }
 
         return c.json({ data: newTask }, 200);
       } catch (error) {
@@ -332,6 +350,41 @@ const app = new Hono()
           {
             error: "Internal Server Error",
             message: "Failed to update tasks",
+          },
+          500
+        );
+      }
+    }
+  )
+  .patch(
+    "/update-task",
+    sessionMiddleware,
+    zValidator("json", updateTaskSchema),
+    async (c) => {
+      try {
+        const { name, description, dueDate, assignedTo, status, id } =
+          c.req.valid("json");
+        const updatedTask = await db
+          .update(task)
+          .set({
+            name,
+            description,
+            dueDate: new Date(dueDate),
+            assignedTo,
+            status,
+          })
+          .where(eq(task.id, id))
+          .returning();
+        return c.json(
+          { data: updatedTask[0], message: "Task updated successfully" },
+          200
+        );
+      } catch (error) {
+        console.log("ERROR OCCURED WHILE UPDATING TASK", error);
+        return c.json(
+          {
+            error: "FailedToUpdateTask",
+            message: "Failed to update task",
           },
           500
         );

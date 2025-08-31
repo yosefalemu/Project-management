@@ -1,12 +1,12 @@
 import { differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 interface TaskDateProps {
-  value: string;
+  value: Date | null;
   className?: string;
 }
 export default function TaskDate({ value, className }: TaskDateProps) {
   const today = new Date();
-  const endDate = new Date(value);
+  const endDate = value ? new Date(value) : today;
   const difference = differenceInDays(endDate, today);
   let textColor = "text-muted-foreground";
   if (difference <= 3) {
@@ -19,7 +19,9 @@ export default function TaskDate({ value, className }: TaskDateProps) {
 
   return (
     <div className={textColor}>
-      <span className={cn("truncate", className)}>{format(value, "PPP")}</span>
+      <span className={cn("truncate", className)}>
+        {format(endDate, "PPP")}
+      </span>
     </div>
   );
 }
