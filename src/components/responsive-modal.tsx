@@ -25,7 +25,7 @@ export default function ResponsiveModal({
             className
           )}
         >
-          <DialogTitle className="hidden" />
+          <DialogTitle />
           {children}
         </DialogContent>
       </Dialog>

@@ -64,7 +64,7 @@ export function CustomDatePicker({
                 mode="single"
                 selected={field.value}
                 onSelect={(date) => {
-                  field.onChange(date);
+                  field.onChange(date?.toISOString());
                   setOpen(false);
                 }}
                 initialFocus

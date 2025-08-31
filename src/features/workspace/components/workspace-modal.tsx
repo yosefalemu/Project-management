@@ -9,7 +9,7 @@ export default function WorkspaceModal() {
     <ResponsiveModal
       open={isOpen}
       onOpenChange={setIsOpen}
-      className="sm:max-w-xl xl:max-w-6xl lg:max-w-3xl"
+      className="sm:max-w-xl lg:max-w-5xl xl:max-w-6xl"
     >
       <WorkSpaceForm />
     </ResponsiveModal>

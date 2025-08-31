@@ -1,4 +1,3 @@
-import DootedSeparator from "@/components/dooted-separator";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
@@ -121,36 +120,35 @@ export default function InviteMemberForm() {
   }, [form, selectedMembers]);
 
   return (
-    <div>
+    <div className="p-2">
       <Input
         placeholder="Search Member by email"
-        className="h-12"
+        className="h-12 mb-2"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
       />
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(handleInviteMember)}>
-          <DootedSeparator className="py-4" />
-          {isLoading ? (
-            <div className="space-y-2 h-52">
-              {Array.from({ length: 3 }).map((_, index) => (
-                <Skeleton key={index}>
-                  <div className="flex items-center justify-between border px-2 py-3 rounded-md">
-                    <div className="flex items-center gap-x-2">
-                      <Skeleton className="h-5 w-5 rounded-sm" />
-                      <Skeleton className="h-8 w-8 rounded-full" />
-                      <Skeleton className="h-4 w-32 rounded" />
-                    </div>
-                    <div>
-                      <Skeleton className="h-8 w-8 rounded-md" />
-                    </div>
-                  </div>
-                </Skeleton>
-              ))}
-            </div>
-          ) : error ? (
-            <div>Error Found</div>
-          ) : (
+      {isLoading ? (
+        <div className="space-y-2 h-52">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <Skeleton key={index}>
+              <div className="flex items-center justify-between border px-2 py-3 rounded-md">
+                <div className="flex items-center gap-x-2">
+                  <Skeleton className="h-5 w-5 rounded-sm" />
+                  <Skeleton className="h-8 w-8 rounded-full" />
+                  <Skeleton className="h-4 w-32 rounded" />
+                </div>
+                <div>
+                  <Skeleton className="h-8 w-8 rounded-md" />
+                </div>
+              </div>
+            </Skeleton>
+          ))}
+        </div>
+      ) : error ? (
+        <div>Error</div>
+      ) : (
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleInviteMember)}>
             <div className="space-y-2 h-52 overflow-y-auto hide-scrollbar">
               {(dataToDisplay ?? []).length > 0 ? (
                 <>
@@ -211,30 +209,33 @@ export default function InviteMemberForm() {
                 </div>
               )}
             </div>
-          )}
-          <DootedSeparator className="py-4" />
-          <div className="flex items-center justify-end gap-x-2">
-            <Button
-              type="button"
-              size={isDesktop ? "lg" : "sm"}
-              variant="secondary"
-              onClick={() => {
-                form.reset();
-                close();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              size={isDesktop ? "lg" : "sm"}
-              disabled={isPending || selectedMembers.length === 0}
-            >
-              {isPending ? <Loader2 className="animate-spin" /> : "Add Members"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+            <div className="flex items-center justify-end gap-x-2">
+              <Button
+                type="button"
+                size={isDesktop ? "lg" : "sm"}
+                variant="secondary"
+                onClick={() => {
+                  form.reset();
+                  close();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                size={isDesktop ? "lg" : "sm"}
+                disabled={isPending || selectedMembers.length === 0}
+              >
+                {isPending ? (
+                  <Loader2 className="animate-spin" />
+                ) : (
+                  "Add Members"
+                )}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      )}
     </div>
   );
 }

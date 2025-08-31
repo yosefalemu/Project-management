@@ -27,9 +27,5 @@ export default function CreateTaskFormWrapper() {
       </Card>
     );
   }
-  return (
-    <div>
-      <TaskForm membersOptions={memberOptions || []} />
-    </div>
-  );
+  return <TaskForm membersOptions={memberOptions || []} />;
 }

@@ -1,8 +1,14 @@
 import { client } from "@/lib/rpc";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
-import { useQueryClient } from "@tanstack/react-query";
 
+type ResponseType = InferResponseType<
+  (typeof client.api.tasks)["update-task"]["$patch"],
+  200
+>;
+type RequestType = InferRequestType<
+  (typeof client.api.tasks)["update-task"]["$patch"]
+>;
 type ZodErrorDetail = {
   name: string;
   issues: { message: string }[];
@@ -11,17 +17,15 @@ type ErrorResponse = {
   error?: ZodErrorDetail | string;
   message?: string;
 };
-type ResponseType = InferResponseType<(typeof client.api.tasks)["$post"], 200>;
-type RequestType = InferRequestType<(typeof client.api.tasks)["$post"]>;
-
-export const useCreateTask = () => {
+export const useUpdateTask = () => {
   const queryClient = useQueryClient();
-  const mutation = useMutation<ResponseType, Error, RequestType>({
-    mutationFn: async ({ json }): Promise<ResponseType> => {
-      const response = await client.api.tasks["$post"]({ json });
+  const mutation = useMutation<ResponseType, ErrorResponse, RequestType>({
+    mutationFn: async ({ json }) => {
+      const response = await client.api.tasks["update-task"]["$patch"]({
+        json,
+      });
       if (!response.ok) {
         const errorData = (await response.json()) as ErrorResponse;
-        console.log("ERROR WHILE CREATING TASK", errorData);
         if (
           typeof errorData.error === "object" &&
           "name" in errorData.error &&
@@ -32,7 +36,7 @@ export const useCreateTask = () => {
           throw new Error(errorDataDetail);
         }
         throw new Error(
-          errorData.message || "An error occurred while creating task"
+          errorData.message || "An error occured while updating the task"
         );
       }
       return (await response.json()) as ResponseType;

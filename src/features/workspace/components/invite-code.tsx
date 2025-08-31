@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useConfirm } from "@/hooks/use-confirm";
-import { CopyIcon, Loader } from "lucide-react";
+import { ClockAlert, CopyIcon, Loader } from "lucide-react";
 import { useMedia } from "react-use";
 import { toast } from "sonner";
 import { useUpdateInviteCodeWorkspace } from "../api/update-invitecode-api";
@@ -16,10 +16,12 @@ import { useUpdateInviteCodeWorkspace } from "../api/update-invitecode-api";
 interface InvitecodeProps {
   inviteCode: string;
   workspaceId: string;
+  inviteCodeExpire: Date;
 }
 export default function InviteCode({
   inviteCode,
   workspaceId,
+  inviteCodeExpire,
 }: InvitecodeProps) {
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const fullInviteCode = `${window.location.origin}/join/${workspaceId}/${inviteCode}`;
@@ -68,18 +70,22 @@ export default function InviteCode({
                   .then(() => toast.success("Invite code copied to clipboard"))
               }
               variant="ghost"
-              className="size-12"
-              disabled={isPending}
+              className="size-12 disabled:cursor-not-allowed"
+              disabled={isPending || inviteCodeExpire < new Date()}
               type="button"
             >
-              <CopyIcon className="size-5" />
+              {inviteCodeExpire < new Date() ? (
+                <ClockAlert className="size-5" />
+              ) : (
+                <CopyIcon className="size-5" />
+              )}
             </Button>
           </div>
           <div className="w-full flex justify-end">
             <Button
               className="w-fit"
               size={isDesktop ? "lg" : "sm"}
-              variant="destructive"
+              variant="default"
               type="button"
               onClick={handleDeleteWorkspace}
               disabled={isPending}

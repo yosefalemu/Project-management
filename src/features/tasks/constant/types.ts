@@ -14,7 +14,7 @@ export type Task = {
   workspaceId: string;
   projectId: string;
   assignedTo: string;
-  dueDate: string;
+  dueDate: string | undefined;
   createdAt: string;
   updatedAt: string;
   position: string;

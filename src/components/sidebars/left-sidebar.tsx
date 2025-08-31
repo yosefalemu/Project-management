@@ -14,14 +14,7 @@ import DirectMessage from "../direct-message";
 import { useBetterAuthGetUser } from "@/features/auth/api/better-get-user";
 import MemberAvatar from "@/features/members/components/member-avatar";
 import UserProfile from "./user-profile";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "../ui/dialog";
-import { Drawer, DrawerContent, DrawerTitle } from "../ui/drawer";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import Preferences from "./preferences/preferences";
 import { usePreferenceModalStore } from "@/states/modals/user-preference";
 import { useState, useRef, useEffect } from "react";
@@ -31,14 +24,13 @@ import AccountSetting from "@/components/sidebars/account-settings/account-setti
 import { fonts } from "@/lib/font";
 import { fontProfile } from "@/states/font/font-state";
 import { cn } from "@/lib/utils";
-import WorkspaceSettingComponent from "@/features/workspace/components/workspace-setting";
 import { Button } from "../ui/button";
-import { useMedia } from "react-use";
 import { House, MessageCircleMore, Settings } from "lucide-react";
+import ResponsiveModal from "../responsive-modal";
+import WorkSpaceForm from "@/features/workspace/components/workspace-form";
 
 export default function LeftSidebar() {
   const params = useParams();
-  const isDesktop = useMedia("(min-width: 1024px)", true);
   const workspaceRef = useRef<HTMLDivElement>(null);
   const dmsRef = useRef<HTMLDivElement>(null);
   const profileRef = useRef<HTMLDivElement>(null);
@@ -214,47 +206,35 @@ export default function LeftSidebar() {
       <div className="flex flex-col gap-2 items-center justify-center">
         {currentWorkspace?.member?.role === "admin" && (
           <div>
-            {isDesktop ? (
-              <Dialog
-                open={workspaceSettingDialogOpen}
-                onOpenChange={(open) => {
-                  if (open) {
-                    setWorkspaceSettingDialogOpen(true);
-                  } else {
-                    setWorkspaceSettingDialogOpen(false);
-                  }
+            <Button
+              className="flex items-center justify-center w-full rounded-none p-1 border-none bg-transparent hover:bg-transparent"
+              onClick={() => {
+                setWorkspaceSettingDialogOpen(true);
+              }}
+              variant="ghost"
+            >
+              <Settings />
+            </Button>
+            <ResponsiveModal
+              open={workspaceSettingDialogOpen}
+              onOpenChange={setWorkspaceSettingDialogOpen}
+              className="sm:max-w-xl lg:max-w-5xl xl:max-w-6xl"
+            >
+              <WorkSpaceForm
+                workspace={{
+                  ...currentWorkspace,
+                  createdAt: new Date(currentWorkspace.createdAt!),
+                  updatedAt: new Date(currentWorkspace.updatedAt!),
+                  inviteCodeExpire: new Date(
+                    currentWorkspace.inviteCodeExpire!
+                  ),
+                  image:
+                    currentWorkspace.image === null
+                      ? undefined
+                      : currentWorkspace.image,
                 }}
-              >
-                <DialogTrigger asChild className="border-none">
-                  <Button
-                    className="flex items-center justify-center w-full rounded-none p-1 border-none bg-transparent hover:bg-transparent"
-                    onClick={() => {
-                      setWorkspaceSettingDialogOpen(true);
-                    }}
-                    variant="ghost"
-                  >
-                    <Settings />
-                  </Button>
-                </DialogTrigger>
-                <DialogContent
-                  className="w-full max-w-6xl
-      "
-                >
-                  <DialogTitle className="hidden" />
-                  <WorkspaceSettingComponent />
-                </DialogContent>
-              </Dialog>
-            ) : (
-              <Drawer
-                open={workspaceSettingDialogOpen}
-                onOpenChange={setWorkspaceSettingDialogOpen}
-              >
-                <DrawerTitle className="hidden" />
-                <DrawerContent>
-                  <div className="overflow-y-auto hide-scrollbar max-h-[85vh]"></div>
-                </DrawerContent>
-              </Drawer>
-            )}
+              />
+            </ResponsiveModal>
           </div>
         )}
         <Tooltip open={userProfileTooltipOpen}>
