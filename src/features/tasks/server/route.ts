@@ -255,8 +255,14 @@ const app = new Hono()
   .delete("/:taskId", sessionMiddleware, async (c) => {
     const taskId = c.req.param("taskId") as string;
     try {
-      await db.delete(task).where(eq(task.id, taskId));
-      return c.json({ message: "Task deleted successfully" }, 200);
+      const [deletedTask] = await db
+        .delete(task)
+        .where(eq(task.id, taskId))
+        .returning();
+      return c.json(
+        { data: deletedTask, message: "Task deleted successfully" },
+        200
+      );
     } catch (error) {
       console.log("ERROR OCCURED WHILE DELETING TASK", error);
       return c.json(

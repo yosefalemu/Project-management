@@ -1,7 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader, PlusIcon } from "lucide-react";
+import { Loader2, PlusIcon } from "lucide-react";
 import { useTaskModalHook } from "@/features/tasks/hooks/use-task-modal";
 import { useGetTasks } from "@/features/tasks/api/get-tasks-api";
 import { useParams } from "next/navigation";
@@ -12,7 +12,7 @@ import { DataTable } from "@/features/tasks/components/data-table";
 import { columns } from "@/features/tasks/components/colums";
 import { Task, TaskStatus } from "@/features/tasks/constant/types";
 import DataKanban from "@/features/tasks/components/data-kanban";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { useUpdateBulkTask } from "@/features/tasks/api/update-bulk-task";
 import { useDispatch } from "react-redux";
 import { setLoading } from "@/store/loading-slice";
@@ -25,7 +25,11 @@ export default function TaskViewSwitcher() {
   const [view, setView] = useQueryState("task-view", { defaultValue: "table" });
   const { open } = useTaskModalHook();
   const [{ status, search, assigneedId, dueDate }] = useTaskFilters();
-  const { data, isPending } = useGetTasks({
+  console.log("dueDate in task view switcher", dueDate);
+  console.log("status in task view switcher", status);
+  console.log("assigneedId in task view switcher", assigneedId);
+  const { mutate: updateBulkTask } = useUpdateBulkTask();
+  const { data, isPending, refetch, isRefetching } = useGetTasks({
     workspaceId: params.workspaceId as string,
     projectId: params.projectId as string,
     status,
@@ -34,7 +38,9 @@ export default function TaskViewSwitcher() {
     dueDate,
   });
 
-  const { mutate: updateBulkTask } = useUpdateBulkTask();
+  useEffect(() => {
+    refetch();
+  }, [status, assigneedId, dueDate, refetch]);
 
   const onKanbanChange = useCallback(
     (tasks: { id: string; position: number; status: TaskStatus }[]) => {
@@ -79,9 +85,9 @@ export default function TaskViewSwitcher() {
         </Button>
       </div>
       <DataFilters hideProjectFilter={false} />
-      {isPending ? (
+      {isPending || isRefetching ? (
         <div className="flex justify-center items-center h-64 border rounded-lg">
-          <Loader className="animate-spin" />
+          <Loader2 className="animate-spin" />
         </div>
       ) : (
         <div className="h-full flex-1">

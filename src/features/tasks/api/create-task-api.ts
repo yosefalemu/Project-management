@@ -39,7 +39,13 @@ export const useCreateTask = () => {
     },
     onSuccess: async ({ data }) => {
       await queryClient.invalidateQueries({
-        queryKey: ["tasks", data.projectId],
+        queryKey: [
+          "tasks",
+          data.projectId,
+          data.assignedTo,
+          data.status,
+          data.dueDate,
+        ],
       });
     },
   });

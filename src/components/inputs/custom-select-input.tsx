@@ -65,11 +65,18 @@ export default function CustomSelectInput({
                   data?.map((item) => (
                     <SelectItem value={item.id} key={item.id} className="">
                       <div className="flex items-center gap-x-2">
-                        <MemberAvatar
-                          image={item.image}
-                          name={item.name}
-                          className="size-6 text-xs"
-                        />
+                        {item.image ? (
+                          <MemberAvatar
+                            image={item.image}
+                            name={item.name}
+                            className="size-6 text-xs"
+                          />
+                        ) : (
+                          <MemberAvatar
+                            name={item.name}
+                            className="size-6 text-xs"
+                          />
+                        )}
                         {item.name}
                       </div>
                     </SelectItem>

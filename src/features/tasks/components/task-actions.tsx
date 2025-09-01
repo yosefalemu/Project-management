@@ -67,6 +67,7 @@ export default function TaskActions({ task, children }: TaskActionsProps) {
               ? membersFound.map((member) => ({
                   id: member.id,
                   name: member.name,
+                  image: member.image ?? undefined,
                 }))
               : []
           }

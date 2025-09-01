@@ -1,6 +1,7 @@
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { useState } from "react";
 
 interface MemberAvatarProps {
   image?: string;
@@ -12,6 +13,10 @@ export default function MemberAvatar({
   name,
   className,
 }: MemberAvatarProps) {
+  const [imageLoadError, setImageLoadError] = useState<boolean>(false);
+  const handleImageError = () => {
+    setImageLoadError(true);
+  };
   if (image) {
     return (
       <div
@@ -21,7 +26,13 @@ export default function MemberAvatar({
         )}
         key={name}
       >
-        <Image src={image} alt={name} fill className="object-cover" />
+        <Image
+          src={image && !imageLoadError ? image : "/images/person.png"}
+          alt={name}
+          fill
+          className="object-contain"
+          onError={handleImageError}
+        />
       </div>
     );
   }
@@ -35,7 +46,7 @@ export default function MemberAvatar({
     >
       <AvatarFallback
         className={cn(
-          "text-neutral-500 bg-neutral-200 font-semibold text-lg uppercase rounded-full flex items-center justify-center",
+          "text-white bg-gray-900 font-normal text-lg uppercase rounded-full flex items-center justify-center",
           className
         )}
       >

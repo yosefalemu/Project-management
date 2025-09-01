@@ -15,7 +15,6 @@ import { db } from "@/index";
 
 const app = new Hono()
   .get("/project-channels/:projectId", sessionMiddleware, async (c) => {
-    console.log("TRYING FETCHING PROJECT");
     try {
       const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
       const session = c.get("session") as
