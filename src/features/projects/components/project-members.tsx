@@ -5,6 +5,7 @@ import { useGetProjectMembers } from "../api/get-project-member-api";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface ProjectMembersProps {
   projectId: string;
@@ -20,6 +21,9 @@ export default function ProjectMembers({
     projectId,
     workspaceId: workspaceId ?? "",
   });
+  const [imageErrors, setImageErrors] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   if (isLoading || !data) {
     return <Skeleton className="h-8 w-8 rounded-full" />;
@@ -35,12 +39,16 @@ export default function ProjectMembers({
     return bgClasses[index % bgClasses.length];
   };
 
+  const handleImageError = (id: string) => {
+    setImageErrors((prev) => ({ ...prev, [id]: true }));
+  };
+
   return (
     <div className="flex items-center space-x-2 rounded-lg cursor-pointer">
       {data.length > 3 ? (
         <div className="flex items-center ">
           {data.slice(0, 3).map((member, index) =>
-            member.image ? (
+            member.image && !imageErrors[member.id] ? (
               <div
                 className="relative h-8 w-8 rounded-full overflow-hidden"
                 style={{
@@ -54,6 +62,7 @@ export default function ProjectMembers({
                   alt={member.name}
                   fill
                   className="object-cover"
+                  onError={() => handleImageError(member.id)}
                 />
               </div>
             ) : (
@@ -68,9 +77,18 @@ export default function ProjectMembers({
                 }}
                 key={member.id}
               >
-                <div className="text-sm text-white">
-                  {member.name.charAt(0)}
-                </div>
+                {member.image && imageErrors[member.id] ? (
+                  <Image
+                    src="/images/person-circle.png"
+                    alt={member.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-sm text-white">
+                    {member.name.charAt(0)}
+                  </div>
+                )}
               </div>
             )
           )}
@@ -81,7 +99,7 @@ export default function ProjectMembers({
       ) : (
         <div className="flex">
           {data.map((member, index) =>
-            member.image ? (
+            member.image && !imageErrors[member.id] ? (
               <div
                 className="relative h-8 w-8 rounded-full overflow-hidden"
                 style={{
@@ -95,6 +113,7 @@ export default function ProjectMembers({
                   alt={member.name}
                   fill
                   className="object-cover"
+                  onError={() => handleImageError(member.id)}
                 />
               </div>
             ) : (
@@ -109,9 +128,18 @@ export default function ProjectMembers({
                 }}
                 key={member.id}
               >
-                <div className="text-sm text-white">
-                  {member.name.charAt(0)}
-                </div>
+                {member.image && imageErrors[member.id] ? (
+                  <Image
+                    src="/images/person-circle.png"
+                    alt={member.name}
+                    fill
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="text-sm text-white">
+                    {member.name.charAt(0)}
+                  </div>
+                )}
               </div>
             )
           )}

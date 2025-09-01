@@ -48,10 +48,13 @@ export default function UserProfileInfo() {
   const { data: startDate, isLoading: isStartDateLoading } =
     useGetStartDate(workspaceId);
 
-  const handleFileChange = (
-    input: File | React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = input instanceof File ? input : input.target.files?.[0];
+  const handleFileChange = (input: File | File[]) => {
+    let file: File | undefined;
+    if (Array.isArray(input)) {
+      file = input[0];
+    } else {
+      file = input;
+    }
     if (!file) return;
 
     const reader = new FileReader();
@@ -217,7 +220,11 @@ export default function UserProfileInfo() {
                             accept="image/*"
                             ref={userProfileViewRef}
                             className="hidden"
-                            onChange={handleFileChange}
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files.length > 0) {
+                                handleFileChange(e.target.files[0]);
+                              }
+                            }}
                           />
                           <Button
                             onClick={() => userProfileViewRef.current?.click()}

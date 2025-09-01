@@ -16,8 +16,9 @@ export default function TaskModal() {
     });
 
   const memberOptions = membersFound?.map((member) => ({
-    id: member.id || "",
-    name: member.name || "",
+    id: member.id,
+    name: member.name,
+    image: member.image ?? undefined,
   }));
   return (
     <ResponsiveModal
@@ -38,10 +39,10 @@ export default function TaskModal() {
               <Skeleton className="h-10 w-full" />
             </div>
             <div className="col-span-1 space-y-2 flex flex-col h-full">
-              <Skeleton className="h-4 w-1/3" /> 
+              <Skeleton className="h-4 w-1/3" />
               <Skeleton className="h-10 w-full" />
               <Skeleton className="h-4 w-1/3" />
-              <Skeleton className="h-10 w-full" /> 
+              <Skeleton className="h-10 w-full" />
               <div className="flex items-end justify-end gap-x-6 flex-1">
                 <Skeleton className="h-10 w-24" />
                 <Skeleton className="h-10 w-24" />

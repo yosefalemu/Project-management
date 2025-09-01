@@ -25,7 +25,7 @@ import { useUpdateTask } from "../api/update-task";
 import { useMedia } from "react-use";
 
 interface TaskFormProps {
-  membersOptions: { id: string; name: string }[];
+  membersOptions: { id: string; name: string; image?: string }[];
   task?: Task;
   setIsTaskModalOpen?: (isOpen: boolean) => void;
 }

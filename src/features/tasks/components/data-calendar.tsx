@@ -29,13 +29,13 @@ export default function DataCalendar({ data }: DataCalendarProps) {
     locales,
   });
   const [value, setValue] = useState(
-    data.length > 0 ? new Date(data[0].dueDate) : new Date()
+    data.length > 0 && data[0].dueDate ? new Date(data[0].dueDate) : new Date()
   );
 
   console.log("DataCalendar data", data);
   const events = data.map((task) => ({
-    start: new Date(task.dueDate),
-    end: new Date(task.dueDate),
+    start: new Date(task.dueDate ?? new Date()),
+    end: new Date(task.dueDate ?? new Date()),
     title: task.name,
     assignee: task.assignedUser.name,
     status: task.status,

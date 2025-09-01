@@ -45,8 +45,10 @@ export const useDeleteTask = () => {
       }
       return (await response.json()) as ResponseType;
     },
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: ["getTasks"] });
+    onSuccess: async ({ data }) => {
+      await queryClient.invalidateQueries({
+        queryKey: ["tasks", data.projectId],
+      });
     },
   });
   return mutation;

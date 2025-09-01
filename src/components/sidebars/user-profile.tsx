@@ -50,7 +50,7 @@ export default function UserProfile({
       <div className="flex gap-2">
         <MemberAvatar
           name={name}
-          image={image ?? ""}
+          image={image ?? undefined}
           className="size-10 rounded-sm"
         />
         <div className="flex flex-col gap-0 justify-start items-start">

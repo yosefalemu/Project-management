@@ -15,6 +15,7 @@ import { TaskStatusType } from "@/features/workspace/constants/type";
 import { DatePicker } from "@/components/DatePicker";
 import { TaskStatus } from "../constant/types";
 import { Button } from "@/components/ui/button";
+import MemberAvatar from "@/features/members/components/member-avatar";
 
 interface DataFiltersProps {
   hideProjectFilter?: boolean;
@@ -29,6 +30,7 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
   const memberOptions = members?.map((member) => ({
     value: member.id,
     label: member.name,
+    image: member.image ?? undefined,
   }));
 
   const [{ status, search, assigneedId, dueDate }, setFilters] =
@@ -58,41 +60,80 @@ export default function DataFilters({ hideProjectFilter }: DataFiltersProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-2 py-2">
       <Select
-        value={status ?? undefined}
+        value={status ?? "all"}
         onValueChange={(value) => onStatusChange(value)}
       >
         <SelectTrigger className="w-full lg:w-auto h-8">
           <div className="flex items-center pr-8">
-            <ListChecksIcon className="size-4 mr-2" />
-            <SelectValue placeholder="All statuses" />
+            <SelectValue
+              placeholder={
+                <div className="flex items-center gap-2">
+                  <ListChecksIcon className="size-4" />
+                  <span>All statuses</span>
+                </div>
+              }
+            />
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All statuses</SelectItem>
+          <SelectItem value="all">
+            <div className="flex items-center gap-2">
+              <ListChecksIcon className="size-4" />
+              <span>All statuses</span>
+            </div>
+          </SelectItem>
           <Separator />
           {TaskStatusFound?.map((status) => (
             <SelectItem value={status.id} key={status.id}>
-              {status.name}
+              <div className="flex items-center gap-2">
+                <MemberAvatar name={status.name} className="size-6 text-xs" />
+                <span>{status.name}</span>
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
       <Select
-        value={assigneedId ?? undefined}
+        value={assigneedId ?? "all"}
         onValueChange={(value) => onAssigneeChange(value)}
       >
         <SelectTrigger className="w-full lg:w-auto h-8">
           <div className="flex items-center pr-8">
-            <UserIcon className="size-4 mr-2" />
-            <SelectValue placeholder="All Members" />
+            <SelectValue
+              placeholder={
+                <div className="flex items-center gap-2">
+                  <UserIcon className="size-4" />
+                  <span>All Members</span>
+                </div>
+              }
+            />
           </div>
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">All Members</SelectItem>
+          <SelectItem value="all">
+            <div className="flex items-center gap-2">
+              <UserIcon className="size-4" />
+              <span>All Members</span>
+            </div>
+          </SelectItem>
           <Separator />
           {memberOptions?.map((member) => (
             <SelectItem value={member.value!} key={member.value}>
-              {member.label}
+              <div className="flex items-center gap-2">
+                {member.image ? (
+                  <MemberAvatar
+                    name={member.label}
+                    image={member.image}
+                    className="size-6 text-xs"
+                  />
+                ) : (
+                  <MemberAvatar
+                    name={member.label}
+                    className="size-6 text-xs"
+                  />
+                )}
+                {member.label}
+              </div>
             </SelectItem>
           ))}
         </SelectContent>
