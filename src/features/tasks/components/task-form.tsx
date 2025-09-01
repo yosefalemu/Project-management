@@ -22,14 +22,21 @@ import {
   createTaskSchemaType,
 } from "@/features/tasks/validators/create-task";
 import { useUpdateTask } from "../api/update-task";
+import { useMedia } from "react-use";
 
 interface TaskFormProps {
   membersOptions: { id: string; name: string }[];
   task?: Task;
+  setIsTaskModalOpen?: (isOpen: boolean) => void;
 }
 
-export default function TaskForm({ membersOptions, task }: TaskFormProps) {
+export default function TaskForm({
+  membersOptions,
+  task,
+  setIsTaskModalOpen,
+}: TaskFormProps) {
   const params = useParams();
+  const isDesktop = useMedia("(min-width: 1024px)", true);
   const { taskStatus, close } = useTaskModalHook();
   const { mutate: createTask, isPending: isCreatingTask } = useCreateTask();
   const { mutate: updateTask, isPending: isUpdatingTask } = useUpdateTask();
@@ -91,7 +98,7 @@ export default function TaskForm({ membersOptions, task }: TaskFormProps) {
       {
         onSuccess: () => {
           toast.success("Task updated successfully");
-          close();
+          setIsTaskModalOpen?.(false);
         },
         onError: (error) => {
           toast.error(error?.message || "An error occurred");
@@ -99,10 +106,6 @@ export default function TaskForm({ membersOptions, task }: TaskFormProps) {
       }
     );
   };
-
-  console.log("UPDATE FORM VALUE", updateTaskForm.getValues());
-  console.log("UPDATE FORM VALUE ERRORS", updateTaskForm.formState.errors);
-
   return (
     <div>
       {task ? (
@@ -147,24 +150,30 @@ export default function TaskForm({ membersOptions, task }: TaskFormProps) {
                 />
                 <div className="flex items-end justify-end gap-x-6 flex-1">
                   <Button
-                    variant="destructive"
-                    size="lg"
+                    variant="secondary"
+                    size={isDesktop ? "lg" : "sm"}
                     type="button"
                     onClick={() => {
                       updateTaskForm.reset();
-                      close();
+                      setIsTaskModalOpen?.(false);
                     }}
                     disabled={isUpdatingTask}
                   >
                     Cancel
                   </Button>
-                  <Button size="lg" type="submit" disabled={isUpdatingTask}>
+                  <Button
+                    size={isDesktop ? "lg" : "sm"}
+                    type="submit"
+                    disabled={
+                      isUpdatingTask || !updateTaskForm.formState.isDirty
+                    }
+                  >
                     {isUpdatingTask ? (
                       <span className="flex items-center justify-center">
-                        <Loader className="mr-2 animate-spin" />
+                        <Loader className="animate-spin" />
                       </span>
                     ) : (
-                      <p>Update Task</p>
+                      <p>Save Changes</p>
                     )}
                   </Button>
                 </div>
@@ -214,7 +223,7 @@ export default function TaskForm({ membersOptions, task }: TaskFormProps) {
                 />
                 <div className="flex items-end justify-end gap-x-6 flex-1">
                   <Button
-                    variant="destructive"
+                    variant="secondary"
                     size="lg"
                     type="button"
                     onClick={() => {

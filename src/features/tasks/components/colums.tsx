@@ -1,11 +1,10 @@
 "use client";
-
 import { ColumnDef } from "@tanstack/react-table";
 import { Task, TaskStatus } from "@/features/tasks/constant/types";
 import { ArrowUpDown, MoreVertical } from "lucide-react";
-import TaskDate from "./task-date";
+import TaskDate from "@/features/tasks/components/task-date";
 import { Badge } from "@/components/ui/badge";
-import TaskActions from "./task-actions";
+import TaskActions from "@/features/tasks/components/task-actions";
 import { Button } from "@/components/ui/button";
 
 export const columns: ColumnDef<Task>[] = [
@@ -90,7 +89,7 @@ export const columns: ColumnDef<Task>[] = [
     cell: ({ row }) => {
       return (
         <TaskActions task={row.original}>
-          <Button variant="ghost" className="size-8 p-0">
+          <Button variant="ghost" className="size-8 p-0 hover:bg-transparent">
             <MoreVertical className="size-4" />
           </Button>
         </TaskActions>

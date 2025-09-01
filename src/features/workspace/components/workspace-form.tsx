@@ -25,8 +25,12 @@ import {
 
 interface WorkSpaceFormProps {
   workspace?: getWorkspaceSchemaType;
+  setWorkspaceSettingDialogOpen?: (isOpen: boolean) => void;
 }
-export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
+export default function WorkSpaceForm({
+  workspace,
+  setWorkspaceSettingDialogOpen,
+}: WorkSpaceFormProps) {
   const { close } = useWorkspaceModalHook();
   const isDesktop = useMedia("(min-width: 1024px)", true);
   const createWorkspaceMutation = useCreateWorkspace();
@@ -94,18 +98,31 @@ export default function WorkSpaceForm({ workspace }: WorkSpaceFormProps) {
                 <div className="flex flex-col gap-y-4 w-full">Column Two</div>
               </div>
               <div className="flex items-center justify-end gap-x-4">
-                <Button
-                  type="button"
-                  size={isDesktop ? "lg" : "sm"}
-                  variant="secondary"
-                  onClick={() => {
-                    updateWorkspaceForm.reset();
-                    close();
-                  }}
-                  disabled={updateWorkspaceMutation.isPending}
-                >
-                  Cancel
-                </Button>
+                {updateWorkspaceForm.formState.isDirty ? (
+                  <Button
+                    type="button"
+                    size={isDesktop ? "lg" : "sm"}
+                    variant="secondary"
+                    onClick={() => {
+                      updateWorkspaceForm.reset();
+                    }}
+                    disabled={updateWorkspaceMutation.isPending}
+                  >
+                    Reset
+                  </Button>
+                ) : (
+                  <Button
+                    type="button"
+                    size={isDesktop ? "lg" : "sm"}
+                    variant="secondary"
+                    onClick={() => {
+                      setWorkspaceSettingDialogOpen?.(false);
+                    }}
+                    disabled={updateWorkspaceMutation.isPending}
+                  >
+                    Cancel
+                  </Button>
+                )}
                 <Button
                   type="submit"
                   size={isDesktop ? "lg" : "sm"}

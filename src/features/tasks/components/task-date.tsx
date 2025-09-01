@@ -1,7 +1,7 @@
 import { differenceInDays, format } from "date-fns";
 import { cn } from "@/lib/utils";
 interface TaskDateProps {
-  value: Date | null;
+  value: string | undefined;
   className?: string;
 }
 export default function TaskDate({ value, className }: TaskDateProps) {

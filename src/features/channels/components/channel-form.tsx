@@ -16,6 +16,7 @@ import { useGetProjectMembers } from "@/features/projects/api/get-project-member
 import CustomSelectInput from "@/components/inputs/custom-select-input";
 import { useChannelModalHook } from "../hooks/use-channel-modal";
 import { toast } from "sonner";
+import { useMedia } from "react-use";
 
 interface ChannelFormProps {
   channel?: getChannelSchemaType;
@@ -24,6 +25,7 @@ export default function ChannelForm({ channel }: ChannelFormProps) {
   const params = useParams();
   const createChannelMutation = useCreateProjectChannel();
   const { close } = useChannelModalHook();
+  const isDesktop = useMedia("(min-width: 1024px)", true);
   const { data: membersFound, isLoading: isLoadingMembers } =
     useGetProjectMembers({
       projectId: params.projectId as string,
@@ -98,10 +100,15 @@ export default function ChannelForm({ channel }: ChannelFormProps) {
               </div>
             </div>
             <div className="flex items-center justify-end gap-x-4">
-              <Button type="button" variant="destructive">
+              <Button
+                type="button"
+                variant="secondary"
+                size={isDesktop ? "lg" : "sm"}
+                onClick={() => close()}
+              >
                 Cancel
               </Button>
-              <Button>
+              <Button size={isDesktop ? "lg" : "sm"} variant="default">
                 {createChannelMutation.isPending ? (
                   <span className="flex items-center justify-center">
                     <Loader className="animate-spin" />

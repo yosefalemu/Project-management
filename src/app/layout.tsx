@@ -3,7 +3,7 @@ import "./globals.css";
 import QueryProviders from "@/components/query-provider";
 import { Toaster } from "@/components/ui/sonner";
 import StoreProvider from "@/store/store-provider";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+// import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import WorkspaceModal from "@/features/workspace/components/workspace-modal";
 import InviteProjectMemberModal from "@/features/projects/components/invite-project-member-modal";
@@ -52,10 +52,10 @@ export default function RootLayout({
                   <TaskModal />
                   <CreateChannelModal />
                   <TooltipProvider>{children}</TooltipProvider>
-                  <ReactQueryDevtools
+                  {/* <ReactQueryDevtools
                     initialIsOpen={false}
                     buttonPosition="bottom-right"
-                  />
+                  /> */}
                 </QueryProviders>
               </NuqsAdapter>
             </StoreProvider>
