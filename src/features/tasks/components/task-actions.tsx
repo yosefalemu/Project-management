@@ -71,14 +71,15 @@ export default function TaskActions({ task, children }: TaskActionsProps) {
               : []
           }
           task={task}
+          setIsTaskModalOpen={setIsTaskModalOpen}
         />
       </ResponsiveModal>
       <DropdownMenu modal={false}>
         <DropdownMenuTrigger asChild>{children}</DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuContent align="end" className="w-48 p-0 rounded-sm">
           <DropdownMenuItem
             onClick={() => setIsTaskModalOpen(true)}
-            className="font-medium p-[10px]"
+            className="font-medium rounded-none cursor-pointer"
             disabled={isLoadingMembers || !task}
           >
             <PencilIcon className="size-4 mr-2 stroke-2" />
@@ -86,7 +87,7 @@ export default function TaskActions({ task, children }: TaskActionsProps) {
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleDeleteTask}
-            className="font-medium p-[10px] text-red-700 focus:text-red-700"
+            className="font-medium rounded-none cursor-pointer text-red-700 focus:text-red-700"
             disabled={!task}
           >
             <Trash2Icon className="size-4 mr-2 stroke-2" />

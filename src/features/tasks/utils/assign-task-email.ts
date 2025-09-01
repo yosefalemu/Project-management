@@ -1,6 +1,6 @@
 import { render } from "@react-email/components";
 import nodemailer from "nodemailer";
-import AssignTaskEmail from "../components/assign-task-email";
+import AssignTaskEmail from "@/features/tasks/components/assign-task-email";
 
 export const sendAssignTaskEmail = async (
   email: string,

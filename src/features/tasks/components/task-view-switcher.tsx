@@ -2,22 +2,22 @@
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader, PlusIcon } from "lucide-react";
-import { useTaskModalHook } from "../hooks/use-task-modal";
-import { useGetTasks } from "../api/get-tasks-api";
+import { useTaskModalHook } from "@/features/tasks/hooks/use-task-modal";
+import { useGetTasks } from "@/features/tasks/api/get-tasks-api";
 import { useParams } from "next/navigation";
 import { useQueryState } from "nuqs";
-import DataFilters from "./data-filters";
-import { useTaskFilters } from "../hooks/use-task-filters";
-import { DataTable } from "./data-table";
-import { columns } from "./colums";
-import { Task, TaskStatus } from "../constant/types";
-import DataKanban from "./data-kanban";
+import DataFilters from "@/features/tasks/components/data-filters";
+import { useTaskFilters } from "@/features/tasks/hooks/use-task-filters";
+import { DataTable } from "@/features/tasks/components/data-table";
+import { columns } from "@/features/tasks/components/colums";
+import { Task, TaskStatus } from "@/features/tasks/constant/types";
+import DataKanban from "@/features/tasks/components/data-kanban";
 import { useCallback } from "react";
-import { useUpdateBulkTask } from "../api/update-bulk-task";
+import { useUpdateBulkTask } from "@/features/tasks/api/update-bulk-task";
 import { useDispatch } from "react-redux";
 import { setLoading } from "@/store/loading-slice";
 import { toast } from "sonner";
-import DataCalendar from "./data-calendar";
+import DataCalendar from "@/features/tasks/components/data-calendar";
 
 export default function TaskViewSwitcher() {
   const params = useParams();
@@ -57,29 +57,16 @@ export default function TaskViewSwitcher() {
   );
 
   return (
-    <Tabs
-      className="h-full flex flex-col"
-      value={view}
-      onValueChange={setView}
-    >
+    <Tabs className="h-full flex flex-col" value={view} onValueChange={setView}>
       <div className="flex flex-col gap-y-2 lg:flex-row justify-between items-center">
         <TabsList className="w-full lg:w-auto h-8 bg-transparent border rounded-sm">
-          <TabsTrigger
-            value="table"
-            className="w-full lg:w-auto rounded-sm"
-          >
+          <TabsTrigger value="table" className="w-full lg:w-auto rounded-sm">
             Table
           </TabsTrigger>
-          <TabsTrigger
-            value="kanban"
-            className="w-full lg:w-auto rounded-sm"
-          >
+          <TabsTrigger value="kanban" className="w-full lg:w-auto rounded-sm">
             Kanban
           </TabsTrigger>
-          <TabsTrigger
-            value="calendar"
-            className="w-full lg:w-auto rounded-sm"
-          >
+          <TabsTrigger value="calendar" className="w-full lg:w-auto rounded-sm">
             Calendar
           </TabsTrigger>
         </TabsList>
@@ -104,7 +91,10 @@ export default function TaskViewSwitcher() {
           <TabsContent value="kanban" className="flex-1 h-full m-0">
             <DataKanban data={data as Task[]} onChange={onKanbanChange} />
           </TabsContent>
-          <TabsContent value="calendar" className="h-full flex-1 m-0 overflow-y-auto">
+          <TabsContent
+            value="calendar"
+            className="h-full flex-1 m-0 overflow-y-auto"
+          >
             <DataCalendar data={data as Task[]} />
           </TabsContent>
         </div>

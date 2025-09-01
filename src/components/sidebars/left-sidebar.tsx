@@ -233,6 +233,7 @@ export default function LeftSidebar() {
                       ? undefined
                       : currentWorkspace.image,
                 }}
+                setWorkspaceSettingDialogOpen={setWorkspaceSettingDialogOpen}
               />
             </ResponsiveModal>
           </div>
