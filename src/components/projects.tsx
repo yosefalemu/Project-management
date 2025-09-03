@@ -1,5 +1,5 @@
 "use client";
-import { useGetUserChannels } from "@/features/channels/api/get-channels";
+import { useGetUserChannels } from "@/features/channels/api/get-project-channels";
 import { useGetProjects } from "@/features/projects/api/get-projects-api";
 import ProjectAvatar from "@/features/projects/components/project-avatar";
 import { useProjectModalHook } from "@/features/projects/hooks/use-project-modal";

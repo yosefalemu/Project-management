@@ -1,4 +1,5 @@
 "use client";
+import { useGetChannelMessages } from "@/features/channel-messges/api/get-channel-message";
 import ChannelTitle from "@/features/channels/components/channel-title";
 import CreateMessage from "@/features/channels/components/create-message";
 import { cn } from "@/lib/utils";
@@ -22,6 +23,15 @@ export default function ChannelPage() {
   const channelId = Array.isArray(params.channelId)
     ? (params.channelId[0] ?? "")
     : (params.channelId ?? "");
+  const { data: messages, error, isLoading } = useGetChannelMessages(channelId);
+
+  if (error) {
+    console.error("Error fetching messages:", error);
+    return;
+  }
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="w-full h-full flex flex-col">
@@ -33,9 +43,9 @@ export default function ChannelPage() {
         )}
       >
         <div className="h-full">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div key={i} className="p-2 border-b">
-              Message {i + 1}
+          {messages?.data.map((message) => (
+            <div key={message.id} className="p-2 border-b">
+              {message.content}
             </div>
           ))}
         </div>

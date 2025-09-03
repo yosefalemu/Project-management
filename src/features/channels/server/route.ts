@@ -14,6 +14,37 @@ import { createChannelSchema } from "@/features/channels/validators/create-chann
 import { db } from "@/index";
 
 const app = new Hono()
+  .get("/all-channels", sessionMiddleware, async (c) => {
+    try {
+      const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
+      const session = c.get("session") as
+        | typeof auth.$Infer.Session.session
+        | null;
+      if (!userFound || !session) {
+        return c.json(
+          { error: "Unauthorized", message: "User not authenticated" },
+          401
+        );
+      }
+      const allChannels = await db.select().from(channel);
+      return c.json(
+        {
+          data: allChannels,
+          message: "Channels fetched successfully",
+        },
+        200
+      );
+    } catch (error) {
+      console.error("Error fetching all channels:", error);
+      return c.json(
+        {
+          error: "Internal Server Error",
+          message: "Failed to fetch all channels",
+        },
+        500
+      );
+    }
+  })
   .get("/project-channels/:projectId", sessionMiddleware, async (c) => {
     try {
       const userFound = c.get("user") as typeof auth.$Infer.Session.user | null;
