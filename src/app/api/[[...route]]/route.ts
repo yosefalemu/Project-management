@@ -9,13 +9,14 @@ import member from "@/features/members/server/route";
 import project from "@/features/projects/server/route";
 import task from "@/features/tasks/server/route";
 import channel from "@/features/channels/server/route";
+import channelMessages from "@/features/channel-messges/server/route";
 
 const app = new Hono().basePath("/api").use(
   cors({
     origin: [
       "http://localhost:3000",
       "https://project-management-sandy-one.vercel.app",
-      "https://project-management-phi-ivory.vercel.app"
+      "https://project-management-phi-ivory.vercel.app",
     ],
     allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
     allowMethods: ["POST", "GET", "OPTIONS", "PATCH", "DELETE"],
@@ -35,7 +36,8 @@ const routes = app
   .route("/members", member)
   .route("/projects", project)
   .route("/tasks", task)
-  .route("/channels", channel);
+  .route("/channels", channel)
+  .route("/channel-messages", channelMessages);
 
 export const GET = handle(app);
 export const POST = handle(app);
